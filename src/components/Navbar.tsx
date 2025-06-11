@@ -3,14 +3,15 @@ import React from 'react';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
+import { useNavigation } from '@/contexts/NavigationContext';
 import { LogOut, Bell, Settings } from 'lucide-react';
 
 export const Navbar = () => {
   const { user, logout } = useAuth();
+  const { setCurrentPage } = useNavigation();
 
   const handleLogoClick = () => {
-    // Reload the page to go back to dashboard
-    window.location.href = '/';
+    setCurrentPage('dashboard');
   };
 
   return (

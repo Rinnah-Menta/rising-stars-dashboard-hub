@@ -11,6 +11,7 @@ import {
   SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { useAuth } from '@/contexts/AuthContext';
+import { useNavigation } from '@/contexts/NavigationContext';
 import { 
   Home, 
   GraduationCap, 
@@ -29,6 +30,7 @@ import {
 
 export const AppSidebar = () => {
   const { user } = useAuth();
+  const { currentPage, setCurrentPage } = useNavigation();
 
   const getMenuItems = () => {
     const commonItems = [
@@ -53,15 +55,15 @@ export const AppSidebar = () => {
           { title: 'My Classes', icon: GraduationCap, id: 'classes' },
           { title: 'Students', icon: Users, id: 'students' },
           { title: 'Assignments', icon: FileText, id: 'assignments' },
-          { title: 'Gradebook', icon: BarChart3, id: 'gradebook' },
-          { title: 'Attendance', icon: Clock, id: 'attendance' },
+          { title: 'Gradebook', icon: BarChart3, id: 'results' },
+          { title: 'Attendance', icon: Clock, id: 'timetable' },
         ];
       case 'parent':
         return [
           ...commonItems,
-          { title: 'My Children', icon: Users, id: 'children' },
-          { title: 'Academic Progress', icon: BarChart3, id: 'progress' },
-          { title: 'Fee Payments', icon: DollarSign, id: 'payments' },
+          { title: 'My Children', icon: Users, id: 'students' },
+          { title: 'Academic Progress', icon: BarChart3, id: 'results' },
+          { title: 'Fee Payments', icon: DollarSign, id: 'finances' },
           { title: 'Communication', icon: MessageSquare, id: 'communication' },
         ];
       case 'admin':
@@ -82,9 +84,8 @@ export const AppSidebar = () => {
   const menuItems = getMenuItems();
 
   const handleMenuClick = (itemId: string) => {
-    // For now, just log the navigation - in a real app this would use React Router
     console.log(`Navigating to: ${itemId}`);
-    // You could implement actual navigation here later
+    setCurrentPage(itemId);
   };
 
   return (
@@ -96,7 +97,10 @@ export const AppSidebar = () => {
             <SidebarMenu>
               {menuItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
+                  <SidebarMenuButton 
+                    asChild
+                    isActive={currentPage === item.id}
+                  >
                     <button 
                       className="flex items-center space-x-2 w-full"
                       onClick={() => handleMenuClick(item.id)}
