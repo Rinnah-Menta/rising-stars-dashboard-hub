@@ -3,102 +3,51 @@ import { User } from '@/types/auth';
 
 export const localDatabase = {
   users: [
-    // Pupils
     {
       id: '1',
-      email: 'john.doe@pupil.rising-stars.edu',
+      email: 'john.mukasa@pupil.springingstars.ac.ug',
       password: 'pupil123',
       role: 'pupil' as const,
-      name: 'John Doe',
-      class: 'Grade 5A',
-      avatar: '👦'
+      name: 'John Mukasa',
+      class: 'Primary 6',
+      avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=face'
     },
     {
       id: '2',
-      email: 'mary.smith@pupil.rising-stars.edu',
-      password: 'pupil123',
-      role: 'pupil' as const,
-      name: 'Mary Smith',
-      class: 'Grade 4B',
-      avatar: '👧'
-    },
-    // Teachers
-    {
-      id: '3',
-      email: 'jane.wilson@teacher.rising-stars.edu',
+      email: 'sarah.nambi@teacher.springingstars.ac.ug',
       password: 'teacher123',
       role: 'teacher' as const,
-      name: 'Ms. Jane Wilson',
-      subject: 'Mathematics',
-      department: 'Primary Education',
-      avatar: '👩‍🏫'
+      name: 'Sarah Nambi',
+      subject: 'Mathematics & Science',
+      class: 'Primary 5 & 6',
+      avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop&crop=face'
+    },
+    {
+      id: '3',
+      email: 'david.kato@staff.springingstars.ac.ug',
+      password: 'staff123',
+      role: 'non-teaching' as const,
+      name: 'David Kato',
+      department: 'Administration',
+      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face'
     },
     {
       id: '4',
-      email: 'robert.brown@teacher.rising-stars.edu',
-      password: 'teacher123',
-      role: 'teacher' as const,
-      name: 'Mr. Robert Brown',
-      subject: 'Science',
-      department: 'Primary Education',
-      avatar: '👨‍🏫'
+      email: 'grace.nalongo@parent.springingstars.ac.ug',
+      password: 'parent123',
+      role: 'parent' as const,
+      name: 'Grace Nalongo',
+      children: ['John Mukasa', 'Mary Nakato'],
+      avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b123?w=400&h=400&fit=crop&crop=face'
     },
-    // Non-teaching Staff
     {
       id: '5',
-      email: 'sarah.jones@staff.rising-stars.edu',
-      password: 'staff123',
-      role: 'non-teaching' as const,
-      name: 'Sarah Jones',
-      department: 'Administration',
-      avatar: '👩‍💼'
-    },
-    {
-      id: '6',
-      email: 'mike.davis@staff.rising-stars.edu',
-      password: 'staff123',
-      role: 'non-teaching' as const,
-      name: 'Mike Davis',
-      department: 'Maintenance',
-      avatar: '👨‍🔧'
-    },
-    // Parents
-    {
-      id: '7',
-      email: 'alice.doe@parent.rising-stars.edu',
-      password: 'parent123',
-      role: 'parent' as const,
-      name: 'Alice Doe',
-      children: ['John Doe'],
-      avatar: '👩'
-    },
-    {
-      id: '8',
-      email: 'mark.smith@parent.rising-stars.edu',
-      password: 'parent123',
-      role: 'parent' as const,
-      name: 'Mark Smith',
-      children: ['Mary Smith'],
-      avatar: '👨'
-    },
-    // Administrators
-    {
-      id: '9',
-      email: 'admin@rising-stars.edu',
+      email: 'admin@springingstars.ac.ug',
       password: 'admin123',
       role: 'admin' as const,
-      name: 'Dr. Patricia Anderson',
+      name: 'Moses Ssebunya',
       department: 'School Administration',
-      avatar: '👩‍💼'
-    },
-    {
-      id: '10',
-      email: 'principal@rising-stars.edu',
-      password: 'admin123',
-      role: 'admin' as const,
-      name: 'Mr. James Thompson',
-      department: 'Principal Office',
-      avatar: '👨‍💼'
+      avatar: 'https://images.unsplash.com/photo-1556157382-97eda2d62296?w=400&h=400&fit=crop&crop=face'
     }
   ] as User[]
 };

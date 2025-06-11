@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from '@/contexts/AuthContext';
-import { GraduationCap, LogIn, Star } from 'lucide-react';
+import { LogIn, Star } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const LoginPage = () => {
@@ -26,7 +26,7 @@ const LoginPage = () => {
     if (result.success) {
       toast({
         title: "Login Successful",
-        description: "Welcome to Rising Stars Junior School!",
+        description: "Welcome to Springing Stars Junior School!",
       });
     } else {
       toast({
@@ -41,11 +41,11 @@ const LoginPage = () => {
 
   const getDemoCredentials = () => {
     const credentials = {
-      pupil: { email: 'john.doe@pupil.rising-stars.edu', password: 'pupil123' },
-      teacher: { email: 'jane.wilson@teacher.rising-stars.edu', password: 'teacher123' },
-      'non-teaching': { email: 'sarah.jones@staff.rising-stars.edu', password: 'staff123' },
-      parent: { email: 'alice.doe@parent.rising-stars.edu', password: 'parent123' },
-      admin: { email: 'admin@rising-stars.edu', password: 'admin123' }
+      pupil: { email: 'john.mukasa@pupil.springingstars.ac.ug', password: 'pupil123' },
+      teacher: { email: 'sarah.nambi@teacher.springingstars.ac.ug', password: 'teacher123' },
+      'non-teaching': { email: 'david.kato@staff.springingstars.ac.ug', password: 'staff123' },
+      parent: { email: 'grace.nalongo@parent.springingstars.ac.ug', password: 'parent123' },
+      admin: { email: 'admin@springingstars.ac.ug', password: 'admin123' }
     };
     return credentials[userType as keyof typeof credentials];
   };
@@ -65,14 +65,18 @@ const LoginPage = () => {
         <div className="text-center space-y-4">
           <div className="flex items-center justify-center space-x-2">
             <div className="relative">
-              <GraduationCap className="h-12 w-12 text-blue-600" />
+              <img 
+                src="https://springingstars.ac.ug/wp-content/uploads/2023/04/logo.png" 
+                alt="Springing Stars Logo" 
+                className="h-16 w-16 object-contain"
+              />
               <Star className="h-6 w-6 text-orange-500 absolute -top-1 -right-1" />
             </div>
           </div>
           <div>
-            <h1 className="text-3xl font-bold text-blue-900">Rising Stars</h1>
+            <h1 className="text-3xl font-bold text-blue-900">Springing Stars</h1>
             <p className="text-xl text-blue-700">Junior School</p>
-            <p className="text-sm text-gray-600 mt-2">School Management System</p>
+            <p className="text-sm text-gray-600 mt-2">School Management System - Uganda</p>
           </div>
         </div>
 
@@ -160,11 +164,11 @@ const LoginPage = () => {
             <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
               <h4 className="font-semibold text-blue-900 mb-2">Demo Credentials:</h4>
               <div className="text-xs text-blue-700 space-y-1">
-                <p><strong>Pupil:</strong> john.doe@pupil.rising-stars.edu / pupil123</p>
-                <p><strong>Teacher:</strong> jane.wilson@teacher.rising-stars.edu / teacher123</p>
-                <p><strong>Staff:</strong> sarah.jones@staff.rising-stars.edu / staff123</p>
-                <p><strong>Parent:</strong> alice.doe@parent.rising-stars.edu / parent123</p>
-                <p><strong>Admin:</strong> admin@rising-stars.edu / admin123</p>
+                <p><strong>Pupil:</strong> john.mukasa@pupil.springingstars.ac.ug / pupil123</p>
+                <p><strong>Teacher:</strong> sarah.nambi@teacher.springingstars.ac.ug / teacher123</p>
+                <p><strong>Staff:</strong> david.kato@staff.springingstars.ac.ug / staff123</p>
+                <p><strong>Parent:</strong> grace.nalongo@parent.springingstars.ac.ug / parent123</p>
+                <p><strong>Admin:</strong> admin@springingstars.ac.ug / admin123</p>
               </div>
             </div>
           </CardContent>
