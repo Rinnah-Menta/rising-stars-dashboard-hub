@@ -26,13 +26,9 @@ import {
   Award,
   MessageSquare
 } from 'lucide-react';
-import { Timetable } from '@/components/pages/Timetable';
-import { Assignments } from '@/components/pages/Assignments';
-import { Results } from '@/components/pages/Results';
 
 export const AppSidebar = () => {
   const { user } = useAuth();
-  const [currentPage, setCurrentPage] = useState('dashboard');
 
   const getMenuItems = () => {
     const commonItems = [
@@ -86,66 +82,35 @@ export const AppSidebar = () => {
   const menuItems = getMenuItems();
 
   const handleMenuClick = (itemId: string) => {
-    setCurrentPage(itemId);
-    // In a real app, this would use React Router
+    // For now, just log the navigation - in a real app this would use React Router
     console.log(`Navigating to: ${itemId}`);
-  };
-
-  const renderPageContent = () => {
-    switch (currentPage) {
-      case 'timetable':
-        return <Timetable />;
-      case 'assignments':
-        return <Assignments />;
-      case 'results':
-        return <Results />;
-      default:
-        return null;
-    }
+    // You could implement actual navigation here later
   };
 
   return (
-    <>
-      <Sidebar>
-        <SidebarContent>
-          <SidebarGroup>
-            <SidebarGroupLabel>Main Menu</SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {menuItems.map((item) => (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton 
-                      asChild
-                      isActive={currentPage === item.id}
+    <Sidebar>
+      <SidebarContent>
+        <SidebarGroup>
+          <SidebarGroupLabel>Main Menu</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {menuItems.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton asChild>
+                    <button 
+                      className="flex items-center space-x-2 w-full"
                       onClick={() => handleMenuClick(item.id)}
                     >
-                      <button className="flex items-center space-x-2 w-full">
-                        <item.icon className="h-4 w-4" />
-                        <span>{item.title}</span>
-                      </button>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        </SidebarContent>
-      </Sidebar>
-      
-      {/* Render page content when sidebar items are clicked */}
-      {currentPage !== 'dashboard' && (
-        <div className="fixed inset-0 bg-white z-50 overflow-auto">
-          <div className="p-4">
-            <button 
-              onClick={() => setCurrentPage('dashboard')}
-              className="mb-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-            >
-              Back to Dashboard
-            </button>
-            {renderPageContent()}
-          </div>
-        </div>
-      )}
-    </>
+                      <item.icon className="h-4 w-4" />
+                      <span>{item.title}</span>
+                    </button>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+      </SidebarContent>
+    </Sidebar>
   );
 };

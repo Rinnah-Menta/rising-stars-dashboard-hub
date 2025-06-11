@@ -8,23 +8,28 @@ import { LogOut, Bell, Settings } from 'lucide-react';
 export const Navbar = () => {
   const { user, logout } = useAuth();
 
+  const handleLogoClick = () => {
+    // Reload the page to go back to dashboard
+    window.location.href = '/';
+  };
+
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 px-2 sm:px-4 py-2 sm:py-3 shadow-sm">
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2 sm:space-x-4">
           <SidebarTrigger />
-          <div className="flex items-center space-x-2 sm:space-x-3">
+          <div className="flex items-center space-x-2 sm:space-x-3 cursor-pointer" onClick={handleLogoClick}>
             <img 
               src="https://springingstars.ac.ug/wp-content/uploads/2023/04/logo.png" 
               alt="Springing Stars Logo" 
-              className="h-8 w-8 sm:h-10 sm:w-10 object-contain"
+              className="h-8 w-8 sm:h-10 sm:w-10 object-contain hover:opacity-80 transition-opacity"
             />
             <div className="hidden sm:block">
-              <h1 className="text-lg sm:text-xl font-bold text-blue-900">Springing Stars</h1>
+              <h1 className="text-lg sm:text-xl font-bold text-blue-900 hover:text-blue-700 transition-colors">Springing Stars</h1>
               <p className="text-xs sm:text-sm text-blue-700">Junior School</p>
             </div>
             <div className="sm:hidden">
-              <h1 className="text-sm font-bold text-blue-900">Springing Stars</h1>
+              <h1 className="text-sm font-bold text-blue-900 hover:text-blue-700 transition-colors">Springing Stars</h1>
             </div>
           </div>
         </div>

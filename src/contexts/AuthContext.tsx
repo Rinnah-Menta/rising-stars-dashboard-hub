@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User, AuthState } from '@/types/auth';
 import { localDatabase } from '@/data/localDatabase';
 
@@ -24,6 +24,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     isAuthenticated: false,
   });
 
+  // Load authentication state from localStorage on component mount
+  useEffect(() => {
+    const savedUser = localStorage.getItem('springingstars_user');
+    if (savedUser) {
+      try {
+        const user = JSON.parse(savedUser);
+        setAuthState({
+          user,
+          isAuthenticated: true,
+        });
+      } catch (error) {
+        console.error('Error parsing saved user data:', error);
+        localStorage.removeItem('springingstars_user');
+      }
+    }
+  }, []);
+
   const login = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
     const user = localDatabase.users.find(u => u.email === email && u.password === password);
     
@@ -32,6 +49,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         user,
         isAuthenticated: true,
       });
+      // Save user data to localStorage
+      localStorage.setItem('springingstars_user', JSON.stringify(user));
       return { success: true };
     }
     
@@ -43,6 +62,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       user: null,
       isAuthenticated: false,
     });
+    // Remove user data from localStorage
+    localStorage.removeItem('springingstars_user');
   };
 
   return (
