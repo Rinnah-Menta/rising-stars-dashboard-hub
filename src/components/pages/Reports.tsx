@@ -1,139 +1,51 @@
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { FileText, Download, TrendingUp, Users, BookOpen, Clock, GraduationCap, Printer } from 'lucide-react';
-import { toast } from '@/hooks/use-toast';
-import { MarksheetGenerator } from '@/components/reports/MarksheetGenerator';
+import { FileText, Download, TrendingUp, Users, BookOpen, Clock } from 'lucide-react';
 
 export const Reports = () => {
   const { user } = useAuth();
-  const [reports, setReports] = useState([]);
-  const [selectedClass, setSelectedClass] = useState('');
-  const [selectedTerm, setSelectedTerm] = useState('');
-  const [selectedStudent, setSelectedStudent] = useState('');
-  const [showMarksheet, setShowMarksheet] = useState(false);
 
-  const classes = [
-    'P.1', 'P.2', 'P.3', 'P.4', 'P.5', 'P.6', 'P.7'
-  ];
-
-  const terms = [
-    'Term 1 - 2024', 'Term 2 - 2024', 'Term 3 - 2024'
-  ];
-
-  const students = [
-    { id: 1, name: 'Nakato Sarah', class: 'P.5' },
-    { id: 2, name: 'Musoke John', class: 'P.5' },
-    { id: 3, name: 'Namubiru Grace', class: 'P.5' },
-    { id: 4, name: 'Kasozi David', class: 'P.5' },
-    { id: 5, name: 'Nalubega Mary', class: 'P.5' },
-  ];
-
-  useEffect(() => {
-    const savedReports = localStorage.getItem('teacher_reports');
-    if (savedReports) {
-      setReports(JSON.parse(savedReports));
-    } else {
-      const defaultReports = [
-        {
-          id: 1,
-          title: 'Academic Performance Report',
-          description: 'Detailed analysis of student academic performance for Term 2',
-          date: '2024-06-10',
-          type: 'Academic',
-          status: 'Ready',
-          icon: TrendingUp
-        },
-        {
-          id: 2,
-          title: 'Attendance Report',
-          description: 'Student attendance summary for the current term',
-          date: '2024-06-08',
-          type: 'Attendance',
-          status: 'Ready',
-          icon: Clock
-        },
-        {
-          id: 3,
-          title: 'Class Performance Analysis',
-          description: 'Comparative analysis of class performance across subjects',
-          date: '2024-06-03',
-          type: 'Academic',
-          status: 'Processing',
-          icon: BookOpen
-        },
-        {
-          id: 4,
-          title: 'Student Marksheets',
-          description: 'Individual student performance marksheets for all terms',
-          date: '2024-06-12',
-          type: 'Marksheet',
-          status: 'Ready',
-          icon: GraduationCap
-        }
-      ];
-      setReports(defaultReports);
-      localStorage.setItem('teacher_reports', JSON.stringify(defaultReports));
-    }
-  }, []);
-
-  const generateReport = (type) => {
-    const newReport = {
-      id: Date.now(),
-      title: `${type} Report`,
-      description: `Generated ${type.toLowerCase()} report for current academic period`,
-      date: new Date().toISOString().split('T')[0],
-      type: type,
-      status: 'Processing',
+  const reports = [
+    {
+      id: 1,
+      title: 'Academic Performance Report',
+      description: 'Detailed analysis of student academic performance for Term 2',
+      date: '2024-06-10',
+      type: 'Academic',
+      status: 'Ready',
+      icon: TrendingUp
+    },
+    {
+      id: 2,
+      title: 'Attendance Report',
+      description: 'Student attendance summary for the current term',
+      date: '2024-06-08',
+      type: 'Attendance',
+      status: 'Ready',
+      icon: Clock
+    },
+    {
+      id: 3,
+      title: 'Fee Collection Report',
+      description: 'Overview of fee payments and outstanding balances',
+      date: '2024-06-05',
+      type: 'Financial',
+      status: 'Ready',
       icon: FileText
-    };
-
-    const updatedReports = [...reports, newReport];
-    setReports(updatedReports);
-    localStorage.setItem('teacher_reports', JSON.stringify(updatedReports));
-
-    // Simulate processing time
-    setTimeout(() => {
-      const processedReports = updatedReports.map(report => 
-        report.id === newReport.id ? { ...report, status: 'Ready' } : report
-      );
-      setReports(processedReports);
-      localStorage.setItem('teacher_reports', JSON.stringify(processedReports));
-      toast({
-        title: "Report Generated",
-        description: `${type} report has been generated successfully.`,
-      });
-    }, 3000);
-
-    toast({
-      title: "Report Generation Started",
-      description: `Generating ${type.toLowerCase()} report...`,
-    });
-  };
-
-  const downloadReport = (report) => {
-    toast({
-      title: "Download Started",
-      description: `Downloading ${report.title}...`,
-    });
-  };
-
-  const generateMarksheet = () => {
-    if (!selectedClass || !selectedTerm || !selectedStudent) {
-      toast({
-        title: "Missing Information",
-        description: "Please select class, term, and student to generate marksheet.",
-        variant: "destructive"
-      });
-      return;
+    },
+    {
+      id: 4,
+      title: 'Class Performance Analysis',
+      description: 'Comparative analysis of class performance across subjects',
+      date: '2024-06-03',
+      type: 'Academic',
+      status: 'Processing',
+      icon: BookOpen
     }
-    
-    setShowMarksheet(true);
-  };
+  ];
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -144,115 +56,39 @@ export const Reports = () => {
     }
   };
 
-  const getTypeColor = (type: string) => {
-    switch (type) {
-      case 'Academic': return 'bg-blue-50 text-blue-600';
-      case 'Attendance': return 'bg-purple-50 text-purple-600';
-      case 'Financial': return 'bg-green-50 text-green-600';
-      case 'Marksheet': return 'bg-orange-50 text-orange-600';
-      default: return 'bg-gray-50 text-gray-600';
-    }
-  };
-
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h1 className="text-2xl font-bold">Reports & Analytics</h1>
-        <div className="flex gap-2 flex-wrap">
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button>
-                <GraduationCap className="h-4 w-4 mr-2" />
-                Generate Marksheet
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-md">
-              <DialogHeader>
-                <DialogTitle>Generate Student Marksheet</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4">
-                <div>
-                  <label className="text-sm font-medium">Select Class</label>
-                  <Select value={selectedClass} onValueChange={setSelectedClass}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Choose class" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {classes.map((cls) => (
-                        <SelectItem key={cls} value={cls}>{cls}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div>
-                  <label className="text-sm font-medium">Select Term</label>
-                  <Select value={selectedTerm} onValueChange={setSelectedTerm}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Choose term" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {terms.map((term) => (
-                        <SelectItem key={term} value={term}>{term}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <label className="text-sm font-medium">Select Student</label>
-                  <Select value={selectedStudent} onValueChange={setSelectedStudent}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Choose student" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {students.map((student) => (
-                        <SelectItem key={student.id} value={student.id.toString()}>
-                          {student.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <Button onClick={generateMarksheet} className="w-full">
-                  <Printer className="h-4 w-4 mr-2" />
-                  Generate Marksheet
-                </Button>
-              </div>
-            </DialogContent>
-          </Dialog>
-
-          <Button variant="outline" onClick={() => generateReport('Academic')}>
-            <FileText className="h-4 w-4 mr-2" />
-            Generate Report
-          </Button>
-        </div>
+        <Button>
+          <FileText className="h-4 w-4 mr-2" />
+          Generate New Report
+        </Button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
           <CardContent className="pt-6">
-            <div className="text-2xl font-bold">15</div>
-            <p className="text-xs text-muted-foreground">Total Reports</p>
+            <div className="text-2xl font-bold">12</div>
+            <p className="text-xs text-gray-600">Total Reports</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-6">
-            <div className="text-2xl font-bold text-green-600">12</div>
-            <p className="text-xs text-muted-foreground">Ready Reports</p>
+            <div className="text-2xl font-bold text-green-600">8</div>
+            <p className="text-xs text-gray-600">Ready Reports</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-6">
-            <div className="text-2xl font-bold text-yellow-600">2</div>
-            <p className="text-xs text-muted-foreground">Processing</p>
+            <div className="text-2xl font-bold text-yellow-600">3</div>
+            <p className="text-xs text-gray-600">Processing</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-6">
-            <div className="text-2xl font-bold text-blue-600">89</div>
-            <p className="text-xs text-muted-foreground">Downloads This Month</p>
+            <div className="text-2xl font-bold text-blue-600">245</div>
+            <p className="text-xs text-gray-600">Downloads This Month</p>
           </CardContent>
         </Card>
       </div>
@@ -266,19 +102,17 @@ export const Reports = () => {
             {reports.map((report) => {
               const IconComponent = report.icon;
               return (
-                <div key={report.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+                <div key={report.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
                   <div className="flex items-center space-x-4">
-                    <div className="p-2 bg-primary/10 rounded-lg">
-                      <IconComponent className="h-5 w-5 text-primary" />
+                    <div className="p-2 bg-blue-100 rounded-lg">
+                      <IconComponent className="h-5 w-5 text-blue-600" />
                     </div>
                     <div className="flex-1">
                       <h3 className="font-semibold">{report.title}</h3>
-                      <p className="text-sm text-muted-foreground">{report.description}</p>
+                      <p className="text-sm text-gray-600">{report.description}</p>
                       <div className="flex items-center space-x-4 mt-2">
-                        <span className="text-xs text-muted-foreground">Generated: {new Date(report.date).toLocaleDateString()}</span>
-                        <span className={`text-xs font-medium px-2 py-1 rounded-full ${getTypeColor(report.type)}`}>
-                          {report.type}
-                        </span>
+                        <span className="text-xs text-gray-500">Generated: {new Date(report.date).toLocaleDateString()}</span>
+                        <span className="text-xs font-medium px-2 py-1 rounded-full bg-blue-50 text-blue-600">{report.type}</span>
                       </div>
                     </div>
                   </div>
@@ -287,7 +121,7 @@ export const Reports = () => {
                       {report.status}
                     </span>
                     {report.status === 'Ready' && (
-                      <Button variant="outline" size="sm" onClick={() => downloadReport(report)}>
+                      <Button variant="outline" size="sm">
                         <Download className="h-4 w-4 mr-2" />
                         Download
                       </Button>
@@ -299,15 +133,6 @@ export const Reports = () => {
           </div>
         </CardContent>
       </Card>
-
-      {showMarksheet && (
-        <MarksheetGenerator
-          student={students.find(s => s.id.toString() === selectedStudent)}
-          term={selectedTerm}
-          class={selectedClass}
-          onClose={() => setShowMarksheet(false)}
-        />
-      )}
     </div>
   );
 };
