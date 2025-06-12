@@ -5,14 +5,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Settings, Bell, Shield, Database, Users, Mail } from 'lucide-react';
+import { Settings as SettingsIcon, Bell, Shield, Database, Users, Mail } from 'lucide-react';
 
 export const Settings = () => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">System Settings</h1>
-        <Settings className="h-6 w-6 text-gray-500" />
+        <SettingsIcon className="h-6 w-6 text-gray-500" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
