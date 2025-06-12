@@ -1,230 +1,475 @@
 
-import React, { useRef } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
+import React, { useState, useRef } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { X, Download, Printer } from 'lucide-react';
-import { toast } from '@/hooks/use-toast';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { ArrowLeft, Download, Printer, Save, Plus, Trash2 } from 'lucide-react';
 
 interface Student {
-  id: number;
+  id: string;
   name: string;
-  class: string;
+  registrationNumber: string;
+  marks: number;
+  grade: string;
+  remarks: string;
+}
+
+interface MarksheetData {
+  schoolName: string;
+  schoolAddress: string;
+  className: string;
+  subject: string;
+  term: string;
+  year: string;
+  teacherName: string;
+  students: Student[];
 }
 
 interface MarksheetGeneratorProps {
-  student: Student;
-  term: string;
-  class: string;
-  onClose: () => void;
+  onBack: () => void;
+  onSave: (data: MarksheetData) => void;
+  existingReport?: any;
 }
 
-export const MarksheetGenerator = ({ student, term, class: studentClass, onClose }: MarksheetGeneratorProps) => {
-  const marksheetRef = useRef<HTMLDivElement>(null);
+export const MarksheetGenerator: React.FC<MarksheetGeneratorProps> = ({
+  onBack,
+  onSave,
+  existingReport
+}) => {
+  const printRef = useRef<HTMLDivElement>(null);
+  
+  const [marksheetData, setMarksheetData] = useState<MarksheetData>({
+    schoolName: 'Kampala Primary School',
+    schoolAddress: 'Plot 123, Kampala Road, Kampala, Uganda',
+    className: existingReport?.classId || 'P5A',
+    subject: existingReport?.subject || 'Mathematics',
+    term: existingReport?.term || 'Term 2',
+    year: '2024',
+    teacherName: 'Mr. John Mukasa',
+    students: [
+      {
+        id: '1',
+        name: 'Nakato Sarah',
+        registrationNumber: 'KPS/2024/001',
+        marks: 85,
+        grade: 'A',
+        remarks: 'Excellent performance'
+      },
+      {
+        id: '2',
+        name: 'Ssemakula David',
+        registrationNumber: 'KPS/2024/002',
+        marks: 78,
+        grade: 'B+',
+        remarks: 'Good work'
+      },
+      {
+        id: '3',
+        name: 'Namukasa Grace',
+        registrationNumber: 'KPS/2024/003',
+        marks: 92,
+        grade: 'A',
+        remarks: 'Outstanding'
+      },
+      {
+        id: '4',
+        name: 'Kato Michael',
+        registrationNumber: 'KPS/2024/004',
+        marks: 65,
+        grade: 'C+',
+        remarks: 'Satisfactory'
+      },
+      {
+        id: '5',
+        name: 'Namatovu Ruth',
+        registrationNumber: 'KPS/2024/005',
+        marks: 88,
+        grade: 'A',
+        remarks: 'Very good'
+      }
+    ]
+  });
 
-  // Sample subjects and grades data
-  const subjects = [
-    { name: 'English Language', score: 85, grade: 'A', remarks: 'Excellent' },
-    { name: 'Mathematics', score: 78, grade: 'B+', remarks: 'Very Good' },
-    { name: 'Science', score: 82, grade: 'A-', remarks: 'Excellent' },
-    { name: 'Social Studies', score: 75, grade: 'B', remarks: 'Good' },
-    { name: 'Luganda', score: 80, grade: 'A-', remarks: 'Very Good' },
-    { name: 'Religious Education', score: 88, grade: 'A', remarks: 'Excellent' },
-    { name: 'Physical Education', score: 90, grade: 'A', remarks: 'Outstanding' },
-    { name: 'Music, Dance & Drama', score: 83, grade: 'A-', remarks: 'Very Good' },
-  ];
+  const getGrade = (marks: number): string => {
+    if (marks >= 90) return 'A';
+    if (marks >= 80) return 'B+';
+    if (marks >= 70) return 'B';
+    if (marks >= 60) return 'C+';
+    if (marks >= 50) return 'C';
+    if (marks >= 40) return 'D';
+    return 'F';
+  };
 
-  const totalMarks = subjects.reduce((sum, subject) => sum + subject.score, 0);
-  const average = Math.round(totalMarks / subjects.length);
-  const overallGrade = average >= 85 ? 'A' : average >= 75 ? 'B+' : average >= 65 ? 'B' : average >= 55 ? 'C+' : 'C';
+  const updateStudent = (index: number, field: keyof Student, value: string | number) => {
+    const updatedStudents = [...marksheetData.students];
+    updatedStudents[index] = {
+      ...updatedStudents[index],
+      [field]: value
+    };
+    
+    // Auto-calculate grade when marks change
+    if (field === 'marks') {
+      updatedStudents[index].grade = getGrade(Number(value));
+    }
+    
+    setMarksheetData({
+      ...marksheetData,
+      students: updatedStudents
+    });
+  };
+
+  const addStudent = () => {
+    const newStudent: Student = {
+      id: Date.now().toString(),
+      name: '',
+      registrationNumber: '',
+      marks: 0,
+      grade: 'F',
+      remarks: ''
+    };
+    
+    setMarksheetData({
+      ...marksheetData,
+      students: [...marksheetData.students, newStudent]
+    });
+  };
+
+  const removeStudent = (index: number) => {
+    const updatedStudents = marksheetData.students.filter((_, i) => i !== index);
+    setMarksheetData({
+      ...marksheetData,
+      students: updatedStudents
+    });
+  };
 
   const handlePrint = () => {
     window.print();
-    toast({
-      title: "Print Started",
-      description: "Marksheet is being prepared for printing.",
-    });
   };
 
   const handleDownload = () => {
-    toast({
-      title: "Download Started",
-      description: "Marksheet PDF is being generated.",
-    });
+    // In a real application, this would generate a PDF
+    console.log('Downloading marksheet as PDF...');
+    alert('PDF download functionality would be implemented here');
   };
 
+  const handleSave = () => {
+    onSave(marksheetData);
+  };
+
+  const calculateStats = () => {
+    const marks = marksheetData.students.map(s => s.marks);
+    const total = marks.length;
+    const passed = marks.filter(m => m >= 50).length;
+    const average = marks.reduce((sum, mark) => sum + mark, 0) / total;
+    
+    return {
+      total,
+      passed,
+      failed: total - passed,
+      average: average.toFixed(1),
+      highest: Math.max(...marks),
+      lowest: Math.min(...marks)
+    };
+  };
+
+  const stats = calculateStats();
+
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-auto">
-        <div className="flex justify-between items-center p-4 border-b">
-          <h2 className="text-xl font-semibold">Student Marksheet</h2>
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={handlePrint}>
-              <Printer className="h-4 w-4 mr-2" />
-              Print
-            </Button>
-            <Button variant="outline" size="sm" onClick={handleDownload}>
-              <Download className="h-4 w-4 mr-2" />
-              Download PDF
-            </Button>
-            <Button variant="ghost" size="sm" onClick={onClose}>
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
+    <div className="space-y-6">
+      {/* Navigation */}
+      <div className="flex items-center justify-between">
+        <Button variant="ghost" onClick={onBack}>
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back to Reports
+        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={handleSave}>
+            <Save className="h-4 w-4 mr-2" />
+            Save
+          </Button>
+          <Button variant="outline" onClick={handleDownload}>
+            <Download className="h-4 w-4 mr-2" />
+            Download PDF
+          </Button>
+          <Button variant="outline" onClick={handlePrint}>
+            <Printer className="h-4 w-4 mr-2" />
+            Print
+          </Button>
         </div>
+      </div>
 
-        <div ref={marksheetRef} className="p-8 bg-white relative">
+      {/* Configuration Panel */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Marksheet Configuration</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <Label htmlFor="className">Class</Label>
+              <Select 
+                value={marksheetData.className} 
+                onValueChange={(value) => setMarksheetData({...marksheetData, className: value})}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="P1A">Primary 1A</SelectItem>
+                  <SelectItem value="P1B">Primary 1B</SelectItem>
+                  <SelectItem value="P2A">Primary 2A</SelectItem>
+                  <SelectItem value="P3A">Primary 3A</SelectItem>
+                  <SelectItem value="P4A">Primary 4A</SelectItem>
+                  <SelectItem value="P5A">Primary 5A</SelectItem>
+                  <SelectItem value="P6A">Primary 6A</SelectItem>
+                  <SelectItem value="P7A">Primary 7A</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div>
+              <Label htmlFor="subject">Subject</Label>
+              <Select 
+                value={marksheetData.subject} 
+                onValueChange={(value) => setMarksheetData({...marksheetData, subject: value})}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Mathematics">Mathematics</SelectItem>
+                  <SelectItem value="English">English Language</SelectItem>
+                  <SelectItem value="Science">Science</SelectItem>
+                  <SelectItem value="Social Studies">Social Studies</SelectItem>
+                  <SelectItem value="Religious Education">Religious Education</SelectItem>
+                  <SelectItem value="Physical Education">Physical Education</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div>
+              <Label htmlFor="term">Term</Label>
+              <Select 
+                value={marksheetData.term} 
+                onValueChange={(value) => setMarksheetData({...marksheetData, term: value})}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Term 1">Term 1</SelectItem>
+                  <SelectItem value="Term 2">Term 2</SelectItem>
+                  <SelectItem value="Term 3">Term 3</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Statistics */}
+      <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
+        <Card>
+          <CardContent className="pt-6">
+            <div className="text-2xl font-bold">{stats.total}</div>
+            <p className="text-xs text-muted-foreground">Total Students</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="text-2xl font-bold text-green-600">{stats.passed}</div>
+            <p className="text-xs text-muted-foreground">Passed</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="text-2xl font-bold text-red-600">{stats.failed}</div>
+            <p className="text-xs text-muted-foreground">Failed</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="text-2xl font-bold text-blue-600">{stats.average}%</div>
+            <p className="text-xs text-muted-foreground">Average</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="text-2xl font-bold text-purple-600">{stats.highest}%</div>
+            <p className="text-xs text-muted-foreground">Highest</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="text-2xl font-bold text-orange-600">{stats.lowest}%</div>
+            <p className="text-xs text-muted-foreground">Lowest</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Printable Marksheet */}
+      <div ref={printRef} className="print:shadow-none">
+        <Card className="relative overflow-hidden">
           {/* Watermark */}
-          <div className="absolute inset-0 flex items-center justify-center opacity-5 pointer-events-none">
-            <img 
-              src="https://springingstars.ac.ug/wp-content/uploads/2023/04/logo.png" 
-              alt="Watermark" 
-              className="w-96 h-96 object-contain"
-            />
+          <div className="absolute inset-0 flex items-center justify-center opacity-5 pointer-events-none z-0">
+            <div className="text-9xl font-bold transform rotate-45 text-primary">
+              {marksheetData.schoolName.split(' ')[0]}
+            </div>
           </div>
+          
+          <CardContent className="relative z-10 p-8">
+            {/* School Header */}
+            <div className="text-center mb-8 border-b-2 border-primary pb-6">
+              <div className="flex items-center justify-center gap-4 mb-4">
+                <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center">
+                  <span className="text-white font-bold text-xl">KPS</span>
+                </div>
+                <div>
+                  <h1 className="text-3xl font-bold text-primary">{marksheetData.schoolName}</h1>
+                  <p className="text-muted-foreground">{marksheetData.schoolAddress}</p>
+                  <p className="text-sm font-medium mt-1">Phone: +256 700 123 456 | Email: info@kampalaprimary.ac.ug</p>
+                </div>
+              </div>
+              <h2 className="text-xl font-semibold bg-primary text-white px-4 py-2 rounded inline-block">
+                ACADEMIC MARKSHEET - {marksheetData.term} {marksheetData.year}
+              </h2>
+            </div>
 
-          {/* School Header */}
-          <div className="text-center mb-8 relative z-10">
-            <div className="flex items-center justify-center gap-4 mb-4">
-              <img 
-                src="https://springingstars.ac.ug/wp-content/uploads/2023/04/logo.png" 
-                alt="Springing Stars Logo" 
-                className="h-16 w-16 object-contain"
-              />
-              <div>
-                <h1 className="text-2xl font-bold text-blue-900">SPRINGING STARS JUNIOR SCHOOL</h1>
-                <p className="text-sm text-blue-700">Excellence in Education • Nurturing Future Leaders</p>
-                <p className="text-xs text-gray-600">P.O. Box 1234, Kampala, Uganda | Tel: +256 700 000 000</p>
+            {/* Marksheet Details */}
+            <div className="grid grid-cols-2 gap-8 mb-6">
+              <div className="space-y-2">
+                <p><strong>Class:</strong> {marksheetData.className}</p>
+                <p><strong>Subject:</strong> {marksheetData.subject}</p>
+                <p><strong>Term:</strong> {marksheetData.term}</p>
+              </div>
+              <div className="space-y-2">
+                <p><strong>Year:</strong> {marksheetData.year}</p>
+                <p><strong>Teacher:</strong> {marksheetData.teacherName}</p>
+                <p><strong>Date:</strong> {new Date().toLocaleDateString()}</p>
               </div>
             </div>
-            <div className="border-t-2 border-b-2 border-blue-900 py-2">
-              <h2 className="text-xl font-semibold text-blue-900">STUDENT PROGRESS REPORT</h2>
-            </div>
-          </div>
 
-          {/* Student Information */}
-          <div className="grid grid-cols-2 gap-8 mb-6 relative z-10">
-            <div className="space-y-2">
-              <div className="flex">
-                <span className="font-semibold w-32">Student Name:</span>
-                <span className="border-b border-gray-300 flex-1 px-2">{student?.name}</span>
+            {/* Students Table */}
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <h3 className="text-lg font-semibold">Student Results</h3>
+                <Button onClick={addStudent} size="sm">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Student
+                </Button>
               </div>
-              <div className="flex">
-                <span className="font-semibold w-32">Class:</span>
-                <span className="border-b border-gray-300 flex-1 px-2">{studentClass}</span>
-              </div>
-              <div className="flex">
-                <span className="font-semibold w-32">Student ID:</span>
-                <span className="border-b border-gray-300 flex-1 px-2">SS{student?.id.toString().padStart(4, '0')}</span>
-              </div>
+              
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-primary/10">
+                    <TableHead className="font-bold">S/N</TableHead>
+                    <TableHead className="font-bold">Student Name</TableHead>
+                    <TableHead className="font-bold">Reg. Number</TableHead>
+                    <TableHead className="font-bold">Marks (%)</TableHead>
+                    <TableHead className="font-bold">Grade</TableHead>
+                    <TableHead className="font-bold">Remarks</TableHead>
+                    <TableHead className="font-bold print:hidden">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {marksheetData.students.map((student, index) => (
+                    <TableRow key={student.id} className="hover:bg-accent/50">
+                      <TableCell className="font-medium">{index + 1}</TableCell>
+                      <TableCell>
+                        <Input
+                          value={student.name}
+                          onChange={(e) => updateStudent(index, 'name', e.target.value)}
+                          className="border-0 bg-transparent p-0"
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Input
+                          value={student.registrationNumber}
+                          onChange={(e) => updateStudent(index, 'registrationNumber', e.target.value)}
+                          className="border-0 bg-transparent p-0"
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Input
+                          type="number"
+                          min="0"
+                          max="100"
+                          value={student.marks}
+                          onChange={(e) => updateStudent(index, 'marks', Number(e.target.value))}
+                          className="border-0 bg-transparent p-0 w-20"
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <span className={`font-bold ${
+                          student.grade === 'A' ? 'text-green-600' :
+                          student.grade.startsWith('B') ? 'text-blue-600' :
+                          student.grade.startsWith('C') ? 'text-yellow-600' :
+                          'text-red-600'
+                        }`}>
+                          {student.grade}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        <Input
+                          value={student.remarks}
+                          onChange={(e) => updateStudent(index, 'remarks', e.target.value)}
+                          className="border-0 bg-transparent p-0"
+                        />
+                      </TableCell>
+                      <TableCell className="print:hidden">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => removeStudent(index)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </div>
-            <div className="space-y-2">
-              <div className="flex">
-                <span className="font-semibold w-32">Term:</span>
-                <span className="border-b border-gray-300 flex-1 px-2">{term}</span>
-              </div>
-              <div className="flex">
-                <span className="font-semibold w-32">Academic Year:</span>
-                <span className="border-b border-gray-300 flex-1 px-2">2024</span>
-              </div>
-              <div className="flex">
-                <span className="font-semibold w-32">Date Issued:</span>
-                <span className="border-b border-gray-300 flex-1 px-2">{new Date().toLocaleDateString()}</span>
-              </div>
-            </div>
-          </div>
 
-          {/* Grades Table */}
-          <div className="mb-6 relative z-10">
-            <table className="w-full border-collapse border border-gray-400">
-              <thead>
-                <tr className="bg-blue-50">
-                  <th className="border border-gray-400 p-2 text-left">Subject</th>
-                  <th className="border border-gray-400 p-2 text-center">Score (%)</th>
-                  <th className="border border-gray-400 p-2 text-center">Grade</th>
-                  <th className="border border-gray-400 p-2 text-center">Remarks</th>
-                </tr>
-              </thead>
-              <tbody>
-                {subjects.map((subject, index) => (
-                  <tr key={index} className="hover:bg-gray-50">
-                    <td className="border border-gray-400 p-2">{subject.name}</td>
-                    <td className="border border-gray-400 p-2 text-center">{subject.score}</td>
-                    <td className="border border-gray-400 p-2 text-center font-semibold">{subject.grade}</td>
-                    <td className="border border-gray-400 p-2 text-center">{subject.remarks}</td>
-                  </tr>
-                ))}
-                <tr className="bg-blue-50 font-semibold">
-                  <td className="border border-gray-400 p-2">TOTAL</td>
-                  <td className="border border-gray-400 p-2 text-center">{totalMarks}</td>
-                  <td className="border border-gray-400 p-2 text-center">{overallGrade}</td>
-                  <td className="border border-gray-400 p-2 text-center">Average: {average}%</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+            {/* Summary Section */}
+            <div className="mt-8 p-4 bg-accent/20 rounded-lg">
+              <h3 className="font-semibold mb-2">Class Summary</h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                <div>Total Students: <strong>{stats.total}</strong></div>
+                <div>Passed: <strong className="text-green-600">{stats.passed}</strong></div>
+                <div>Failed: <strong className="text-red-600">{stats.failed}</strong></div>
+                <div>Class Average: <strong>{stats.average}%</strong></div>
+              </div>
+            </div>
 
-          {/* Grading Scale */}
-          <div className="grid grid-cols-2 gap-8 mb-6 relative z-10">
-            <div>
-              <h3 className="font-semibold mb-2">Grading Scale:</h3>
-              <div className="text-sm space-y-1">
-                <div>A: 85-100% (Excellent)</div>
-                <div>A-: 80-84% (Very Good)</div>
-                <div>B+: 75-79% (Good)</div>
-                <div>B: 65-74% (Fair)</div>
-                <div>C+: 55-64% (Satisfactory)</div>
-                <div>C: 45-54% (Needs Improvement)</div>
+            {/* Footer */}
+            <div className="mt-8 pt-6 border-t">
+              <div className="grid grid-cols-3 gap-8 text-center">
+                <div>
+                  <div className="border-t border-primary mt-12 pt-2">
+                    <p className="font-semibold">Class Teacher</p>
+                    <p className="text-sm text-muted-foreground">{marksheetData.teacherName}</p>
+                  </div>
+                </div>
+                <div>
+                  <div className="border-t border-primary mt-12 pt-2">
+                    <p className="font-semibold">Head Teacher</p>
+                    <p className="text-sm text-muted-foreground">Mrs. Jane Nakato</p>
+                  </div>
+                </div>
+                <div>
+                  <div className="border-t border-primary mt-12 pt-2">
+                    <p className="font-semibold">Date</p>
+                    <p className="text-sm text-muted-foreground">{new Date().toLocaleDateString()}</p>
+                  </div>
+                </div>
               </div>
             </div>
-            <div>
-              <h3 className="font-semibold mb-2">Class Performance:</h3>
-              <div className="text-sm space-y-1">
-                <div>Class Average: 76%</div>
-                <div>Student Position: 3rd out of 25</div>
-                <div>Highest Score: 92%</div>
-                <div>Lowest Score: 58%</div>
-              </div>
-            </div>
-          </div>
-
-          {/* Teacher Comments */}
-          <div className="mb-6 relative z-10">
-            <h3 className="font-semibold mb-2">Class Teacher's Comments:</h3>
-            <div className="border border-gray-300 p-3 min-h-[60px] bg-gray-50">
-              <p className="text-sm">
-                {student?.name} has shown excellent performance this term. Keep up the good work in Mathematics and continue reading more to improve English comprehension skills.
-              </p>
-            </div>
-          </div>
-
-          {/* Signatures */}
-          <div className="grid grid-cols-3 gap-8 pt-8 relative z-10">
-            <div className="text-center">
-              <div className="border-t border-gray-400 pt-2">
-                <p className="text-sm font-semibold">Class Teacher</p>
-                <p className="text-xs">Ms. Sarah Namubiru</p>
-              </div>
-            </div>
-            <div className="text-center">
-              <div className="border-t border-gray-400 pt-2">
-                <p className="text-sm font-semibold">Head Teacher</p>
-                <p className="text-xs">Mr. John Kasozi</p>
-              </div>
-            </div>
-            <div className="text-center">
-              <div className="border-t border-gray-400 pt-2">
-                <p className="text-sm font-semibold">Parent/Guardian</p>
-                <p className="text-xs">Signature & Date</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Footer */}
-          <div className="text-center mt-8 pt-4 border-t border-gray-300 text-xs text-gray-600 relative z-10">
-            <p>This report is a confidential document of Springing Stars Junior School</p>
-            <p>Generated on {new Date().toLocaleDateString()} • Report ID: MS{Date.now()}</p>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
