@@ -1,43 +1,38 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
+import { useProfile } from '@/contexts/ProfileContext';
 import { User, BookOpen, Calendar, MessageCircle, LogOut, Bell } from 'lucide-react';
+import AnimatedInView from '../AnimatedInView';
 
 const ParentDashboard = () => {
   const { user, logout } = useAuth();
+  const { profileData } = useProfile();
+  
+  const getTitle = () => {
+    if (!profileData?.title) return '';
+    return profileData.title;
+  };
+
+  const getLastName = () => {
+    return profileData?.lastName || '';
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-orange-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-4">
-              <h1 className="text-xl font-semibold text-blue-900">Rising Stars Junior School</h1>
-            </div>
-            <div className="flex items-center space-x-4">
-              <span className="text-sm text-gray-600">Welcome, {user?.name}</span>
-              <span className="text-lg">{user?.avatar}</span>
-              <Button variant="outline" size="sm" onClick={logout}>
-                <LogOut className="h-4 w-4 mr-2" />
-                Logout
-              </Button>
-            </div>
-          </div>
+    <div className="space-y-4 sm:space-y-6">
+      {/* Welcome Section */}
+      <AnimatedInView>
+        <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4 sm:p-6 rounded-lg">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold">Welcome back, {getTitle()} {getLastName()}!</h1>
+          <p className="text-blue-100 mt-2">Here's a summary of your child's progress.</p>
         </div>
-      </header>
+      </AnimatedInView>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8">
-          <h2 className="text-3xl font-bold text-gray-900">Parent Dashboard</h2>
-          <p className="text-gray-600">Children: {user?.children?.join(', ')}</p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           {/* Quick Stats */}
+        <AnimatedInView>
           <Card className="bg-gradient-to-r from-blue-500 to-blue-600 text-white">
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
@@ -50,7 +45,9 @@ const ParentDashboard = () => {
               <p className="text-blue-100">Enrolled</p>
             </CardContent>
           </Card>
+        </AnimatedInView>
 
+        <AnimatedInView>
           <Card className="bg-gradient-to-r from-orange-500 to-orange-600 text-white">
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
@@ -63,7 +60,9 @@ const ParentDashboard = () => {
               <p className="text-orange-100">Excellent work!</p>
             </CardContent>
           </Card>
+        </AnimatedInView>
 
+        <AnimatedInView>
           <Card className="bg-gradient-to-r from-green-500 to-green-600 text-white">
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
@@ -76,7 +75,9 @@ const ParentDashboard = () => {
               <p className="text-green-100">This month</p>
             </CardContent>
           </Card>
+        </AnimatedInView>
 
+        <AnimatedInView>
           <Card className="bg-gradient-to-r from-purple-500 to-purple-600 text-white">
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
@@ -89,9 +90,11 @@ const ParentDashboard = () => {
               <p className="text-purple-100">Unread</p>
             </CardContent>
           </Card>
+        </AnimatedInView>
 
           {/* Child Progress */}
-          <Card className="lg:col-span-2">
+        <AnimatedInView className="lg:col-span-2">
+          <Card>
             <CardHeader>
               <CardTitle>Child Progress</CardTitle>
             </CardHeader>
@@ -121,9 +124,11 @@ const ParentDashboard = () => {
               </div>
             </CardContent>
           </Card>
+        </AnimatedInView>
 
           {/* Recent Announcements */}
-          <Card className="lg:col-span-2">
+        <AnimatedInView className="lg:col-span-2">
+          <Card>
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
                 <Bell className="h-5 w-5" />
@@ -143,9 +148,11 @@ const ParentDashboard = () => {
               </div>
             </CardContent>
           </Card>
+        </AnimatedInView>
 
           {/* Upcoming Events */}
-          <Card className="lg:col-span-2">
+        <AnimatedInView className="lg:col-span-2">
+          <Card>
             <CardHeader>
               <CardTitle>Upcoming Events</CardTitle>
             </CardHeader>
@@ -173,9 +180,11 @@ const ParentDashboard = () => {
               </div>
             </CardContent>
           </Card>
+        </AnimatedInView>
 
           {/* Teacher Messages */}
-          <Card className="lg:col-span-2">
+        <AnimatedInView className="lg:col-span-2">
+          <Card>
             <CardHeader>
               <CardTitle>Recent Messages</CardTitle>
               <CardDescription>Communication from teachers</CardDescription>
@@ -197,8 +206,8 @@ const ParentDashboard = () => {
               </div>
             </CardContent>
           </Card>
+        </AnimatedInView>
         </div>
-      </main>
     </div>
   );
 };

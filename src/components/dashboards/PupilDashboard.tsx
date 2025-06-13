@@ -1,9 +1,10 @@
-
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
+import { useAuth } from '@/contexts/AuthContext';
+import { useProfile } from '@/contexts/ProfileContext';
 import { 
   BookOpen, 
   Calendar, 
@@ -14,18 +15,39 @@ import {
   Users,
   FileText
 } from 'lucide-react';
+import AnimatedInView from '../AnimatedInView';
+import { motion } from 'framer-motion';
+
+const AnimatedProgress = ({ value }: { value: number }) => {
+  const [animatedValue, setAnimatedValue] = useState(0);
+
+  useEffect(() => {
+    // Animate from 0 to the target value
+    const timeout = setTimeout(() => setAnimatedValue(value), 100); // slight delay
+    return () => clearTimeout(timeout);
+  }, [value]);
+
+  return <Progress value={animatedValue} className="mt-2 h-2" />;
+};
 
 const PupilDashboard = () => {
+  const { user } = useAuth();
+  const { profileData } = useProfile();
+  const getLastName = () => profileData?.lastName || '';
+
   return (
     <div className="space-y-4 sm:space-y-6">
       {/* Welcome Section */}
+      <AnimatedInView>
       <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4 sm:p-6 rounded-lg">
-        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold">Welcome back, Amina!</h1>
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold">Welcome back, {getLastName()}!</h1>
         <p className="text-blue-100 mt-2">Ready for another great day of learning?</p>
       </div>
+      </AnimatedInView>
 
       {/* Quick Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <AnimatedInView>
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center space-x-2">
@@ -37,7 +59,9 @@ const PupilDashboard = () => {
             </div>
           </CardContent>
         </Card>
+        </AnimatedInView>
         
+        <AnimatedInView>
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center space-x-2">
@@ -49,7 +73,9 @@ const PupilDashboard = () => {
             </div>
           </CardContent>
         </Card>
+        </AnimatedInView>
         
+        <AnimatedInView>
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center space-x-2">
@@ -61,7 +87,9 @@ const PupilDashboard = () => {
             </div>
           </CardContent>
         </Card>
+        </AnimatedInView>
         
+        <AnimatedInView>
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center space-x-2">
@@ -73,11 +101,13 @@ const PupilDashboard = () => {
             </div>
           </CardContent>
         </Card>
+        </AnimatedInView>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
         {/* Today's Schedule */}
-        <Card className="lg:col-span-2">
+        <AnimatedInView className="lg:col-span-2">
+          <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Calendar className="h-5 w-5" />
@@ -125,8 +155,10 @@ const PupilDashboard = () => {
             </div>
           </CardContent>
         </Card>
+        </AnimatedInView>
 
         {/* Upcoming Assignments */}
+        <AnimatedInView>
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -172,9 +204,11 @@ const PupilDashboard = () => {
             </div>
           </CardContent>
         </Card>
+        </AnimatedInView>
       </div>
 
       {/* Recent Grades */}
+      <AnimatedInView>
       <Card>
         <CardHeader>
           <CardTitle>Recent Grades</CardTitle>
@@ -192,7 +226,7 @@ const PupilDashboard = () => {
                   <Badge className="bg-green-500 text-xs">A</Badge>
                 </div>
               </div>
-              <Progress value={85} className="mt-2 h-2" />
+                <AnimatedProgress value={85} />
             </div>
             
             <div className="p-4 bg-blue-50 rounded-lg">
@@ -206,7 +240,7 @@ const PupilDashboard = () => {
                   <Badge className="bg-blue-500 text-xs">B+</Badge>
                 </div>
               </div>
-              <Progress value={76} className="mt-2 h-2" />
+                <AnimatedProgress value={76} />
             </div>
             
             <div className="p-4 bg-purple-50 rounded-lg">
@@ -220,7 +254,7 @@ const PupilDashboard = () => {
                   <Badge className="bg-purple-500 text-xs">A-</Badge>
                 </div>
               </div>
-              <Progress value={82} className="mt-2 h-2" />
+                <AnimatedProgress value={82} />
             </div>
           </div>
           
@@ -229,9 +263,11 @@ const PupilDashboard = () => {
           </Button>
         </CardContent>
       </Card>
+      </AnimatedInView>
 
       {/* Class Information */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+        <AnimatedInView>
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -260,7 +296,9 @@ const PupilDashboard = () => {
             </div>
           </CardContent>
         </Card>
+        </AnimatedInView>
 
+        <AnimatedInView>
         <Card>
           <CardHeader>
             <CardTitle>Quick Actions</CardTitle>
@@ -286,6 +324,7 @@ const PupilDashboard = () => {
             </div>
           </CardContent>
         </Card>
+        </AnimatedInView>
       </div>
     </div>
   );

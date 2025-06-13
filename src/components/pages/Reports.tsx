@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,7 +8,56 @@ import { FileText, Download, TrendingUp, Users, BookOpen, Clock, GraduationCap, 
 import { toast } from '@/hooks/use-toast';
 import { MarksheetGenerator } from '@/components/reports/MarksheetGenerator';
 
-export const Reports = () => {
+// Map of icon names to components
+const iconMap = {
+  TrendingUp,
+  Clock,
+  BookOpen,
+  GraduationCap,
+  FileText
+};
+
+// Default reports data
+const defaultReports = [
+  {
+    id: 1,
+    title: 'Academic Performance Report',
+    description: 'Detailed analysis of student academic performance for Term 2',
+    date: '2024-06-10',
+    type: 'Academic',
+    status: 'Ready',
+    iconName: 'TrendingUp'
+  },
+  {
+    id: 2,
+    title: 'Attendance Report',
+    description: 'Student attendance summary for the current term',
+    date: '2024-06-08',
+    type: 'Attendance',
+    status: 'Ready',
+    iconName: 'Clock'
+  },
+  {
+    id: 3,
+    title: 'Class Performance Analysis',
+    description: 'Comparative analysis of class performance across subjects',
+    date: '2024-06-03',
+    type: 'Academic',
+    status: 'Processing',
+    iconName: 'BookOpen'
+  },
+  {
+    id: 4,
+    title: 'Student Marksheets',
+    description: 'Individual student performance marksheets for all terms',
+    date: '2024-06-12',
+    type: 'Marksheet',
+    status: 'Ready',
+    iconName: 'GraduationCap'
+  }
+];
+
+const Reports = () => {
   const { user } = useAuth();
   const [reports, setReports] = useState([]);
   const [selectedClass, setSelectedClass] = useState('');
@@ -33,49 +81,41 @@ export const Reports = () => {
     { id: 5, name: 'Nalubega Mary', class: 'P.5' },
   ];
 
+  // Helper function to migrate old report format to new format
+  const migrateReport = (report) => {
+    if (!report.iconName && report.icon) {
+      // If we have an old format report with an icon object
+      const iconName = Object.keys(iconMap).find(name => 
+        iconMap[name] === report.icon || 
+        (typeof report.icon === 'object' && report.icon.type === iconMap[name])
+      ) || 'FileText';
+      
+      return {
+        ...report,
+        iconName,
+        icon: undefined // Remove the old icon property
+      };
+    }
+    return report;
+  };
+
   useEffect(() => {
+    try {
     const savedReports = localStorage.getItem('teacher_reports');
     if (savedReports) {
-      setReports(JSON.parse(savedReports));
+        const parsedReports = JSON.parse(savedReports);
+        // Migrate any old format reports
+        const migratedReports = parsedReports.map(migrateReport);
+        setReports(migratedReports);
+        // Save migrated reports back to localStorage
+        localStorage.setItem('teacher_reports', JSON.stringify(migratedReports));
     } else {
-      const defaultReports = [
-        {
-          id: 1,
-          title: 'Academic Performance Report',
-          description: 'Detailed analysis of student academic performance for Term 2',
-          date: '2024-06-10',
-          type: 'Academic',
-          status: 'Ready',
-          icon: TrendingUp
-        },
-        {
-          id: 2,
-          title: 'Attendance Report',
-          description: 'Student attendance summary for the current term',
-          date: '2024-06-08',
-          type: 'Attendance',
-          status: 'Ready',
-          icon: Clock
-        },
-        {
-          id: 3,
-          title: 'Class Performance Analysis',
-          description: 'Comparative analysis of class performance across subjects',
-          date: '2024-06-03',
-          type: 'Academic',
-          status: 'Processing',
-          icon: BookOpen
-        },
-        {
-          id: 4,
-          title: 'Student Marksheets',
-          description: 'Individual student performance marksheets for all terms',
-          date: '2024-06-12',
-          type: 'Marksheet',
-          status: 'Ready',
-          icon: GraduationCap
-        }
-      ];
+        setReports(defaultReports);
+        localStorage.setItem('teacher_reports', JSON.stringify(defaultReports));
+      }
+    } catch (error) {
+      console.error('Error loading reports:', error);
+      // If there's any error, reset to default reports
       setReports(defaultReports);
       localStorage.setItem('teacher_reports', JSON.stringify(defaultReports));
     }
@@ -89,7 +129,7 @@ export const Reports = () => {
       date: new Date().toISOString().split('T')[0],
       type: type,
       status: 'Processing',
-      icon: FileText
+      iconName: 'FileText'
     };
 
     const updatedReports = [...reports, newReport];
@@ -152,6 +192,11 @@ export const Reports = () => {
       case 'Marksheet': return 'bg-orange-50 text-orange-600';
       default: return 'bg-gray-50 text-gray-600';
     }
+  };
+
+  // Helper function to safely get icon component
+  const getIconComponent = (iconName) => {
+    return iconMap[iconName] || FileText; // Fallback to FileText if icon not found
   };
 
   return (
@@ -264,7 +309,7 @@ export const Reports = () => {
         <CardContent>
           <div className="space-y-4">
             {reports.map((report) => {
-              const IconComponent = report.icon;
+              const IconComponent = getIconComponent(report.iconName);
               return (
                 <div key={report.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
                   <div className="flex items-center space-x-4">
@@ -311,3 +356,5 @@ export const Reports = () => {
     </div>
   );
 };
+
+export default Reports;

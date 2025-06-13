@@ -1,43 +1,38 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
+import { useProfile } from '@/contexts/ProfileContext';
 import { Wrench, Calendar, CheckCircle, AlertCircle, LogOut, Bell } from 'lucide-react';
+import AnimatedInView from '../AnimatedInView';
 
 const NonTeachingDashboard = () => {
   const { user, logout } = useAuth();
+  const { profileData } = useProfile();
+  
+  const getTitle = () => {
+    if (!profileData?.title) return '';
+    return profileData.title;
+  };
+
+  const getLastName = () => {
+    return profileData?.lastName || '';
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-orange-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-4">
-              <h1 className="text-xl font-semibold text-blue-900">Rising Stars Junior School</h1>
-            </div>
-            <div className="flex items-center space-x-4">
-              <span className="text-sm text-gray-600">Welcome, {user?.name}</span>
-              <span className="text-lg">{user?.avatar}</span>
-              <Button variant="outline" size="sm" onClick={logout}>
-                <LogOut className="h-4 w-4 mr-2" />
-                Logout
-              </Button>
-            </div>
-          </div>
+    <div className="space-y-4 sm:space-y-6">
+      {/* Welcome Section */}
+      <AnimatedInView>
+        <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4 sm:p-6 rounded-lg">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold">Welcome back, {getTitle()} {getLastName()}!</h1>
+          <p className="text-blue-100 mt-2">Here are your tasks and updates for today.</p>
         </div>
-      </header>
+      </AnimatedInView>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8">
-          <h2 className="text-3xl font-bold text-gray-900">Staff Dashboard</h2>
-          <p className="text-gray-600">Department: {user?.department}</p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           {/* Quick Stats */}
+        <AnimatedInView>
           <Card className="bg-gradient-to-r from-blue-500 to-blue-600 text-white">
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
@@ -50,7 +45,9 @@ const NonTeachingDashboard = () => {
               <p className="text-blue-100">This week</p>
             </CardContent>
           </Card>
+        </AnimatedInView>
 
+        <AnimatedInView>
           <Card className="bg-gradient-to-r from-orange-500 to-orange-600 text-white">
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
@@ -63,7 +60,9 @@ const NonTeachingDashboard = () => {
               <p className="text-orange-100">High priority</p>
             </CardContent>
           </Card>
+        </AnimatedInView>
 
+        <AnimatedInView>
           <Card className="bg-gradient-to-r from-green-500 to-green-600 text-white">
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
@@ -76,7 +75,9 @@ const NonTeachingDashboard = () => {
               <p className="text-green-100">Active</p>
             </CardContent>
           </Card>
+        </AnimatedInView>
 
+        <AnimatedInView>
           <Card className="bg-gradient-to-r from-purple-500 to-purple-600 text-white">
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
@@ -89,9 +90,11 @@ const NonTeachingDashboard = () => {
               <p className="text-purple-100">This week</p>
             </CardContent>
           </Card>
+        </AnimatedInView>
 
           {/* Today's Tasks */}
-          <Card className="lg:col-span-2">
+        <AnimatedInView className="lg:col-span-2">
+          <Card>
             <CardHeader>
               <CardTitle>Today's Tasks</CardTitle>
             </CardHeader>
@@ -119,9 +122,11 @@ const NonTeachingDashboard = () => {
               </div>
             </CardContent>
           </Card>
+        </AnimatedInView>
 
           {/* Announcements */}
-          <Card className="lg:col-span-2">
+        <AnimatedInView className="lg:col-span-2">
+          <Card>
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
                 <Bell className="h-5 w-5" />
@@ -141,9 +146,11 @@ const NonTeachingDashboard = () => {
               </div>
             </CardContent>
           </Card>
+        </AnimatedInView>
 
           {/* Work Order Status */}
-          <Card className="lg:col-span-4">
+        <AnimatedInView className="lg:col-span-4">
+          <Card>
             <CardHeader>
               <CardTitle>Recent Work Orders</CardTitle>
               <CardDescription>Status of maintenance and facility requests</CardDescription>
@@ -177,8 +184,8 @@ const NonTeachingDashboard = () => {
               </div>
             </CardContent>
           </Card>
+        </AnimatedInView>
         </div>
-      </main>
     </div>
   );
 };

@@ -1,12 +1,8 @@
-export interface User {
-  id: string;
-  email: string;
-  password: string;
-  role: 'pupil' | 'teacher' | 'non-teaching' | 'parent' | 'admin';
-  name: string; // Retained for initial login, will be parsed
+export interface ProfileData {
   firstName: string;
   middleName: string;
   lastName: string;
+  email: string;
   phone: string;
   address: string;
   title: string;
@@ -19,12 +15,6 @@ export interface User {
   bio: string;
   emergencyContact: string;
   emergencyPhone: string;
-  avatar?: string;
+  avatar: string;
   class?: string;
-  children?: string[];
-}
-
-export interface AuthState {
-  user: User | null;
-  isAuthenticated: boolean;
-}
+} 

@@ -1,5 +1,5 @@
-
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,11 +16,13 @@ const LoginPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { login } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
+    try {
     const result = await login(email, password);
     
     if (result.success) {
@@ -28,6 +30,8 @@ const LoginPage = () => {
         title: "Login Successful",
         description: "Welcome to Springing Stars Junior School!",
       });
+        // Navigate to dashboard after successful login
+        navigate('/');
     } else {
       toast({
         title: "Login Failed",
@@ -35,8 +39,15 @@ const LoginPage = () => {
         variant: "destructive",
       });
     }
-    
+    } catch (error) {
+      toast({
+        title: "Login Failed",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
     setIsLoading(false);
+    }
   };
 
   const getDemoCredentials = () => {

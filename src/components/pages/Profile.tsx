@@ -1,323 +1,276 @@
-
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useAuth } from '@/contexts/AuthContext';
-import { User, Mail, Phone, MapPin, BookOpen, Calendar, Save, Edit2 } from 'lucide-react';
+import { useProfile } from '@/contexts/ProfileContext';
+import { Save, Edit, Upload, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { capitalizeWords } from '@/lib/utils';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { ProfileCompleteness } from '../ProfileCompleteness';
+import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 
-interface TeacherProfile {
-  name: string;
-  email: string;
-  phone: string;
-  address: string;
-  subject: string;
-  department: string;
-  qualification: string;
-  experience: string;
-  joinDate: string;
-  bio: string;
-  emergencyContact: string;
-  emergencyPhone: string;
-}
+// Helper component for profile fields
+const ProfileField = ({ id, label, value, isEditing, onChange, onCapitalizedChange, type = 'text', component = 'input' }: any) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    if (onCapitalizedChange) {
+      onCapitalizedChange(id, e.target.value);
+    } else {
+      onChange(id, e.target.value);
+    }
+  };
+
+  if (!isEditing) {
+    return (
+      <div className="space-y-2">
+        <Label htmlFor={id}>{label}</Label>
+        <p className="text-sm p-2 bg-muted rounded min-h-[40px]">{value}</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-2">
+      <Label htmlFor={id}>{label}</Label>
+      {component === 'textarea' ? (
+        <Textarea id={id} value={value} onChange={handleChange} rows={3} />
+      ) : (
+        <Input id={id} type={type} value={value} onChange={handleChange} />
+      )}
+    </div>
+  );
+};
 
 export const Profile = () => {
   const { user } = useAuth();
+  const { profileData, updateProfile, isLoading } = useProfile();
   const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
-  const [profile, setProfile] = useState<TeacherProfile>({
-    name: user?.name || '',
-    email: user?.email || '',
-    phone: '+256 700 123 456',
-    address: 'Kampala, Uganda',
-    subject: user?.subject || 'Mathematics',
-    department: user?.department || 'Science Department',
-    qualification: 'Bachelor of Education (Mathematics)',
-    experience: '8 years',
-    joinDate: '2016-09-01',
-    bio: 'Passionate mathematics teacher with a focus on making complex concepts accessible to young minds.',
-    emergencyContact: 'Mary Nakiwala',
-    emergencyPhone: '+256 701 234 567'
-  });
+  const [formData, setFormData] = useState<any>({});
 
-  // Load profile from localStorage on component mount
+  const profileFields = [
+    'firstName', 'lastName', 'gender', 'phone', 'address', 'bio', 
+    'emergencyContact', 'emergencyPhone', 'qualification', 'experience', 'joinDate'
+  ];
+
   useEffect(() => {
-    const savedProfile = localStorage.getItem(`teacher_profile_${user?.id}`);
-    if (savedProfile) {
-      setProfile(JSON.parse(savedProfile));
+    if (profileData) {
+      setFormData(profileData);
     }
-  }, [user?.id]);
+  }, [profileData]);
 
-  const handleInputChange = (field: keyof TeacherProfile, value: string) => {
-    setProfile(prev => ({
-      ...prev,
-      [field]: value
-    }));
+  if (isLoading || !profileData) {
+    return <div>Loading profile...</div>;
+  }
+  
+  const handleInputChange = (field: string, value: string) => {
+    setFormData((prev: any) => ({ ...prev, [field]: value }));
+  };
+
+  const handleCapitalizedInputChange = (field: string, value: string) => {
+    handleInputChange(field, capitalizeWords(value));
+  };
+
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        if (event.target?.result) {
+          handleInputChange('avatar', event.target.result as string);
+        }
+      };
+      reader.readAsDataURL(e.target.files[0]);
+    }
   };
 
   const handleSave = () => {
-    // Save to localStorage
-    localStorage.setItem(`teacher_profile_${user?.id}`, JSON.stringify(profile));
+    updateProfile(formData);
     setIsEditing(false);
     toast({
-      title: "Profile Updated",
-      description: "Your profile has been saved successfully.",
+      title: 'Profile Updated',
+      description: 'Your profile has been successfully updated.',
     });
   };
 
   const handleCancel = () => {
-    // Reload from localStorage
-    const savedProfile = localStorage.getItem(`teacher_profile_${user?.id}`);
-    if (savedProfile) {
-      setProfile(JSON.parse(savedProfile));
-    }
     setIsEditing(false);
+    setFormData(profileData);
+  };
+  
+  const getInitials = (firstName: string = '', lastName: string = '') => {
+    return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">My Profile</h1>
-        {!isEditing ? (
-          <Button onClick={() => setIsEditing(true)}>
-            <Edit2 className="h-4 w-4 mr-2" />
-            Edit Profile
-          </Button>
-        ) : (
+    <div className="p-4 md:p-8 flex flex-col h-full">
+      {/* Header */}
+      <div className="flex-shrink-0">
+        <div className="flex justify-between items-center mb-6">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-bold">My Profile</h1>
+            <p className="text-muted-foreground">Manage your personal and professional information.</p>
+          </div>
           <div className="space-x-2">
-            <Button onClick={handleSave}>
-              <Save className="h-4 w-4 mr-2" />
-              Save Changes
-            </Button>
-            <Button variant="outline" onClick={handleCancel}>
-              Cancel
-            </Button>
+            {isEditing ? (
+              <>
+                <Button onClick={handleSave}><Save className="h-4 w-4 mr-2" />Save</Button>
+                <Button variant="outline" onClick={handleCancel}><X className="h-4 w-4 mr-2" />Cancel</Button>
+              </>
+            ) : (
+              <Button onClick={() => setIsEditing(true)}><Edit className="h-4 w-4 mr-2" />Edit Profile</Button>
+            )}
           </div>
-        )}
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Profile Picture and Basic Info */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <User className="h-5 w-5" />
-              <span>Basic Information</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex justify-center">
-              <img 
-                src={user?.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=120&h=120&fit=crop&crop=face'} 
-                alt={profile.name}
-                className="w-24 h-24 rounded-full object-cover"
-              />
+      {/* Scrollable Content */}
+      <div className="flex-grow overflow-y-auto pr-2">
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Left Column */}
+            <div className="lg:col-span-1 space-y-6">
+              <Card>
+                <CardContent className="pt-6 flex flex-col items-center text-center">
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <div className="relative mb-4 cursor-pointer">
+                        <Avatar className="w-24 h-24 text-3xl">
+                          <AvatarImage src={formData.avatar} alt="User avatar" />
+                          <AvatarFallback>{getInitials(formData.firstName, formData.lastName)}</AvatarFallback>
+                        </Avatar>
+                        {isEditing && (
+                          <label htmlFor="avatar-upload" className="absolute -bottom-1 -right-1 bg-primary text-primary-foreground rounded-full p-2 cursor-pointer hover:bg-primary/90">
+                            <Upload className="h-4 w-4" />
+                            <input id="avatar-upload" type="file" className="hidden" onChange={handleAvatarChange} accept="image/*" />
+                          </label>
+                        )}
+                      </div>
+                    </DialogTrigger>
+                    <DialogContent className="p-0 border-0 max-w-2xl bg-transparent">
+                      <img src={formData.avatar} alt="User avatar zoomed" className="w-full h-auto rounded-lg max-h-[85vh] object-contain" />
+                    </DialogContent>
+                  </Dialog>
+                  <h2 className="text-xl font-semibold">{`${formData.title || ''} ${formData.firstName} ${formData.lastName}`}</h2>
+                  <p className="text-muted-foreground break-words max-w-full">{user?.email}</p>
+                  <p className="text-sm text-blue-500 font-medium">{capitalizeWords(user?.role || '')}</p>
+                </CardContent>
+                <CardContent>
+                  <ProfileCompleteness profileData={formData} fields={profileFields} />
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader><CardTitle>Bio</CardTitle></CardHeader>
+                <CardContent>
+                  <ProfileField id="bio" label="" value={formData.bio} isEditing={isEditing} onChange={handleInputChange} component="textarea" />
+                </CardContent>
+              </Card>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="name">Full Name</Label>
-              {isEditing ? (
-                <Input
-                  id="name"
-                  value={profile.name}
-                  onChange={(e) => handleInputChange('name', e.target.value)}
-                />
-              ) : (
-                <p className="text-sm p-2 bg-gray-50 rounded">{profile.name}</p>
-              )}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              {isEditing ? (
-                <Input
-                  id="email"
-                  type="email"
-                  value={profile.email}
-                  onChange={(e) => handleInputChange('email', e.target.value)}
-                />
-              ) : (
-                <p className="text-sm p-2 bg-gray-50 rounded">{profile.email}</p>
-              )}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="phone">Phone Number</Label>
-              {isEditing ? (
-                <Input
-                  id="phone"
-                  value={profile.phone}
-                  onChange={(e) => handleInputChange('phone', e.target.value)}
-                />
-              ) : (
-                <p className="text-sm p-2 bg-gray-50 rounded">{profile.phone}</p>
-              )}
-            </div>
-          </CardContent>
-        </Card>
 
-        {/* Professional Information */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <BookOpen className="h-5 w-5" />
-              <span>Professional Details</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="subject">Subject</Label>
-              {isEditing ? (
-                <Input
-                  id="subject"
-                  value={profile.subject}
-                  onChange={(e) => handleInputChange('subject', e.target.value)}
-                />
-              ) : (
-                <p className="text-sm p-2 bg-gray-50 rounded">{profile.subject}</p>
-              )}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="department">Department</Label>
-              {isEditing ? (
-                <Input
-                  id="department"
-                  value={profile.department}
-                  onChange={(e) => handleInputChange('department', e.target.value)}
-                />
-              ) : (
-                <p className="text-sm p-2 bg-gray-50 rounded">{profile.department}</p>
-              )}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="qualification">Qualification</Label>
-              {isEditing ? (
-                <Input
-                  id="qualification"
-                  value={profile.qualification}
-                  onChange={(e) => handleInputChange('qualification', e.target.value)}
-                />
-              ) : (
-                <p className="text-sm p-2 bg-gray-50 rounded">{profile.qualification}</p>
-              )}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="experience">Experience</Label>
-              {isEditing ? (
-                <Input
-                  id="experience"
-                  value={profile.experience}
-                  onChange={(e) => handleInputChange('experience', e.target.value)}
-                />
-              ) : (
-                <p className="text-sm p-2 bg-gray-50 rounded">{profile.experience}</p>
-              )}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="joinDate">Join Date</Label>
-              {isEditing ? (
-                <Input
-                  id="joinDate"
-                  type="date"
-                  value={profile.joinDate}
-                  onChange={(e) => handleInputChange('joinDate', e.target.value)}
-                />
-              ) : (
-                <p className="text-sm p-2 bg-gray-50 rounded">{new Date(profile.joinDate).toLocaleDateString()}</p>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+            {/* Right Column */}
+            <div className="lg:col-span-2">
+              <Tabs defaultValue="personal">
+                <TabsList>
+                  <TabsTrigger value="personal">Personal</TabsTrigger>
+                  {(user?.role === 'teacher' || user?.role === 'admin') && <TabsTrigger value="professional">Professional</TabsTrigger>}
+                  <TabsTrigger value="contact">Contact</TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="personal" className="pt-4">
+                  <Card>
+                    <CardHeader><CardTitle>Personal Information</CardTitle></CardHeader>
+                    <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <ProfileField id="firstName" label="First Name" value={formData.firstName} isEditing={isEditing} onCapitalizedChange={handleCapitalizedInputChange} />
+                      <ProfileField id="lastName" label="Last Name" value={formData.lastName} isEditing={isEditing} onCapitalizedChange={handleCapitalizedInputChange} />
+                      <ProfileField id="middleName" label="Middle Name" value={formData.middleName} isEditing={isEditing} onCapitalizedChange={handleCapitalizedInputChange} />
+                      <div className="space-y-2">
+                        <Label htmlFor="gender">Gender</Label>
+                        {isEditing ? (
+                          <Select value={formData.gender} onValueChange={(value) => handleInputChange('gender', value)}>
+                            <SelectTrigger><SelectValue placeholder="Select gender" /></SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Male">Male</SelectItem>
+                              <SelectItem value="Female">Female</SelectItem>
+                              <SelectItem value="Other">Other</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        ) : (<p className="text-sm p-2 bg-muted rounded min-h-[40px]">{formData.gender}</p>)}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
 
-        {/* Additional Information */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <MapPin className="h-5 w-5" />
-              <span>Additional Information</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="address">Address</Label>
-              {isEditing ? (
-                <Textarea
-                  id="address"
-                  value={profile.address}
-                  onChange={(e) => handleInputChange('address', e.target.value)}
-                  rows={2}
-                />
-              ) : (
-                <p className="text-sm p-2 bg-gray-50 rounded">{profile.address}</p>
-              )}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="bio">Bio</Label>
-              {isEditing ? (
-                <Textarea
-                  id="bio"
-                  value={profile.bio}
-                  onChange={(e) => handleInputChange('bio', e.target.value)}
-                  rows={3}
-                />
-              ) : (
-                <p className="text-sm p-2 bg-gray-50 rounded">{profile.bio}</p>
-              )}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="emergencyContact">Emergency Contact</Label>
-              {isEditing ? (
-                <Input
-                  id="emergencyContact"
-                  value={profile.emergencyContact}
-                  onChange={(e) => handleInputChange('emergencyContact', e.target.value)}
-                />
-              ) : (
-                <p className="text-sm p-2 bg-gray-50 rounded">{profile.emergencyContact}</p>
-              )}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="emergencyPhone">Emergency Phone</Label>
-              {isEditing ? (
-                <Input
-                  id="emergencyPhone"
-                  value={profile.emergencyPhone}
-                  onChange={(e) => handleInputChange('emergencyPhone', e.target.value)}
-                />
-              ) : (
-                <p className="text-sm p-2 bg-gray-50 rounded">{profile.emergencyPhone}</p>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+                <TabsContent value="professional" className="pt-4">
+                  <Card>
+                    <CardHeader><CardTitle>Professional Details</CardTitle></CardHeader>
+                    <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <ProfileField id="qualification" label="Qualification" value={formData.qualification} isEditing={isEditing} onChange={handleInputChange} />
+                      <ProfileField id="experience" label="Experience (years)" value={formData.experience} isEditing={isEditing} onChange={handleInputChange} />
+                      <ProfileField id="department" label="Department" value={formData.department} isEditing={isEditing} onCapitalizedChange={handleCapitalizedInputChange} />
+                      <ProfileField id="subject" label="Subject" value={formData.subject} isEditing={isEditing} onCapitalizedChange={handleCapitalizedInputChange} />
+                      <div className="space-y-2">
+                        <Label htmlFor="joinDate">Joining Date</Label>
+                        <ProfileField id="joinDate" label="" value={formData.joinDate} isEditing={isEditing} onChange={handleInputChange} type="date" />
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
 
-      {/* Quick Stats */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Quick Stats</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="text-center p-4 bg-blue-50 rounded-lg">
-              <div className="text-2xl font-bold text-blue-600">5</div>
-              <p className="text-sm text-gray-600">Classes Teaching</p>
-            </div>
-            <div className="text-center p-4 bg-green-50 rounded-lg">
-              <div className="text-2xl font-bold text-green-600">132</div>
-              <p className="text-sm text-gray-600">Total Students</p>
-            </div>
-            <div className="text-center p-4 bg-orange-50 rounded-lg">
-              <div className="text-2xl font-bold text-orange-600">24</div>
-              <p className="text-sm text-gray-600">Assignments Given</p>
-            </div>
-            <div className="text-center p-4 bg-purple-50 rounded-lg">
-              <div className="text-2xl font-bold text-purple-600">96%</div>
-              <p className="text-sm text-gray-600">Attendance Rate</p>
+                <TabsContent value="contact" className="pt-4">
+                  <Card>
+                    <CardHeader><CardTitle>Contact & Emergency Information</CardTitle></CardHeader>
+                    <CardContent className="space-y-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <ProfileField id="email" label="Email" value={formData.email} isEditing={isEditing} onChange={handleInputChange} type="email" />
+                        <ProfileField id="phone" label="Phone" value={formData.phone} isEditing={isEditing} onChange={handleInputChange} />
+                      </div>
+                      <ProfileField id="address" label="Address" value={formData.address} isEditing={isEditing} onChange={handleInputChange} component="textarea" />
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t">
+                        <ProfileField id="emergencyContact" label="Emergency Contact Name" value={formData.emergencyContact} isEditing={isEditing} onCapitalizedChange={handleCapitalizedInputChange} />
+                        <ProfileField id="emergencyPhone" label="Emergency Contact Phone" value={formData.emergencyPhone} isEditing={isEditing} onChange={handleInputChange} />
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
+              </Tabs>
             </div>
           </div>
-        </CardContent>
-      </Card>
+          {/* Quick Stats */}
+          {(user?.role === 'teacher' || user?.role === 'admin') && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Quick Stats</CardTitle>
+                <CardDescription>A quick overview of your key metrics.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="text-center p-4 bg-blue-50 rounded-lg">
+                    <div className="text-2xl font-bold text-blue-600">5</div>
+                    <p className="text-sm text-gray-600">Classes Teaching</p>
+                  </div>
+                  <div className="text-center p-4 bg-green-50 rounded-lg">
+                    <div className="text-2xl font-bold text-green-600">132</div>
+                    <p className="text-sm text-gray-600">Total Students</p>
+                  </div>
+                  <div className="text-center p-4 bg-orange-50 rounded-lg">
+                    <div className="text-2xl font-bold text-orange-600">24</div>
+                    <p className="text-sm text-gray-600">Assignments Given</p>
+                  </div>
+                  <div className="text-center p-4 bg-purple-50 rounded-lg">
+                    <div className="text-2xl font-bold text-purple-600">96%</div>
+                    <p className="text-sm text-gray-600">Attendance Rate</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      </div>
     </div>
   );
 };

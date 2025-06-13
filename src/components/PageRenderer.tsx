@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useNavigation } from '@/contexts/NavigationContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -13,7 +12,7 @@ import AdminDashboard from './dashboards/AdminDashboard';
 // Import page components
 import { Profile } from './pages/Profile';
 import { Calendar } from './pages/Calendar';
-import { Reports } from './pages/Reports';
+import Reports from './pages/Reports';
 import { Students } from './pages/Students';
 import { Teachers } from './pages/Teachers';
 import { Classes } from './pages/Classes';
