@@ -39,7 +39,7 @@ export const ReportCardGenerator = ({ student, term, class: studentClass, onClos
   const overallGrade = average >= 85 ? 'A' : average >= 75 ? 'B+' : average >= 65 ? 'B' : average >= 55 ? 'C+' : 'C';
 
   const handlePrint = useReactToPrint({
-    content: () => reportCardRef.current,
+    contentRef: reportCardRef,
     documentTitle: `Report Card - ${student?.name} - ${term}`,
     onAfterPrint: () => {
       toast({
@@ -69,37 +69,124 @@ export const ReportCardGenerator = ({ student, term, class: studentClass, onClos
     `
   });
 
-  const handleDownload = useReactToPrint({
-    content: () => reportCardRef.current,
-    documentTitle: `Report Card - ${student?.name} - ${term}`,
-    print: async (printIframe: HTMLIframeElement) => {
-      // This creates a download instead of print
-      return new Promise<void>((resolve) => {
-        if (printIframe.contentWindow) {
-          printIframe.contentWindow.print();
-        }
-        resolve();
-      });
-    },
-    onAfterPrint: () => {
+  const handleDownload = () => {
+    // Create a new window for printing/downloading
+    const printWindow = window.open('', '_blank');
+    if (printWindow && reportCardRef.current) {
+      const reportCardHtml = reportCardRef.current.innerHTML;
+      
+      printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <title>Report Card - ${student?.name} - ${term}</title>
+            <style>
+              @page {
+                size: A4;
+                margin: 0.5in;
+              }
+              body {
+                font-family: Arial, sans-serif;
+                margin: 0;
+                padding: 0;
+                -webkit-print-color-adjust: exact;
+                color-adjust: exact;
+              }
+              .text-2xl { font-size: 1.5rem; }
+              .text-xl { font-size: 1.25rem; }
+              .text-sm { font-size: 0.875rem; }
+              .text-xs { font-size: 0.75rem; }
+              .font-bold { font-weight: bold; }
+              .font-semibold { font-weight: 600; }
+              .text-center { text-align: center; }
+              .text-blue-900 { color: #1e3a8a; }
+              .text-blue-700 { color: #1d4ed8; }
+              .text-gray-600 { color: #4b5563; }
+              .text-gray-300 { color: #d1d5db; }
+              .border-t-2 { border-top: 2px solid; }
+              .border-b-2 { border-bottom: 2px solid; }
+              .border-t { border-top: 1px solid; }
+              .border-b { border-bottom: 1px solid; }
+              .border { border: 1px solid; }
+              .border-gray-400 { border-color: #9ca3af; }
+              .border-gray-300 { border-color: #d1d5db; }
+              .border-blue-900 { border-color: #1e3a8a; }
+              .p-8 { padding: 2rem; }
+              .p-4 { padding: 1rem; }
+              .p-3 { padding: 0.75rem; }
+              .p-2 { padding: 0.5rem; }
+              .pt-8 { padding-top: 2rem; }
+              .pt-4 { padding-top: 1rem; }
+              .pt-2 { padding-top: 0.5rem; }
+              .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+              .px-2 { padding-left: 0.5rem; padding-right: 0.5rem; }
+              .mb-8 { margin-bottom: 2rem; }
+              .mb-6 { margin-bottom: 1.5rem; }
+              .mb-4 { margin-bottom: 1rem; }
+              .mb-2 { margin-bottom: 0.5rem; }
+              .mt-8 { margin-top: 2rem; }
+              .mt-2 { margin-top: 0.5rem; }
+              .grid { display: grid; }
+              .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+              .grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+              .gap-8 { gap: 2rem; }
+              .gap-4 { gap: 1rem; }
+              .space-y-2 > * + * { margin-top: 0.5rem; }
+              .space-y-1 > * + * { margin-top: 0.25rem; }
+              .flex { display: flex; }
+              .flex-1 { flex: 1 1 0%; }
+              .items-center { align-items: center; }
+              .justify-center { justify-content: center; }
+              .w-32 { width: 8rem; }
+              .h-16 { height: 4rem; }
+              .w-16 { width: 4rem; }
+              .w-96 { width: 24rem; }
+              .h-96 { height: 24rem; }
+              .w-full { width: 100%; }
+              .min-h-[60px] { min-height: 60px; }
+              .object-contain { object-fit: contain; }
+              .relative { position: relative; }
+              .absolute { position: absolute; }
+              .inset-0 { top: 0; right: 0; bottom: 0; left: 0; }
+              .z-10 { z-index: 10; }
+              .opacity-5 { opacity: 0.05; }
+              .pointer-events-none { pointer-events: none; }
+              .bg-white { background-color: white; }
+              .bg-blue-50 { background-color: #eff6ff; }
+              .bg-gray-50 { background-color: #f9fafb; }
+              .border-collapse { border-collapse: collapse; }
+              table { width: 100%; border-collapse: collapse; }
+              th { text-align: left; padding: 0.5rem; border: 1px solid #9ca3af; }
+              td { padding: 0.5rem; border: 1px solid #9ca3af; }
+              .bg-blue-50 { background-color: #eff6ff; }
+            </style>
+          </head>
+          <body>
+            ${reportCardHtml}
+          </body>
+        </html>
+      `);
+      
+      printWindow.document.close();
+      
+      // Wait for images to load before printing
+      setTimeout(() => {
+        printWindow.print();
+        printWindow.close();
+        
+        toast({
+          title: "Download Complete",
+          description: "Report card has been prepared for download.",
+        });
+      }, 1000);
+    } else {
       toast({
-        title: "Download Complete",
-        description: "Report card has been prepared for download.",
+        title: "Download Error",
+        description: "Unable to open print window. Please try again.",
+        variant: "destructive"
       });
-    },
-    pageStyle: `
-      @page {
-        size: A4;
-        margin: 0.5in;
-      }
-      @media print {
-        body { 
-          -webkit-print-color-adjust: exact;
-          color-adjust: exact;
-        }
-      }
-    `
-  });
+    }
+  };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
