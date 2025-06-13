@@ -1,8 +1,10 @@
+
 import React, { useRef } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { X, Download, Printer } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { useReactToPrint } from 'react-to-print';
 
 interface Student {
   id: number;
@@ -36,20 +38,68 @@ export const ReportCardGenerator = ({ student, term, class: studentClass, onClos
   const average = Math.round(totalMarks / subjects.length);
   const overallGrade = average >= 85 ? 'A' : average >= 75 ? 'B+' : average >= 65 ? 'B' : average >= 55 ? 'C+' : 'C';
 
-  const handlePrint = () => {
-    window.print();
-    toast({
-      title: "Print Started",
-      description: "Report card is being prepared for printing.",
-    });
-  };
+  const handlePrint = useReactToPrint({
+    content: () => reportCardRef.current,
+    documentTitle: `Report Card - ${student?.name} - ${term}`,
+    onAfterPrint: () => {
+      toast({
+        title: "Print Complete",
+        description: "Report card has been sent to printer successfully.",
+      });
+    },
+    onPrintError: (errorLocation, error) => {
+      console.error('Print error:', errorLocation, error);
+      toast({
+        title: "Print Error",
+        description: "There was an error printing the report card.",
+        variant: "destructive"
+      });
+    },
+    pageStyle: `
+      @page {
+        size: A4;
+        margin: 0.5in;
+      }
+      @media print {
+        body { 
+          -webkit-print-color-adjust: exact;
+          color-adjust: exact;
+        }
+      }
+    `
+  });
 
-  const handleDownload = () => {
-    toast({
-      title: "Download Started",
-      description: "Report card PDF is being generated.",
-    });
-  };
+  const handleDownload = useReactToPrint({
+    content: () => reportCardRef.current,
+    documentTitle: `Report Card - ${student?.name} - ${term}`,
+    print: async (printIframe: HTMLIframeElement) => {
+      // This creates a download instead of print
+      return new Promise<void>((resolve) => {
+        if (printIframe.contentWindow) {
+          printIframe.contentWindow.print();
+        }
+        resolve();
+      });
+    },
+    onAfterPrint: () => {
+      toast({
+        title: "Download Complete",
+        description: "Report card has been prepared for download.",
+      });
+    },
+    pageStyle: `
+      @page {
+        size: A4;
+        margin: 0.5in;
+      }
+      @media print {
+        body { 
+          -webkit-print-color-adjust: exact;
+          color-adjust: exact;
+        }
+      }
+    `
+  });
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">

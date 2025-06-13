@@ -221,9 +221,18 @@ const Reports = () => {
   };
 
   const downloadReport = (report) => {
+    // Simulate file download
+    const element = document.createElement('a');
+    const file = new Blob([`Report: ${report.title}\nGenerated: ${report.date}\nType: ${report.type}`], {type: 'text/plain'});
+    element.href = URL.createObjectURL(file);
+    element.download = `${report.title.replace(/\s+/g, '_')}.txt`;
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+    
     toast({
-      title: "Download Started",
-      description: `Downloading ${report.title}...`,
+      title: "Download Complete",
+      description: `${report.title} has been downloaded successfully.`,
     });
   };
 
