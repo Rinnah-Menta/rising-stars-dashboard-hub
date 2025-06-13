@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -153,7 +152,7 @@ const Reports = () => {
     }
   }, []);
 
-  const generateReportCard = (type) => {
+  const generateNewReportCard = (type) => {
     const newReportCard = {
       id: Date.now(),
       title: `${type} Report Card`,
@@ -228,7 +227,7 @@ const Reports = () => {
     });
   };
 
-  const generateReportCard = () => {
+  const handleGenerateReportCard = () => {
     if (!selectedClass || !selectedTerm || !selectedStudent) {
       toast({
         title: "Missing Information",
@@ -306,6 +305,8 @@ const Reports = () => {
   const readyReports = [...reportCards, ...classReports].filter(r => r.status === 'Ready').length;
   const processingReports = [...reportCards, ...classReports].filter(r => r.status === 'Processing').length;
 
+  const selectedStudentData = students.find(s => s.id.toString() === selectedStudent);
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -373,7 +374,7 @@ const Reports = () => {
                   </Select>
                 </div>
 
-                <Button onClick={generateReportCard} className="w-full">
+                <Button onClick={handleGenerateReportCard} className="w-full">
                   <Printer className="h-4 w-4 mr-2" />
                   Generate Report Card
                 </Button>
@@ -427,44 +428,46 @@ const Reports = () => {
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="report-cards">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <GraduationCap className="h-5 w-5" />
-                Student Report Cards
-              </CardTitle>
-              <p className="text-sm text-muted-foreground">
-                Individual student academic performance reports and progress tracking
-              </p>
-            </CardHeader>
-            <CardContent>
-              {renderReportsList(reportCards, 'report-card')}
-            </CardContent>
-          </Card>
+        <TabsContent value="report-cards" className="space-y-4">
+          <div className="flex justify-between items-center">
+            <div>
+              <h2 className="text-lg font-semibold">Student Report Cards</h2>
+              <p className="text-sm text-muted-foreground">Individual student academic performance reports</p>
+            </div>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => generateNewReportCard('Progressive')}>
+                Generate Progressive
+              </Button>
+              <Button variant="outline" onClick={() => generateNewReportCard('Final Term')}>
+                Generate Final Term
+              </Button>
+            </div>
+          </div>
+          {renderReportsList(reportCards, 'report-card')}
         </TabsContent>
 
-        <TabsContent value="class-reports">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <FileBarChart className="h-5 w-5" />
-                Class Reports
-              </CardTitle>
-              <p className="text-sm text-muted-foreground">
-                Administrative summaries, class performance analysis, and school-wide reports
-              </p>
-            </CardHeader>
-            <CardContent>
-              {renderReportsList(classReports, 'class-report')}
-            </CardContent>
-          </Card>
+        <TabsContent value="class-reports" className="space-y-4">
+          <div className="flex justify-between items-center">
+            <div>
+              <h2 className="text-lg font-semibold">Class Reports</h2>
+              <p className="text-sm text-muted-foreground">Administrative summaries and analytics</p>
+            </div>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => generateClassReport('Performance')}>
+                Generate Performance
+              </Button>
+              <Button variant="outline" onClick={() => generateClassReport('Attendance')}>
+                Generate Attendance
+              </Button>
+            </div>
+          </div>
+          {renderReportsList(classReports, 'class-report')}
         </TabsContent>
       </Tabs>
 
-      {showReportCard && (
+      {showReportCard && selectedStudentData && (
         <ReportCardGenerator
-          student={students.find(s => s.id.toString() === selectedStudent)}
+          student={selectedStudentData}
           term={selectedTerm}
           class={selectedClass}
           onClose={() => setShowReportCard(false)}
@@ -474,4 +477,4 @@ const Reports = () => {
   );
 };
 
-export default Reports;
+export { Reports };

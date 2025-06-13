@@ -1,4 +1,3 @@
-
 import React, { useRef } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -128,7 +127,7 @@ export const ReportCardGenerator = ({ student, term, class: studentClass, onClos
               </div>
               <div className="flex">
                 <span className="font-semibold w-32">Date Issued:</span>
-                <span className="border-b border-gray-300 flex-1 px-2">{new Date().toLocaleDateLength()}</span>
+                <span className="border-b border-gray-300 flex-1 px-2">{new Date().toLocaleDateString()}</span>
               </div>
             </div>
           </div>
