@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -11,7 +12,7 @@ import { Layout } from "@/components/Layout";
 import LoginPage from "@/components/LoginPage";
 import { Profile } from "@/components/pages/Profile";
 import { Calendar } from "@/components/pages/Calendar";
-import Reports from "@/components/pages/Reports";
+import { Reports } from "@/components/pages/Reports";
 import { Students } from "@/components/pages/Students";
 import { Teachers } from "@/components/pages/Teachers";
 import { Classes } from "@/components/pages/Classes";
