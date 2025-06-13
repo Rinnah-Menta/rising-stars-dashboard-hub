@@ -1,0 +1,45 @@
+/* src/App.css */
+
+body.print-active .no-print {
+  display: none !important;
+}
+
+body.print-active .printable-area {
+  display: block !important;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+}
+
+@media print {
+  /* Hide everything on the page by default */
+  body * {
+    visibility: hidden;
+  }
+
+  /* Make the printable area and its children visible */
+  .printable-area, .printable-area * {
+    visibility: visible;
+  }
+  
+  /* Position the printable area to take up the whole page */
+  .printable-area {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
+
+  /* Remove default browser headers/footers */
+  @page {
+    size: A4;
+    margin: 0;
+  }
+
+  body {
+    /* Force printing of background colors and images */
+    -webkit-print-color-adjust: exact;
+    color-adjust: exact;
+  }
+} 

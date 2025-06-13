@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -38,6 +37,8 @@ import { useAuth } from "./contexts/AuthContext";
 import ScrollToTop from "@/components/ScrollToTop";
 import { AnimatePresence, motion } from "framer-motion";
 import { useState, useEffect } from "react";
+import './App.css';
+import './print.css';
 
 const pageTransitions = [
   {
