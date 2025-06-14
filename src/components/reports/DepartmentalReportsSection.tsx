@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Building, Download, FileBarChart, Users, TrendingUp, Eye } from 'lucide-react';
+import { Building, Download, FileBarChart, Users, TrendingUp, Eye, Trash2 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { ReportUpload } from './ReportUpload';
 
@@ -34,16 +34,30 @@ export const DepartmentalReportsSection: React.FC<DepartmentalReportsSectionProp
       status: 'Ready',
       iconName: 'Building',
       category: 'departmental-report',
-      file: file,
-      fileName: file.name
+      fileName: file.name,
+      fileSize: file.size,
+      fileType: file.type,
+      fileData: file.size < 2 * 1024 * 1024 ? null : null
     };
 
-    const updatedDepartmentalReports = [...departmentalReports, newDepartmentalReport];
-    setDepartmentalReports(updatedDepartmentalReports);
-    localStorage.setItem('departmental_reports', JSON.stringify(updatedDepartmentalReports.map(report => ({
-      ...report,
-      file: undefined // Don't store file in localStorage
-    }))));
+    if (file.size < 2 * 1024 * 1024) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        newDepartmentalReport.fileData = e.target?.result as string;
+        const updatedDepartmentalReports = [...departmentalReports, newDepartmentalReport];
+        setDepartmentalReports(updatedDepartmentalReports);
+        
+        localStorage.setItem('departmental_reports', JSON.stringify(updatedDepartmentalReports.map(report => ({
+          ...report,
+          fileData: report.fileSize < 1024 * 1024 ? report.fileData : null
+        }))));
+      };
+      reader.readAsDataURL(file);
+    } else {
+      const updatedDepartmentalReports = [...departmentalReports, newDepartmentalReport];
+      setDepartmentalReports(updatedDepartmentalReports);
+      localStorage.setItem('departmental_reports', JSON.stringify(updatedDepartmentalReports));
+    }
 
     toast({
       title: "Departmental Report Uploaded",
@@ -51,17 +65,35 @@ export const DepartmentalReportsSection: React.FC<DepartmentalReportsSectionProp
     });
   };
 
+  const deleteReport = (reportId: number) => {
+    const updatedDepartmentalReports = departmentalReports.filter(report => report.id !== reportId);
+    setDepartmentalReports(updatedDepartmentalReports);
+    localStorage.setItem('departmental_reports', JSON.stringify(updatedDepartmentalReports));
+    
+    toast({
+      title: "Report Deleted",
+      description: "Departmental report has been removed successfully.",
+    });
+  };
+
   const downloadReport = (report: any) => {
-    if (report.file) {
+    if (report.fileData) {
+      const byteCharacters = atob(report.fileData.split(',')[1]);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      const blob = new Blob([byteArray], { type: report.fileType });
+      
       const element = document.createElement('a');
-      const file = new Blob([report.file], { type: report.file.type });
-      element.href = URL.createObjectURL(file);
+      element.href = URL.createObjectURL(blob);
       element.download = report.fileName || `${report.title}.pdf`;
       document.body.appendChild(element);
       element.click();
       document.body.removeChild(element);
+      URL.revokeObjectURL(element.href);
     } else {
-      // Fallback for old reports without files
       const element = document.createElement('a');
       const file = new Blob([`Report: ${report.title}\nGenerated: ${report.date}\nType: ${report.type}`], {type: 'text/plain'});
       element.href = URL.createObjectURL(file);
@@ -69,6 +101,7 @@ export const DepartmentalReportsSection: React.FC<DepartmentalReportsSectionProp
       document.body.appendChild(element);
       element.click();
       document.body.removeChild(element);
+      URL.revokeObjectURL(element.href);
     }
     
     toast({
@@ -78,15 +111,29 @@ export const DepartmentalReportsSection: React.FC<DepartmentalReportsSectionProp
   };
 
   const previewReport = (report: any) => {
-    if (report.file) {
-      const fileURL = URL.createObjectURL(report.file);
-      window.open(fileURL, '_blank');
+    if (report.fileData) {
+      const newWindow = window.open();
+      if (newWindow) {
+        if (report.fileType.includes('pdf')) {
+          newWindow.document.write(`<iframe src="${report.fileData}" style="width:100%;height:100%;border:none;"></iframe>`);
+        } else {
+          newWindow.document.write(`<img src="${report.fileData}" style="max-width:100%;height:auto;" />`);
+        }
+      }
     } else {
       toast({
         title: "Preview Not Available",
-        description: "This report doesn't have a preview available.",
+        description: "This report doesn't have a preview available. File may be too large for preview.",
       });
     }
+  };
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
   const getIconComponent = (iconName: string) => {
@@ -133,6 +180,11 @@ export const DepartmentalReportsSection: React.FC<DepartmentalReportsSectionProp
                     <span className="text-xs font-medium px-2 py-1 rounded-full bg-orange-50 text-orange-600">
                       {report.type}
                     </span>
+                    {report.fileSize && (
+                      <span className="text-xs text-muted-foreground">
+                        {formatFileSize(report.fileSize)}
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>
@@ -144,7 +196,7 @@ export const DepartmentalReportsSection: React.FC<DepartmentalReportsSectionProp
                 </span>
                 {report.status === 'Ready' && (
                   <div className="flex gap-2">
-                    {report.file && (
+                    {report.fileData && (
                       <Button variant="outline" size="sm" onClick={() => previewReport(report)}>
                         <Eye className="h-4 w-4 mr-2" />
                         Preview
@@ -153,6 +205,10 @@ export const DepartmentalReportsSection: React.FC<DepartmentalReportsSectionProp
                     <Button variant="outline" size="sm" onClick={() => downloadReport(report)}>
                       <Download className="h-4 w-4 mr-2" />
                       Download
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={() => deleteReport(report.id)} className="text-red-600 hover:text-red-700">
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Delete
                     </Button>
                   </div>
                 )}
