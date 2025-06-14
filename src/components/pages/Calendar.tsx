@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react';
+
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -55,6 +56,7 @@ const eventTypeConfig = {
 export const Calendar = () => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const calendarRef = useRef<FullCalendar>(null);
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [formData, setFormData] = useState(initialFormData);
@@ -63,14 +65,21 @@ export const Calendar = () => {
   const loadEvents = useCallback(() => {
     const savedEvents = localStorage.getItem(`calendar_events_${user?.id}`);
     if (savedEvents) {
-      setEvents(JSON.parse(savedEvents));
+      try {
+        const parsedEvents = JSON.parse(savedEvents);
+        console.log('Loaded events from localStorage:', parsedEvents);
+        setEvents(parsedEvents);
+      } catch (error) {
+        console.error('Error parsing saved events:', error);
+        setEvents([]);
+      }
     } else {
       const defaultEvents: CalendarEvent[] = [
         {
           id: '1',
           title: 'Mathematics Exam - P.5A',
-          start: '2024-06-15T09:00:00',
-          end: '2024-06-15T11:00:00',
+          start: '2024-12-16T09:00:00',
+          end: '2024-12-16T11:00:00',
           allDay: false,
           extendedProps: {
             location: 'Room 12A',
@@ -82,6 +91,7 @@ export const Calendar = () => {
         },
       ];
       setEvents(defaultEvents);
+      localStorage.setItem(`calendar_events_${user?.id}`, JSON.stringify(defaultEvents));
     }
   }, [user?.id]);
 
@@ -89,33 +99,65 @@ export const Calendar = () => {
     loadEvents();
   }, [loadEvents]);
 
+  // Update calendar view when selectedView changes
+  useEffect(() => {
+    if (calendarRef.current) {
+      const calendarApi = calendarRef.current.getApi();
+      calendarApi.changeView(selectedView);
+    }
+  }, [selectedView]);
+
   const saveEvents = (updatedEvents: CalendarEvent[]) => {
+    console.log('Saving events:', updatedEvents);
     setEvents(updatedEvents);
     localStorage.setItem(`calendar_events_${user?.id}`, JSON.stringify(updatedEvents));
   };
 
   const handleDateSelect = (selectInfo: any) => {
+    console.log('Date selected:', selectInfo);
     setFormData({
       ...initialFormData,
-      date: selectInfo.startStr,
+      date: selectInfo.startStr.split('T')[0], // Extract just the date part
       allDay: selectInfo.allDay,
     });
     setIsDialogOpen(true);
   };
 
   const handleEventClick = (clickInfo: any) => {
+    console.log('Event clicked:', clickInfo.event);
     const event = clickInfo.event;
     setFormData({
       id: event.id,
       title: event.title,
       date: event.start.toISOString().split('T')[0],
-      time: event.extendedProps.time,
-      location: event.extendedProps.location,
-      type: event.extendedProps.type,
+      time: event.extendedProps.time || '',
+      location: event.extendedProps.location || '',
+      type: event.extendedProps.type || 'class',
       description: event.extendedProps.description || '',
       allDay: event.allDay,
     });
     setIsDialogOpen(true);
+  };
+
+  const convertTo24Hour = (time12h: string) => {
+    if (!time12h || !time12h.includes(':')) return '09:00';
+    
+    try {
+      const [time, modifier] = time12h.trim().split(' ');
+      let [hours, minutes] = time.split(':');
+      
+      if (hours === '12') {
+        hours = '00';
+      }
+      if (modifier && modifier.toUpperCase() === 'PM') {
+        hours = (parseInt(hours, 10) + 12).toString();
+      }
+      
+      return `${hours.padStart(2, '0')}:${(minutes || '00').padStart(2, '0')}`;
+    } catch (error) {
+      console.error('Error converting time:', error);
+      return '09:00';
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -126,22 +168,43 @@ export const Calendar = () => {
     }
 
     const { id, title, date, time, location, type, description, allDay } = formData;
-    const [startTime, endTime] = time.split('-').map(t => t.trim());
+    
+    let startDateTime, endDateTime;
+    
+    if (allDay) {
+      startDateTime = date;
+      endDateTime = undefined;
+    } else if (time && time.includes('-')) {
+      const [startTime, endTime] = time.split('-').map(t => t.trim());
+      startDateTime = `${date}T${convertTo24Hour(startTime)}:00`;
+      endDateTime = `${date}T${convertTo24Hour(endTime)}:00`;
+    } else if (time) {
+      startDateTime = `${date}T${convertTo24Hour(time)}:00`;
+      // Default to 1 hour duration if no end time specified
+      const startHour = parseInt(convertTo24Hour(time).split(':')[0]);
+      const endHour = (startHour + 1) % 24;
+      endDateTime = `${date}T${endHour.toString().padStart(2, '0')}:00:00`;
+    } else {
+      startDateTime = `${date}T09:00:00`;
+      endDateTime = `${date}T10:00:00`;
+    }
 
     const eventData: CalendarEvent = {
       id: id || Date.now().toString(),
       title,
-      start: allDay ? date : `${date}T${convertTo24Hour(startTime) || '00:00:00'}`,
-      end: allDay ? undefined : `${date}T${convertTo24Hour(endTime) || '23:59:59'}`,
+      start: startDateTime,
+      end: endDateTime,
       allDay,
       extendedProps: {
-        location,
+        location: location || '',
         type,
-        description,
-        time,
+        description: description || '',
+        time: time || '9:00 AM',
         teacherId: user?.id || '',
       },
     };
+
+    console.log('Creating/updating event:', eventData);
 
     let updatedEvents;
     if (id) {
@@ -164,19 +227,6 @@ export const Calendar = () => {
     toast({ title: "Event Deleted", description: "Event removed from your calendar." });
     setIsDialogOpen(false);
     setFormData(initialFormData);
-  };
-  
-  const convertTo24Hour = (time12h: string | undefined) => {
-    if (!time12h) return null;
-    const [time, modifier] = time12h.split(' ');
-    let [hours, minutes] = time.split(':');
-    if (hours === '12') {
-      hours = '00';
-    }
-    if (modifier && modifier.toUpperCase() === 'PM') {
-      hours = (parseInt(hours, 10) + 12).toString();
-    }
-    return `${hours.padStart(2, '0')}:${minutes || '00'}:00`;
   };
 
   const getEventColor = (type: string) => {
@@ -345,7 +395,10 @@ export const Calendar = () => {
                         key={view.key}
                         variant={selectedView === view.key ? "default" : "outline"}
                         size="sm"
-                        onClick={() => setSelectedView(view.key)}
+                        onClick={() => {
+                          console.log('Changing view to:', view.key);
+                          setSelectedView(view.key);
+                        }}
                         className={selectedView === view.key ? "bg-blue-600 hover:bg-blue-700" : ""}
                       >
                         {view.label}
@@ -357,6 +410,7 @@ export const Calendar = () => {
               <CardContent className="p-6">
                 <div className="calendar-container">
                   <FullCalendar
+                    ref={calendarRef}
                     plugins={[dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin]}
                     headerToolbar={{
                       left: 'prev,next today',
@@ -365,7 +419,12 @@ export const Calendar = () => {
                     }}
                     initialView={selectedView}
                     height="auto"
-                    events={events.map(e => ({...e, color: getEventColor(e.extendedProps.type)}))}
+                    events={events.map(e => ({
+                      ...e, 
+                      color: getEventColor(e.extendedProps.type),
+                      backgroundColor: getEventColor(e.extendedProps.type),
+                      borderColor: getEventColor(e.extendedProps.type)
+                    }))}
                     editable={true}
                     selectable={true}
                     selectMirror={true}
