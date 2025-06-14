@@ -84,6 +84,10 @@ const Reports = () => {
   const [classReports, setClassReports] = useState([]);
   const [departmentalReports, setDepartmentalReports] = useState([]);
 
+  const isBooleanTrue = (value: boolean | string | undefined): boolean => {
+    return value === true || value === 'true';
+  };
+
   useEffect(() => {
     try {
       // Load report cards (admin only)
@@ -98,7 +102,7 @@ const Reports = () => {
       }
 
       // Load class reports (teachers who are class teachers)
-      if (user?.role === 'teacher' && (profileData?.isClassTeacher === true || profileData?.isClassTeacher === 'true')) {
+      if (user?.role === 'teacher' && isBooleanTrue(profileData?.isClassTeacher)) {
         const savedClassReports = localStorage.getItem('teacher_class_reports');
         if (savedClassReports) {
           setClassReports(JSON.parse(savedClassReports));
@@ -110,7 +114,7 @@ const Reports = () => {
 
       // Load departmental reports (department heads)
       if ((user?.role === 'teacher' || user?.role === 'non-teaching') && 
-          (profileData?.isDepartmentHead === true || profileData?.isDepartmentHead === 'true')) {
+          isBooleanTrue(profileData?.isDepartmentHead)) {
         const savedDepartmentalReports = localStorage.getItem('departmental_reports');
         if (savedDepartmentalReports) {
           setDepartmentalReports(JSON.parse(savedDepartmentalReports));
@@ -125,9 +129,9 @@ const Reports = () => {
   }, [user, profileData]);
 
   const isAdmin = user?.role === 'admin';
-  const isClassTeacher = user?.role === 'teacher' && (profileData?.isClassTeacher === true || profileData?.isClassTeacher === 'true');
+  const isClassTeacher = user?.role === 'teacher' && isBooleanTrue(profileData?.isClassTeacher);
   const isDepartmentHead = (user?.role === 'teacher' || user?.role === 'non-teaching') && 
-                           (profileData?.isDepartmentHead === true || profileData?.isDepartmentHead === 'true');
+                           isBooleanTrue(profileData?.isDepartmentHead);
 
   const getTotalReports = () => {
     let total = 0;

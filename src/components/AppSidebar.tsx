@@ -40,6 +40,10 @@ export const AppSidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
+  const isBooleanTrue = (value: boolean | string | undefined): boolean => {
+    return value === true || value === 'true';
+  };
+
   const shouldShowReports = () => {
     if (!user || !profileData) return false;
     
@@ -47,12 +51,12 @@ export const AppSidebar = () => {
     if (user.role === 'admin') return true;
     
     // Teachers see reports if they are class teachers
-    if (user.role === 'teacher' && (profileData.isClassTeacher === true || profileData.isClassTeacher === 'true')) {
+    if (user.role === 'teacher' && isBooleanTrue(profileData.isClassTeacher)) {
       return true;
     }
     
     // Non-teaching staff see reports if they are department heads
-    if (user.role === 'non-teaching' && (profileData.isDepartmentHead === true || profileData.isDepartmentHead === 'true')) {
+    if (user.role === 'non-teaching' && isBooleanTrue(profileData.isDepartmentHead)) {
       return true;
     }
     
