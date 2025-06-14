@@ -4,7 +4,6 @@ import { useReports } from '@/hooks/useReports';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   FileText, 
   Download, 
@@ -40,7 +39,6 @@ const Reports = () => {
   } = useReports();
 
   const availableTabs = getAvailableTabs();
-  const [activeTab, setActiveTab] = useState(availableTabs[0]?.value || '');
 
   if (availableTabs.length === 0) {
     return (
@@ -99,49 +97,39 @@ const Reports = () => {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
-          <TabsList className="grid w-full max-w-md mx-auto" style={{ gridTemplateColumns: `repeat(${availableTabs.length}, 1fr)` }}>
-            {availableTabs.map((tab) => (
-              <TabsTrigger key={tab.value} value={tab.value} className="flex items-center justify-center px-4">
-                {tab.label}
-              </TabsTrigger>
-            ))}
-          </TabsList>
+        {isLoading ? (
+          <LoadingSkeleton />
+        ) : (
+          <div className="space-y-8">
+            {isAdmin && (
+              <div>
+                <ReportCardSection 
+                  reportCards={reportCards} 
+                  setReportCards={setReportCards} 
+                />
+              </div>
+            )}
 
-          {isLoading ? (
-            <LoadingSkeleton />
-          ) : (
-            <>
-              {isAdmin && (
-                <TabsContent value="report-cards" className="space-y-4">
-                  <ReportCardSection 
-                    reportCards={reportCards} 
-                    setReportCards={setReportCards} 
-                  />
-                </TabsContent>
-              )}
+            {isClassTeacher && (
+              <div>
+                <ClassReportsSection 
+                  classReports={classReports} 
+                  setClassReports={setClassReports} 
+                />
+              </div>
+            )}
 
-              {isClassTeacher && (
-                <TabsContent value="class-reports" className="space-y-4">
-                  <ClassReportsSection 
-                    classReports={classReports} 
-                    setClassReports={setClassReports} 
-                  />
-                </TabsContent>
-              )}
-
-              {isDepartmentHead && (
-                <TabsContent value="departmental-reports" className="space-y-4">
-                  <DepartmentalReportsSection 
-                    departmentalReports={departmentalReports} 
-                    setDepartmentalReports={setDepartmentalReports}
-                    departmentName={profileData?.headOfDepartment || profileData?.department || 'Department'}
-                  />
-                </TabsContent>
-              )}
-            </>
-          )}
-        </Tabs>
+            {isDepartmentHead && (
+              <div>
+                <DepartmentalReportsSection 
+                  departmentalReports={departmentalReports} 
+                  setDepartmentalReports={setDepartmentalReports}
+                  departmentName={profileData?.headOfDepartment || profileData?.department || 'Department'}
+                />
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
