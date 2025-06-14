@@ -9,13 +9,11 @@ import {
   FileText, 
   Download, 
   Eye, 
-  Plus, 
   BarChart3, 
   Users, 
   GraduationCap,
   Clock,
   Building,
-  Filter,
   Search
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -28,11 +26,6 @@ type Report = {
   description: string;
   type: string;
   date: string;
-};
-
-type ReportTab = {
-  value: string;
-  label: string;
 };
 
 const Reports = () => {
@@ -149,27 +142,27 @@ const Reports = () => {
             className="pl-10 w-[200px] sm:w-[250px]"
           />
         </div>
-        <Button variant="outline" size="sm">
-          <Filter className="h-4 w-4 mr-2" />
-          Filter
-        </Button>
-        <Button>
-          <Plus className="h-4 w-4 mr-2" />
-          New Report
-        </Button>
       </div>
     </div>
   );
 
-  const EmptyState = () => (
+  const EmptyState = ({ searchActive }: { searchActive: boolean }) => (
     <Card className="p-12 text-center">
       <FileText className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-      <h3 className="text-lg font-medium text-gray-500 mb-2">No Reports Found</h3>
-      <p className="text-sm text-gray-400 mb-4">Get started by creating your first report</p>
-      <Button>
-        <Plus className="h-4 w-4 mr-2" />
-        Create Report
-      </Button>
+      <h3 className="text-lg font-medium text-gray-500 mb-2">
+        {searchActive ? 'No Reports Match Your Search' : 'No Reports Available'}
+      </h3>
+      <p className="text-sm text-gray-400 mb-4">
+        {searchActive 
+          ? 'Try adjusting your search terms or clear the search to see all reports'
+          : 'Reports will appear here when they become available'
+        }
+      </p>
+      {searchActive && (
+        <Button variant="outline" onClick={() => setSearchTerm('')}>
+          Clear Search
+        </Button>
+      )}
     </Card>
   );
 
@@ -240,13 +233,13 @@ const Reports = () => {
           <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Reports Dashboard</h1>
-              <p className="text-gray-600 mt-2">Manage and generate reports efficiently</p>
+              <p className="text-gray-600 mt-2">View and download available reports</p>
             </div>
             
             {/* Simple Statistics */}
             <div className="bg-blue-50 rounded-xl px-6 py-4 text-center">
               <div className="text-2xl font-bold text-blue-600">{getTotalReports()}</div>
-              <div className="text-sm text-blue-600/70 font-medium">Total Reports</div>
+              <div className="text-sm text-blue-600/70 font-medium">Available Reports</div>
             </div>
           </div>
         </div>
@@ -270,7 +263,7 @@ const Reports = () => {
               {isLoading ? (
                 <LoadingSkeleton />
               ) : filteredReports.length === 0 ? (
-                <EmptyState />
+                <EmptyState searchActive={searchTerm.length > 0} />
               ) : (
                 <div className="grid gap-4">
                   {filteredReports.map((report) => (
