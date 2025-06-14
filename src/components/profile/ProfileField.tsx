@@ -15,6 +15,7 @@ interface ProfileFieldProps {
   type?: string;
   component?: 'input' | 'textarea' | 'select';
   options?: { value: string; label: string }[];
+  placeholder?: string;
 }
 
 export const ProfileField: React.FC<ProfileFieldProps> = ({
@@ -26,7 +27,8 @@ export const ProfileField: React.FC<ProfileFieldProps> = ({
   onCapitalizedChange,
   type = 'text',
   component = 'input',
-  options = []
+  options = [],
+  placeholder
 }) => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     if (onCapitalizedChange) {
@@ -57,7 +59,7 @@ export const ProfileField: React.FC<ProfileFieldProps> = ({
         <Label htmlFor={id}>{label}</Label>
         <Select value={value} onValueChange={handleSelectChange}>
           <SelectTrigger>
-            <SelectValue placeholder={`Select ${label.toLowerCase()}`} />
+            <SelectValue placeholder={placeholder || `Select ${label.toLowerCase()}`} />
           </SelectTrigger>
           <SelectContent>
             {options.map((option) => (
@@ -75,9 +77,9 @@ export const ProfileField: React.FC<ProfileFieldProps> = ({
     <div className="space-y-2">
       <Label htmlFor={id}>{label}</Label>
       {component === 'textarea' ? (
-        <Textarea id={id} value={value} onChange={handleChange} rows={3} />
+        <Textarea id={id} value={value} onChange={handleChange} rows={3} placeholder={placeholder} />
       ) : (
-        <Input id={id} type={type} value={value} onChange={handleChange} />
+        <Input id={id} type={type} value={value} onChange={handleChange} placeholder={placeholder} />
       )}
     </div>
   );
