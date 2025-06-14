@@ -75,9 +75,9 @@ const defaultDepartmentalReports = [
 export const useReports = () => {
   const { user } = useAuth();
   const { profileData } = useProfile();
-  const [reportCards, setReportCards] = useState<any[]>([]);
-  const [classReports, setClassReports] = useState<any[]>([]);
-  const [departmentalReports, setDepartmentalReports] = useState<any[]>([]);
+  const [reportCards, setReportCards] = useState([]);
+  const [classReports, setClassReports] = useState([]);
+  const [departmentalReports, setDepartmentalReports] = useState([]);
 
   const isBooleanTrue = (value: boolean | string | undefined): boolean => {
     return value === true || value === 'true';

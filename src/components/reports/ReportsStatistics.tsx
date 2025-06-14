@@ -14,7 +14,7 @@ export const ReportsStatistics: React.FC<ReportsStatisticsProps> = ({
   processingReports
 }) => {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
       <Card>
         <CardContent className="pt-6">
           <div className="text-2xl font-bold">{totalReports}</div>
@@ -31,6 +31,12 @@ export const ReportsStatistics: React.FC<ReportsStatisticsProps> = ({
         <CardContent className="pt-6">
           <div className="text-2xl font-bold text-yellow-600">{processingReports}</div>
           <p className="text-xs text-muted-foreground">Processing</p>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardContent className="pt-6">
+          <div className="text-2xl font-bold text-blue-600">89</div>
+          <p className="text-xs text-muted-foreground">Downloads This Month</p>
         </CardContent>
       </Card>
     </div>
