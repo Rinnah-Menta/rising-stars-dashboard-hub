@@ -78,6 +78,7 @@ export const useReports = () => {
   const [reportCards, setReportCards] = useState([]);
   const [classReports, setClassReports] = useState([]);
   const [departmentalReports, setDepartmentalReports] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   const isBooleanTrue = (value: boolean | string | undefined): boolean => {
     return value === true || value === 'true';
@@ -89,42 +90,49 @@ export const useReports = () => {
                            isBooleanTrue(profileData?.isDepartmentHead);
 
   useEffect(() => {
-    try {
-      // Load report cards (admin only)
-      if (isAdmin) {
-        const savedReportCards = localStorage.getItem('admin_report_cards');
-        if (savedReportCards) {
-          setReportCards(JSON.parse(savedReportCards));
-        } else {
-          setReportCards(defaultReportCards);
-          localStorage.setItem('admin_report_cards', JSON.stringify(defaultReportCards));
+    const loadReports = async () => {
+      setIsLoading(true);
+      try {
+        // Load report cards (admin only)
+        if (isAdmin) {
+          const savedReportCards = localStorage.getItem('admin_report_cards');
+          if (savedReportCards) {
+            setReportCards(JSON.parse(savedReportCards));
+          } else {
+            setReportCards(defaultReportCards);
+            localStorage.setItem('admin_report_cards', JSON.stringify(defaultReportCards));
+          }
         }
-      }
 
-      // Load class reports (teachers who are class teachers)
-      if (isClassTeacher) {
-        const savedClassReports = localStorage.getItem('teacher_class_reports');
-        if (savedClassReports) {
-          setClassReports(JSON.parse(savedClassReports));
-        } else {
-          setClassReports(defaultClassReports);
-          localStorage.setItem('teacher_class_reports', JSON.stringify(defaultClassReports));
+        // Load class reports (teachers who are class teachers)
+        if (isClassTeacher) {
+          const savedClassReports = localStorage.getItem('teacher_class_reports');
+          if (savedClassReports) {
+            setClassReports(JSON.parse(savedClassReports));
+          } else {
+            setClassReports(defaultClassReports);
+            localStorage.setItem('teacher_class_reports', JSON.stringify(defaultClassReports));
+          }
         }
-      }
 
-      // Load departmental reports (department heads)
-      if (isDepartmentHead) {
-        const savedDepartmentalReports = localStorage.getItem('departmental_reports');
-        if (savedDepartmentalReports) {
-          setDepartmentalReports(JSON.parse(savedDepartmentalReports));
-        } else {
-          setDepartmentalReports(defaultDepartmentalReports);
-          localStorage.setItem('departmental_reports', JSON.stringify(defaultDepartmentalReports));
+        // Load departmental reports (department heads)
+        if (isDepartmentHead) {
+          const savedDepartmentalReports = localStorage.getItem('departmental_reports');
+          if (savedDepartmentalReports) {
+            setDepartmentalReports(JSON.parse(savedDepartmentalReports));
+          } else {
+            setDepartmentalReports(defaultDepartmentalReports);
+            localStorage.setItem('departmental_reports', JSON.stringify(defaultDepartmentalReports));
+          }
         }
+      } catch (error) {
+        console.error('Error loading reports:', error);
+      } finally {
+        setIsLoading(false);
       }
-    } catch (error) {
-      console.error('Error loading reports:', error);
-    }
+    };
+
+    loadReports();
   }, [user, profileData, isAdmin, isClassTeacher, isDepartmentHead]);
 
   const getTotalReports = () => {
@@ -173,6 +181,7 @@ export const useReports = () => {
     getReadyReports,
     getProcessingReports,
     getAvailableTabs,
-    profileData
+    profileData,
+    isLoading
   };
 };
