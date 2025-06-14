@@ -1,8 +1,9 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { BarChart3, Download, FileBarChart, Clock, BookOpen } from 'lucide-react';
+import { BarChart3, Download, FileBarChart, Clock, BookOpen, Eye } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { ReportUpload } from './ReportUpload';
 
 interface ClassReportsSectionProps {
   classReports: any[];
@@ -10,53 +11,77 @@ interface ClassReportsSectionProps {
 }
 
 export const ClassReportsSection: React.FC<ClassReportsSectionProps> = ({ classReports, setClassReports }) => {
-  const generateClassReport = (type: string) => {
+  const [showUpload, setShowUpload] = useState(false);
+  const [selectedReportType, setSelectedReportType] = useState('');
+
+  const handleGenerateReport = (type: string) => {
+    setSelectedReportType(type);
+    setShowUpload(true);
+  };
+
+  const handleUpload = (file: File, title: string) => {
     const newClassReport = {
       id: Date.now(),
-      title: `${type} Class Report`,
-      description: `Generated ${type.toLowerCase()} summary report`,
+      title: title,
+      description: `${selectedReportType} report uploaded`,
       date: new Date().toISOString().split('T')[0],
-      type: type,
-      status: 'Processing',
+      type: selectedReportType,
+      status: 'Ready',
       iconName: 'FileBarChart',
-      category: 'class-report'
+      category: 'class-report',
+      file: file,
+      fileName: file.name
     };
 
     const updatedClassReports = [...classReports, newClassReport];
     setClassReports(updatedClassReports);
-    localStorage.setItem('teacher_class_reports', JSON.stringify(updatedClassReports));
-
-    setTimeout(() => {
-      const processedClassReports = updatedClassReports.map(report => 
-        report.id === newClassReport.id ? { ...report, status: 'Ready' } : report
-      );
-      setClassReports(processedClassReports);
-      localStorage.setItem('teacher_class_reports', JSON.stringify(processedClassReports));
-      toast({
-        title: "Class Report Generated",
-        description: `${type} class report has been generated successfully.`,
-      });
-    }, 3000);
+    localStorage.setItem('teacher_class_reports', JSON.stringify(updatedClassReports.map(report => ({
+      ...report,
+      file: undefined // Don't store file in localStorage
+    }))));
 
     toast({
-      title: "Class Report Generation Started",
-      description: `Generating ${type.toLowerCase()} class report...`,
+      title: "Report Uploaded",
+      description: `${title} has been uploaded successfully.`,
     });
   };
 
   const downloadReport = (report: any) => {
-    const element = document.createElement('a');
-    const file = new Blob([`Report: ${report.title}\nGenerated: ${report.date}\nType: ${report.type}`], {type: 'text/plain'});
-    element.href = URL.createObjectURL(file);
-    element.download = `${report.title.replace(/\s+/g, '_')}.txt`;
-    document.body.appendChild(element);
-    element.click();
-    document.body.removeChild(element);
+    if (report.file) {
+      const element = document.createElement('a');
+      const file = new Blob([report.file], { type: report.file.type });
+      element.href = URL.createObjectURL(file);
+      element.download = report.fileName || `${report.title}.pdf`;
+      document.body.appendChild(element);
+      element.click();
+      document.body.removeChild(element);
+    } else {
+      // Fallback for old reports without files
+      const element = document.createElement('a');
+      const file = new Blob([`Report: ${report.title}\nGenerated: ${report.date}\nType: ${report.type}`], {type: 'text/plain'});
+      element.href = URL.createObjectURL(file);
+      element.download = `${report.title.replace(/\s+/g, '_')}.txt`;
+      document.body.appendChild(element);
+      element.click();
+      document.body.removeChild(element);
+    }
     
     toast({
       title: "Download Complete",
       description: `${report.title} has been downloaded successfully.`,
     });
+  };
+
+  const previewReport = (report: any) => {
+    if (report.file) {
+      const fileURL = URL.createObjectURL(report.file);
+      window.open(fileURL, '_blank');
+    } else {
+      toast({
+        title: "Preview Not Available",
+        description: "This report doesn't have a preview available.",
+      });
+    }
   };
 
   const getIconComponent = (iconName: string) => {
@@ -74,14 +99,14 @@ export const ClassReportsSection: React.FC<ClassReportsSectionProps> = ({ classR
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-lg font-semibold">Class Reports</h2>
-          <p className="text-sm text-muted-foreground">Performance summaries for your classes</p>
+          <p className="text-sm text-muted-foreground">Upload performance summaries for your classes</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={() => generateClassReport('Performance')}>
-            Generate Performance
+          <Button variant="outline" onClick={() => handleGenerateReport('Performance')}>
+            Upload Performance Report
           </Button>
-          <Button variant="outline" onClick={() => generateClassReport('Attendance')}>
-            Generate Attendance
+          <Button variant="outline" onClick={() => handleGenerateReport('Attendance')}>
+            Upload Attendance Report
           </Button>
         </div>
       </div>
@@ -99,7 +124,7 @@ export const ClassReportsSection: React.FC<ClassReportsSectionProps> = ({ classR
                   <h3 className="font-semibold">{report.title}</h3>
                   <p className="text-sm text-muted-foreground">{report.description}</p>
                   <div className="flex items-center space-x-4 mt-2">
-                    <span className="text-xs text-muted-foreground">Generated: {new Date(report.date).toLocaleDateString()}</span>
+                    <span className="text-xs text-muted-foreground">Uploaded: {new Date(report.date).toLocaleDateString()}</span>
                     <span className="text-xs font-medium px-2 py-1 rounded-full bg-purple-50 text-purple-600">
                       {report.type}
                     </span>
@@ -113,16 +138,31 @@ export const ClassReportsSection: React.FC<ClassReportsSectionProps> = ({ classR
                   {report.status}
                 </span>
                 {report.status === 'Ready' && (
-                  <Button variant="outline" size="sm" onClick={() => downloadReport(report)}>
-                    <Download className="h-4 w-4 mr-2" />
-                    Download
-                  </Button>
+                  <div className="flex gap-2">
+                    {report.file && (
+                      <Button variant="outline" size="sm" onClick={() => previewReport(report)}>
+                        <Eye className="h-4 w-4 mr-2" />
+                        Preview
+                      </Button>
+                    )}
+                    <Button variant="outline" size="sm" onClick={() => downloadReport(report)}>
+                      <Download className="h-4 w-4 mr-2" />
+                      Download
+                    </Button>
+                  </div>
                 )}
               </div>
             </div>
           );
         })}
       </div>
+
+      <ReportUpload
+        isOpen={showUpload}
+        onClose={() => setShowUpload(false)}
+        reportType={selectedReportType}
+        onUpload={handleUpload}
+      />
     </div>
   );
 };

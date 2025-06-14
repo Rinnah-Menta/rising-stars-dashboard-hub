@@ -1,8 +1,9 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Building, Download, FileBarChart, Users, TrendingUp } from 'lucide-react';
+import { Building, Download, FileBarChart, Users, TrendingUp, Eye } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { ReportUpload } from './ReportUpload';
 
 interface DepartmentalReportsSectionProps {
   departmentalReports: any[];
@@ -15,53 +16,77 @@ export const DepartmentalReportsSection: React.FC<DepartmentalReportsSectionProp
   setDepartmentalReports,
   departmentName = 'Department'
 }) => {
-  const generateDepartmentalReport = (type: string) => {
+  const [showUpload, setShowUpload] = useState(false);
+  const [selectedReportType, setSelectedReportType] = useState('');
+
+  const handleGenerateReport = (type: string) => {
+    setSelectedReportType(type);
+    setShowUpload(true);
+  };
+
+  const handleUpload = (file: File, title: string) => {
     const newDepartmentalReport = {
       id: Date.now(),
-      title: `${departmentName} ${type} Report`,
-      description: `Generated ${type.toLowerCase()} report for ${departmentName}`,
+      title: title,
+      description: `${selectedReportType} report for ${departmentName}`,
       date: new Date().toISOString().split('T')[0],
-      type: type,
-      status: 'Processing',
+      type: selectedReportType,
+      status: 'Ready',
       iconName: 'Building',
-      category: 'departmental-report'
+      category: 'departmental-report',
+      file: file,
+      fileName: file.name
     };
 
     const updatedDepartmentalReports = [...departmentalReports, newDepartmentalReport];
     setDepartmentalReports(updatedDepartmentalReports);
-    localStorage.setItem('departmental_reports', JSON.stringify(updatedDepartmentalReports));
-
-    setTimeout(() => {
-      const processedDepartmentalReports = updatedDepartmentalReports.map(report => 
-        report.id === newDepartmentalReport.id ? { ...report, status: 'Ready' } : report
-      );
-      setDepartmentalReports(processedDepartmentalReports);
-      localStorage.setItem('departmental_reports', JSON.stringify(processedDepartmentalReports));
-      toast({
-        title: "Departmental Report Generated",
-        description: `${type} departmental report has been generated successfully.`,
-      });
-    }, 3000);
+    localStorage.setItem('departmental_reports', JSON.stringify(updatedDepartmentalReports.map(report => ({
+      ...report,
+      file: undefined // Don't store file in localStorage
+    }))));
 
     toast({
-      title: "Departmental Report Generation Started",
-      description: `Generating ${type.toLowerCase()} departmental report...`,
+      title: "Departmental Report Uploaded",
+      description: `${title} has been uploaded successfully.`,
     });
   };
 
   const downloadReport = (report: any) => {
-    const element = document.createElement('a');
-    const file = new Blob([`Report: ${report.title}\nGenerated: ${report.date}\nType: ${report.type}`], {type: 'text/plain'});
-    element.href = URL.createObjectURL(file);
-    element.download = `${report.title.replace(/\s+/g, '_')}.txt`;
-    document.body.appendChild(element);
-    element.click();
-    document.body.removeChild(element);
+    if (report.file) {
+      const element = document.createElement('a');
+      const file = new Blob([report.file], { type: report.file.type });
+      element.href = URL.createObjectURL(file);
+      element.download = report.fileName || `${report.title}.pdf`;
+      document.body.appendChild(element);
+      element.click();
+      document.body.removeChild(element);
+    } else {
+      // Fallback for old reports without files
+      const element = document.createElement('a');
+      const file = new Blob([`Report: ${report.title}\nGenerated: ${report.date}\nType: ${report.type}`], {type: 'text/plain'});
+      element.href = URL.createObjectURL(file);
+      element.download = `${report.title.replace(/\s+/g, '_')}.txt`;
+      document.body.appendChild(element);
+      element.click();
+      document.body.removeChild(element);
+    }
     
     toast({
       title: "Download Complete",
       description: `${report.title} has been downloaded successfully.`,
     });
+  };
+
+  const previewReport = (report: any) => {
+    if (report.file) {
+      const fileURL = URL.createObjectURL(report.file);
+      window.open(fileURL, '_blank');
+    } else {
+      toast({
+        title: "Preview Not Available",
+        description: "This report doesn't have a preview available.",
+      });
+    }
   };
 
   const getIconComponent = (iconName: string) => {
@@ -79,14 +104,14 @@ export const DepartmentalReportsSection: React.FC<DepartmentalReportsSectionProp
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-lg font-semibold">Departmental Reports</h2>
-          <p className="text-sm text-muted-foreground">Reports for {departmentName} department</p>
+          <p className="text-sm text-muted-foreground">Upload reports for {departmentName} department</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={() => generateDepartmentalReport('Staff Performance')}>
-            Generate Staff Report
+          <Button variant="outline" onClick={() => handleGenerateReport('Staff Performance')}>
+            Upload Staff Report
           </Button>
-          <Button variant="outline" onClick={() => generateDepartmentalReport('Budget')}>
-            Generate Budget Report
+          <Button variant="outline" onClick={() => handleGenerateReport('Budget')}>
+            Upload Budget Report
           </Button>
         </div>
       </div>
@@ -104,7 +129,7 @@ export const DepartmentalReportsSection: React.FC<DepartmentalReportsSectionProp
                   <h3 className="font-semibold">{report.title}</h3>
                   <p className="text-sm text-muted-foreground">{report.description}</p>
                   <div className="flex items-center space-x-4 mt-2">
-                    <span className="text-xs text-muted-foreground">Generated: {new Date(report.date).toLocaleDateString()}</span>
+                    <span className="text-xs text-muted-foreground">Uploaded: {new Date(report.date).toLocaleDateString()}</span>
                     <span className="text-xs font-medium px-2 py-1 rounded-full bg-orange-50 text-orange-600">
                       {report.type}
                     </span>
@@ -118,16 +143,31 @@ export const DepartmentalReportsSection: React.FC<DepartmentalReportsSectionProp
                   {report.status}
                 </span>
                 {report.status === 'Ready' && (
-                  <Button variant="outline" size="sm" onClick={() => downloadReport(report)}>
-                    <Download className="h-4 w-4 mr-2" />
-                    Download
-                  </Button>
+                  <div className="flex gap-2">
+                    {report.file && (
+                      <Button variant="outline" size="sm" onClick={() => previewReport(report)}>
+                        <Eye className="h-4 w-4 mr-2" />
+                        Preview
+                      </Button>
+                    )}
+                    <Button variant="outline" size="sm" onClick={() => downloadReport(report)}>
+                      <Download className="h-4 w-4 mr-2" />
+                      Download
+                    </Button>
+                  </div>
                 )}
               </div>
             </div>
           );
         })}
       </div>
+
+      <ReportUpload
+        isOpen={showUpload}
+        onClose={() => setShowUpload(false)}
+        reportType={selectedReportType}
+        onUpload={handleUpload}
+      />
     </div>
   );
 };
