@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
@@ -24,7 +25,13 @@ import {
   DollarSign,
   Clock,
   Award,
-  MessageSquare
+  MessageSquare,
+  ClipboardList,
+  UserCheck,
+  Building,
+  Bell,
+  HelpCircle,
+  Book
 } from 'lucide-react';
 
 export const AppSidebar = () => {
@@ -39,29 +46,95 @@ export const AppSidebar = () => {
       calendar: { title: 'Calendar', icon: Calendar, id: 'calendar' },
       reports: { title: 'Reports', icon: FileText, id: 'reports' },
       classes: { title: 'My Classes', icon: BookOpen, id: 'classes' },
-      assignments: { title: 'Assignments', icon: FileText, id: 'assignments' },
+      assignments: { title: 'Assignments', icon: ClipboardList, id: 'assignments' },
       results: { title: 'Results', icon: BarChart3, id: 'results' },
       timetable: { title: 'Timetable', icon: Clock, id: 'timetable' },
       students: { title: 'Students', icon: Users, id: 'students' },
-      teachers: { title: 'Teachers', icon: Users, id: 'teachers' },
+      teachers: { title: 'Teachers', icon: UserCheck, id: 'teachers' },
       finances: { title: 'Finances', icon: DollarSign, id: 'finances' },
       analytics: { title: 'Analytics', icon: BarChart3, id: 'analytics' },
       settings: { title: 'Settings', icon: Settings, id: 'settings' },
       communication: { title: 'Communication', icon: MessageSquare, id: 'communication' },
+      library: { title: 'Library', icon: Book, id: 'library' },
+      attendance: { title: 'Attendance', icon: UserCheck, id: 'attendance' },
+      notifications: { title: 'Notifications', icon: Bell, id: 'notifications' },
+      help: { title: 'Help & Support', icon: HelpCircle, id: 'help' },
+      facilities: { title: 'Facilities', icon: Building, id: 'facilities' },
+      grades: { title: 'My Grades', icon: Award, id: 'grades' },
     };
 
     const rolesConfig = {
-      pupil: ['dashboard', 'profile', 'calendar', 'reports', 'classes', 'assignments', 'results', 'timetable'],
-      teacher: ['dashboard', 'profile', 'calendar', 'reports', 'classes', 'students', 'assignments', 'results', 'timetable'],
-      parent: ['dashboard', 'profile', 'calendar', 'reports', 'students', 'results', 'finances', 'communication'],
-      admin: ['dashboard', 'profile', 'calendar', 'reports', 'students', 'teachers', 'classes', 'finances', 'analytics', 'settings'],
-      'non-teaching': ['dashboard', 'profile', 'calendar', 'reports', 'settings'],
+      pupil: [
+        'dashboard', 
+        'profile', 
+        'calendar', 
+        'classes', 
+        'assignments', 
+        'grades', 
+        'timetable', 
+        'library', 
+        'communication', 
+        'notifications', 
+        'help'
+      ],
+      teacher: [
+        'dashboard', 
+        'profile', 
+        'calendar', 
+        'reports', 
+        'classes', 
+        'students', 
+        'assignments', 
+        'results', 
+        'timetable', 
+        'attendance', 
+        'communication', 
+        'notifications', 
+        'help'
+      ],
+      parent: [
+        'dashboard', 
+        'profile', 
+        'calendar', 
+        'students', 
+        'results', 
+        'finances', 
+        'communication', 
+        'notifications', 
+        'help'
+      ],
+      admin: [
+        'dashboard', 
+        'profile', 
+        'calendar', 
+        'reports', 
+        'students', 
+        'teachers', 
+        'classes', 
+        'finances', 
+        'analytics', 
+        'settings', 
+        'attendance', 
+        'facilities', 
+        'communication', 
+        'notifications'
+      ],
+      'non-teaching': [
+        'dashboard', 
+        'profile', 
+        'calendar', 
+        'facilities', 
+        'communication', 
+        'notifications', 
+        'help', 
+        'settings'
+      ],
     };
 
     const userRole = user?.role || 'pupil';
     const accessibleItems = rolesConfig[userRole] || rolesConfig.pupil;
 
-    return accessibleItems.map(id => allItems[id]);
+    return accessibleItems.map(id => allItems[id]).filter(Boolean);
   };
 
   const menuItems = getMenuItems();
@@ -71,11 +144,22 @@ export const AppSidebar = () => {
     navigate(path);
   };
 
+  const getUserRoleLabel = () => {
+    switch (user?.role) {
+      case 'pupil': return 'Student Portal';
+      case 'teacher': return 'Teacher Portal';
+      case 'parent': return 'Parent Portal';
+      case 'admin': return 'Admin Portal';
+      case 'non-teaching': return 'Staff Portal';
+      default: return 'Portal';
+    }
+  };
+
   return (
     <Sidebar>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Menu</SidebarGroupLabel>
+          <SidebarGroupLabel>{getUserRoleLabel()}</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {menuItems.map((item) => (
