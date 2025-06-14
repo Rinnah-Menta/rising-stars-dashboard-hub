@@ -1,6 +1,16 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { 
+  AlertDialog, 
+  AlertDialogAction, 
+  AlertDialogCancel, 
+  AlertDialogContent, 
+  AlertDialogDescription, 
+  AlertDialogFooter, 
+  AlertDialogHeader, 
+  AlertDialogTitle, 
+  AlertDialogTrigger 
+} from '@/components/ui/alert-dialog';
 import { BarChart3, Download, FileBarChart, Clock, BookOpen, Eye, Trash2 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { ReportUpload } from './ReportUpload';
@@ -207,10 +217,28 @@ export const ClassReportsSection: React.FC<ClassReportsSectionProps> = ({ classR
                       <Download className="h-4 w-4 mr-2" />
                       Download
                     </Button>
-                    <Button variant="outline" size="sm" onClick={() => deleteReport(report.id)} className="text-red-600 hover:text-red-700">
-                      <Trash2 className="h-4 w-4 mr-2" />
-                      Delete
-                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700">
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Delete
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete Report</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Are you sure you want to delete "{report.title}"? This action cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => deleteReport(report.id)}>
+                            Delete
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </div>
                 )}
               </div>
