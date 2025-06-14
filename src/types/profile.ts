@@ -1,3 +1,4 @@
+
 export interface ProfileData {
   firstName: string;
   middleName: string;
@@ -17,4 +18,7 @@ export interface ProfileData {
   emergencyPhone: string;
   avatar: string;
   class?: string;
-} 
+  isClassTeacher?: boolean;
+  isDepartmentHead?: boolean;
+  headOfDepartment?: string;
+}

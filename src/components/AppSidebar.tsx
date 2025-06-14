@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
@@ -12,6 +11,7 @@ import {
   SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { useAuth } from '@/contexts/AuthContext';
+import { useProfile } from '@/contexts/ProfileContext';
 import { 
   Home, 
   GraduationCap, 
@@ -36,8 +36,28 @@ import {
 
 export const AppSidebar = () => {
   const { user } = useAuth();
+  const { profileData } = useProfile();
   const navigate = useNavigate();
   const location = useLocation();
+
+  const shouldShowReports = () => {
+    if (!user || !profileData) return false;
+    
+    // Admins always see reports
+    if (user.role === 'admin') return true;
+    
+    // Teachers see reports if they are class teachers
+    if (user.role === 'teacher' && (profileData.isClassTeacher === true || profileData.isClassTeacher === 'true')) {
+      return true;
+    }
+    
+    // Non-teaching staff see reports if they are department heads
+    if (user.role === 'non-teaching' && (profileData.isDepartmentHead === true || profileData.isDepartmentHead === 'true')) {
+      return true;
+    }
+    
+    return false;
+  };
 
   const getMenuItems = () => {
     const allItems = {
@@ -81,7 +101,7 @@ export const AppSidebar = () => {
         'dashboard', 
         'profile', 
         'calendar', 
-        'reports', 
+        ...(shouldShowReports() ? ['reports'] : []),
         'classes', 
         'students', 
         'assignments', 
@@ -123,6 +143,7 @@ export const AppSidebar = () => {
         'dashboard', 
         'profile', 
         'calendar', 
+        ...(shouldShowReports() ? ['reports'] : []),
         'facilities', 
         'communication', 
         'notifications', 
@@ -136,8 +157,6 @@ export const AppSidebar = () => {
 
     return accessibleItems.map(id => allItems[id]).filter(Boolean);
   };
-
-  const menuItems = getMenuItems();
 
   const handleMenuClick = (itemId: string) => {
     const path = itemId === 'dashboard' ? '/' : `/${itemId}`;
@@ -154,6 +173,8 @@ export const AppSidebar = () => {
       default: return 'Portal';
     }
   };
+
+  const menuItems = getMenuItems();
 
   return (
     <Sidebar>

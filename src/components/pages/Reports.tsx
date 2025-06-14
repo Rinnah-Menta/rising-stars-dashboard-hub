@@ -1,27 +1,14 @@
+
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useProfile } from '@/contexts/ProfileContext';
+import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { FileText, Download, TrendingUp, Users, BookOpen, Clock, GraduationCap, Printer, BarChart3, FileBarChart } from 'lucide-react';
-import { toast } from '@/hooks/use-toast';
-import { ReportCardGenerator } from '@/components/reports/ReportCardGenerator';
+import { ReportCardSection } from '@/components/reports/ReportCardSection';
+import { ClassReportsSection } from '@/components/reports/ClassReportsSection';
+import { DepartmentalReportsSection } from '@/components/reports/DepartmentalReportsSection';
 
-// Map of icon names to components
-const iconMap = {
-  TrendingUp,
-  Clock,
-  BookOpen,
-  GraduationCap,
-  FileText,
-  BarChart3,
-  FileBarChart,
-  Users
-};
-
-// Default report cards data (student performance reports)
+// Default data for different report types
 const defaultReportCards = [
   {
     id: 1,
@@ -42,20 +29,9 @@ const defaultReportCards = [
     status: 'Ready',
     iconName: 'TrendingUp',
     category: 'report-card'
-  },
-  {
-    id: 3,
-    title: 'Parent-Teacher Conference Reports',
-    description: 'Individual student performance summaries for parent meetings',
-    date: '2024-06-08',
-    type: 'Conference',
-    status: 'Processing',
-    iconName: 'Users',
-    category: 'report-card'
   }
 ];
 
-// Default class reports data (administrative summaries)
 const defaultClassReports = [
   {
     id: 4,
@@ -70,331 +46,145 @@ const defaultClassReports = [
   {
     id: 5,
     title: 'Attendance Summary Report',
-    description: 'School-wide attendance patterns and statistics',
+    description: 'Class attendance patterns and statistics',
     date: '2024-06-08',
     type: 'Attendance',
     status: 'Ready',
     iconName: 'Clock',
     category: 'class-report'
-  },
+  }
+];
+
+const defaultDepartmentalReports = [
   {
     id: 6,
-    title: 'Subject Performance Report',
-    description: 'Mathematics department performance across all classes',
+    title: 'Mathematics Department Staff Report',
+    description: 'Staff performance and activities summary',
     date: '2024-06-05',
-    type: 'Subject Analysis',
+    type: 'Staff Performance',
     status: 'Ready',
-    iconName: 'BookOpen',
-    category: 'class-report'
+    iconName: 'Users',
+    category: 'departmental-report'
   },
   {
     id: 7,
-    title: 'Monthly School Report',
-    description: 'Comprehensive monthly summary of school activities and performance',
+    title: 'Monthly Budget Report',
+    description: 'Department budget utilization and expenses',
     date: '2024-06-03',
-    type: 'Monthly Summary',
+    type: 'Budget',
     status: 'Processing',
-    iconName: 'FileBarChart',
-    category: 'class-report'
+    iconName: 'Building',
+    category: 'departmental-report'
   }
 ];
 
 const Reports = () => {
   const { user } = useAuth();
+  const { profileData } = useProfile();
   const [reportCards, setReportCards] = useState([]);
   const [classReports, setClassReports] = useState([]);
-  const [selectedClass, setSelectedClass] = useState('');
-  const [selectedTerm, setSelectedTerm] = useState('');
-  const [selectedStudent, setSelectedStudent] = useState('');
-  const [showReportCard, setShowReportCard] = useState(false);
-
-  const classes = [
-    'P.1', 'P.2', 'P.3', 'P.4', 'P.5', 'P.6', 'P.7'
-  ];
-
-  const terms = [
-    'Term 1 - 2024', 'Term 2 - 2024', 'Term 3 - 2024'
-  ];
-
-  const students = [
-    { id: 1, name: 'Nakato Sarah', class: 'P.5' },
-    { id: 2, name: 'Musoke John', class: 'P.5' },
-    { id: 3, name: 'Namubiru Grace', class: 'P.5' },
-    { id: 4, name: 'Kasozi David', class: 'P.5' },
-    { id: 5, name: 'Nalubega Mary', class: 'P.5' },
-  ];
+  const [departmentalReports, setDepartmentalReports] = useState([]);
 
   useEffect(() => {
     try {
-      // Load report cards
-      const savedReportCards = localStorage.getItem('teacher_report_cards');
-      if (savedReportCards) {
-        setReportCards(JSON.parse(savedReportCards));
-      } else {
-        setReportCards(defaultReportCards);
-        localStorage.setItem('teacher_report_cards', JSON.stringify(defaultReportCards));
+      // Load report cards (admin only)
+      if (user?.role === 'admin') {
+        const savedReportCards = localStorage.getItem('admin_report_cards');
+        if (savedReportCards) {
+          setReportCards(JSON.parse(savedReportCards));
+        } else {
+          setReportCards(defaultReportCards);
+          localStorage.setItem('admin_report_cards', JSON.stringify(defaultReportCards));
+        }
       }
 
-      // Load class reports
-      const savedClassReports = localStorage.getItem('teacher_class_reports');
-      if (savedClassReports) {
-        setClassReports(JSON.parse(savedClassReports));
-      } else {
-        setClassReports(defaultClassReports);
-        localStorage.setItem('teacher_class_reports', JSON.stringify(defaultClassReports));
+      // Load class reports (teachers who are class teachers)
+      if (user?.role === 'teacher' && (profileData?.isClassTeacher === true || profileData?.isClassTeacher === 'true')) {
+        const savedClassReports = localStorage.getItem('teacher_class_reports');
+        if (savedClassReports) {
+          setClassReports(JSON.parse(savedClassReports));
+        } else {
+          setClassReports(defaultClassReports);
+          localStorage.setItem('teacher_class_reports', JSON.stringify(defaultClassReports));
+        }
+      }
+
+      // Load departmental reports (department heads)
+      if ((user?.role === 'teacher' || user?.role === 'non-teaching') && 
+          (profileData?.isDepartmentHead === true || profileData?.isDepartmentHead === 'true')) {
+        const savedDepartmentalReports = localStorage.getItem('departmental_reports');
+        if (savedDepartmentalReports) {
+          setDepartmentalReports(JSON.parse(savedDepartmentalReports));
+        } else {
+          setDepartmentalReports(defaultDepartmentalReports);
+          localStorage.setItem('departmental_reports', JSON.stringify(defaultDepartmentalReports));
+        }
       }
     } catch (error) {
       console.error('Error loading reports:', error);
-      setReportCards(defaultReportCards);
-      setClassReports(defaultClassReports);
-      localStorage.setItem('teacher_report_cards', JSON.stringify(defaultReportCards));
-      localStorage.setItem('teacher_class_reports', JSON.stringify(defaultClassReports));
     }
-  }, []);
+  }, [user, profileData]);
 
-  const generateNewReportCard = (type) => {
-    const newReportCard = {
-      id: Date.now(),
-      title: `${type} Report Card`,
-      description: `Generated ${type.toLowerCase()} report card for selected students`,
-      date: new Date().toISOString().split('T')[0],
-      type: type,
-      status: 'Processing',
-      iconName: 'GraduationCap',
-      category: 'report-card'
-    };
+  const isAdmin = user?.role === 'admin';
+  const isClassTeacher = user?.role === 'teacher' && (profileData?.isClassTeacher === true || profileData?.isClassTeacher === 'true');
+  const isDepartmentHead = (user?.role === 'teacher' || user?.role === 'non-teaching') && 
+                           (profileData?.isDepartmentHead === true || profileData?.isDepartmentHead === 'true');
 
-    const updatedReportCards = [...reportCards, newReportCard];
-    setReportCards(updatedReportCards);
-    localStorage.setItem('teacher_report_cards', JSON.stringify(updatedReportCards));
-
-    setTimeout(() => {
-      const processedReportCards = updatedReportCards.map(report => 
-        report.id === newReportCard.id ? { ...report, status: 'Ready' } : report
-      );
-      setReportCards(processedReportCards);
-      localStorage.setItem('teacher_report_cards', JSON.stringify(processedReportCards));
-      toast({
-        title: "Report Card Generated",
-        description: `${type} report card has been generated successfully.`,
-      });
-    }, 3000);
-
-    toast({
-      title: "Report Card Generation Started",
-      description: `Generating ${type.toLowerCase()} report card...`,
-    });
+  const getTotalReports = () => {
+    let total = 0;
+    if (isAdmin) total += reportCards.length;
+    if (isClassTeacher) total += classReports.length;
+    if (isDepartmentHead) total += departmentalReports.length;
+    return total;
   };
 
-  const generateClassReport = (type) => {
-    const newClassReport = {
-      id: Date.now(),
-      title: `${type} Class Report`,
-      description: `Generated ${type.toLowerCase()} summary report`,
-      date: new Date().toISOString().split('T')[0],
-      type: type,
-      status: 'Processing',
-      iconName: 'FileBarChart',
-      category: 'class-report'
-    };
-
-    const updatedClassReports = [...classReports, newClassReport];
-    setClassReports(updatedClassReports);
-    localStorage.setItem('teacher_class_reports', JSON.stringify(updatedClassReports));
-
-    setTimeout(() => {
-      const processedClassReports = updatedClassReports.map(report => 
-        report.id === newClassReport.id ? { ...report, status: 'Ready' } : report
-      );
-      setClassReports(processedClassReports);
-      localStorage.setItem('teacher_class_reports', JSON.stringify(processedClassReports));
-      toast({
-        title: "Class Report Generated",
-        description: `${type} class report has been generated successfully.`,
-      });
-    }, 3000);
-
-    toast({
-      title: "Class Report Generation Started",
-      description: `Generating ${type.toLowerCase()} class report...`,
-    });
+  const getReadyReports = () => {
+    let ready = 0;
+    if (isAdmin) ready += reportCards.filter(r => r.status === 'Ready').length;
+    if (isClassTeacher) ready += classReports.filter(r => r.status === 'Ready').length;
+    if (isDepartmentHead) ready += departmentalReports.filter(r => r.status === 'Ready').length;
+    return ready;
   };
 
-  const downloadReport = (report) => {
-    // Simulate file download
-    const element = document.createElement('a');
-    const file = new Blob([`Report: ${report.title}\nGenerated: ${report.date}\nType: ${report.type}`], {type: 'text/plain'});
-    element.href = URL.createObjectURL(file);
-    element.download = `${report.title.replace(/\s+/g, '_')}.txt`;
-    document.body.appendChild(element);
-    element.click();
-    document.body.removeChild(element);
-    
-    toast({
-      title: "Download Complete",
-      description: `${report.title} has been downloaded successfully.`,
-    });
+  const getProcessingReports = () => {
+    let processing = 0;
+    if (isAdmin) processing += reportCards.filter(r => r.status === 'Processing').length;
+    if (isClassTeacher) processing += classReports.filter(r => r.status === 'Processing').length;
+    if (isDepartmentHead) processing += departmentalReports.filter(r => r.status === 'Processing').length;
+    return processing;
   };
 
-  const handleGenerateReportCard = () => {
-    if (!selectedClass || !selectedTerm || !selectedStudent) {
-      toast({
-        title: "Missing Information",
-        description: "Please select class, term, and student to generate report card.",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    setShowReportCard(true);
+  const totalReports = getTotalReports();
+  const readyReports = getReadyReports();
+  const processingReports = getProcessingReports();
+
+  const getAvailableTabs = () => {
+    const tabs = [];
+    if (isAdmin) tabs.push({ value: 'report-cards', label: 'Report Cards' });
+    if (isClassTeacher) tabs.push({ value: 'class-reports', label: 'Class Reports' });
+    if (isDepartmentHead) tabs.push({ value: 'departmental-reports', label: 'Departmental Reports' });
+    return tabs;
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'Ready': return 'text-green-600 bg-green-50';
-      case 'Processing': return 'text-yellow-600 bg-yellow-50';
-      case 'Error': return 'text-red-600 bg-red-50';
-      default: return 'text-gray-600 bg-gray-50';
-    }
-  };
+  const availableTabs = getAvailableTabs();
 
-  const getTypeColor = (type: string) => {
-    switch (type) {
-      case 'Progressive': case 'Final Term': case 'Conference': return 'bg-blue-50 text-blue-600';
-      case 'Class Performance': case 'Subject Analysis': return 'bg-purple-50 text-purple-600';
-      case 'Attendance': return 'bg-orange-50 text-orange-600';
-      case 'Monthly Summary': return 'bg-green-50 text-green-600';
-      default: return 'bg-gray-50 text-gray-600';
-    }
-  };
-
-  const getIconComponent = (iconName) => {
-    return iconMap[iconName] || FileText;
-  };
-
-  const renderReportsList = (reports, type) => (
-    <div className="space-y-4">
-      {reports.map((report) => {
-        const IconComponent = getIconComponent(report.iconName);
-        return (
-          <div key={report.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
-            <div className="flex items-center space-x-4">
-              <div className="p-2 bg-primary/10 rounded-lg">
-                <IconComponent className="h-5 w-5 text-primary" />
-              </div>
-              <div className="flex-1">
-                <h3 className="font-semibold">{report.title}</h3>
-                <p className="text-sm text-muted-foreground">{report.description}</p>
-                <div className="flex items-center space-x-4 mt-2">
-                  <span className="text-xs text-muted-foreground">Generated: {new Date(report.date).toLocaleDateString()}</span>
-                  <span className={`text-xs font-medium px-2 py-1 rounded-full ${getTypeColor(report.type)}`}>
-                    {report.type}
-                  </span>
-                </div>
-              </div>
-            </div>
-            <div className="flex items-center space-x-3">
-              <span className={`text-xs font-medium px-2 py-1 rounded-full ${getStatusColor(report.status)}`}>
-                {report.status}
-              </span>
-              {report.status === 'Ready' && (
-                <Button variant="outline" size="sm" onClick={() => downloadReport(report)}>
-                  <Download className="h-4 w-4 mr-2" />
-                  Download
-                </Button>
-              )}
-            </div>
-          </div>
-        );
-      })}
-    </div>
-  );
-
-  const totalReports = reportCards.length + classReports.length;
-  const readyReports = [...reportCards, ...classReports].filter(r => r.status === 'Ready').length;
-  const processingReports = [...reportCards, ...classReports].filter(r => r.status === 'Processing').length;
-
-  const selectedStudentData = students.find(s => s.id.toString() === selectedStudent);
+  if (availableTabs.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <h2 className="text-lg font-semibold text-muted-foreground">No Reports Available</h2>
+          <p className="text-sm text-muted-foreground">You don't have permission to access reports.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-2xl font-bold">Reports & Analytics</h1>
-          <p className="text-muted-foreground">Generate and manage student report cards and class reports</p>
-        </div>
-        <div className="flex gap-2 flex-wrap">
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button>
-                <GraduationCap className="h-4 w-4 mr-2" />
-                Generate Report Card
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-md">
-              <DialogHeader>
-                <DialogTitle>Generate Student Report Card</DialogTitle>
-                <DialogDescription>
-                  Select a student to generate their academic performance report card.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4">
-                <div>
-                  <label className="text-sm font-medium">Select Class</label>
-                  <Select value={selectedClass} onValueChange={setSelectedClass}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Choose class" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {classes.map((cls) => (
-                        <SelectItem key={cls} value={cls}>{cls}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div>
-                  <label className="text-sm font-medium">Select Term</label>
-                  <Select value={selectedTerm} onValueChange={setSelectedTerm}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Choose term" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {terms.map((term) => (
-                        <SelectItem key={term} value={term}>{term}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <label className="text-sm font-medium">Select Student</label>
-                  <Select value={selectedStudent} onValueChange={setSelectedStudent}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Choose student" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {students.map((student) => (
-                        <SelectItem key={student.id} value={student.id.toString()}>
-                          {student.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <Button onClick={handleGenerateReportCard} className="w-full">
-                  <Printer className="h-4 w-4 mr-2" />
-                  Generate Report Card
-                </Button>
-              </div>
-            </DialogContent>
-          </Dialog>
-
-          <Button variant="outline" onClick={() => generateClassReport('Performance')}>
-            <FileBarChart className="h-4 w-4 mr-2" />
-            Generate Class Report
-          </Button>
+          <p className="text-muted-foreground">Generate and manage reports based on your role and responsibilities</p>
         </div>
       </div>
 
@@ -425,63 +215,43 @@ const Reports = () => {
         </Card>
       </div>
 
-      <Tabs defaultValue="report-cards" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="report-cards" className="flex items-center gap-2">
-            <GraduationCap className="h-4 w-4" />
-            Report Cards
-          </TabsTrigger>
-          <TabsTrigger value="class-reports" className="flex items-center gap-2">
-            <FileBarChart className="h-4 w-4" />
-            Class Reports
-          </TabsTrigger>
+      <Tabs defaultValue={availableTabs[0]?.value} className="space-y-6">
+        <TabsList className={`grid w-full grid-cols-${availableTabs.length}`}>
+          {availableTabs.map((tab) => (
+            <TabsTrigger key={tab.value} value={tab.value}>
+              {tab.label}
+            </TabsTrigger>
+          ))}
         </TabsList>
 
-        <TabsContent value="report-cards" className="space-y-4">
-          <div className="flex justify-between items-center">
-            <div>
-              <h2 className="text-lg font-semibold">Student Report Cards</h2>
-              <p className="text-sm text-muted-foreground">Individual student academic performance reports</p>
-            </div>
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={() => generateNewReportCard('Progressive')}>
-                Generate Progressive
-              </Button>
-              <Button variant="outline" onClick={() => generateNewReportCard('Final Term')}>
-                Generate Final Term
-              </Button>
-            </div>
-          </div>
-          {renderReportsList(reportCards, 'report-card')}
-        </TabsContent>
+        {isAdmin && (
+          <TabsContent value="report-cards" className="space-y-4">
+            <ReportCardSection 
+              reportCards={reportCards} 
+              setReportCards={setReportCards} 
+            />
+          </TabsContent>
+        )}
 
-        <TabsContent value="class-reports" className="space-y-4">
-          <div className="flex justify-between items-center">
-            <div>
-              <h2 className="text-lg font-semibold">Class Reports</h2>
-              <p className="text-sm text-muted-foreground">Administrative summaries and analytics</p>
-            </div>
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={() => generateClassReport('Performance')}>
-                Generate Performance
-              </Button>
-              <Button variant="outline" onClick={() => generateClassReport('Attendance')}>
-                Generate Attendance
-              </Button>
-            </div>
-          </div>
-          {renderReportsList(classReports, 'class-report')}
-        </TabsContent>
+        {isClassTeacher && (
+          <TabsContent value="class-reports" className="space-y-4">
+            <ClassReportsSection 
+              classReports={classReports} 
+              setClassReports={setClassReports} 
+            />
+          </TabsContent>
+        )}
+
+        {isDepartmentHead && (
+          <TabsContent value="departmental-reports" className="space-y-4">
+            <DepartmentalReportsSection 
+              departmentalReports={departmentalReports} 
+              setDepartmentalReports={setDepartmentalReports}
+              departmentName={profileData?.headOfDepartment || profileData?.department || 'Department'}
+            />
+          </TabsContent>
+        )}
       </Tabs>
-
-      {showReportCard && selectedStudentData && (
-        <ReportCardGenerator
-          student={selectedStudentData}
-          term={selectedTerm}
-          class={selectedClass}
-          onClose={() => setShowReportCard(false)}
-        />
-      )}
     </div>
   );
 };
