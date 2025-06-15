@@ -40,6 +40,8 @@ interface StudentTableDialogsProps {
   }>>;
   onDelete?: (id: string) => void;
   onArchive?: (id: string) => void;
+  onSuspend?: (id: string) => void;
+  onExpel?: (id: string) => void;
 }
 
 export const StudentTableDialogs: React.FC<StudentTableDialogsProps> = ({
@@ -48,7 +50,9 @@ export const StudentTableDialogs: React.FC<StudentTableDialogsProps> = ({
   accountActionDialog,
   setAccountActionDialog,
   onDelete,
-  onArchive
+  onArchive,
+  onSuspend,
+  onExpel
 }) => {
   const { toast } = useToast();
 
@@ -78,13 +82,15 @@ export const StudentTableDialogs: React.FC<StudentTableDialogsProps> = ({
         title: "Student Archived",
         description: `${student.name} has been archived. Reason: ${data.reason}`,
       });
-    } else if (action === 'suspend' && student) {
+    } else if (action === 'suspend' && onSuspend && student) {
+      onSuspend(student.id);
       const endDateText = data.suspensionEndDate ? ` until ${data.suspensionEndDate.toLocaleDateString()}` : '';
       toast({
         title: "Student Suspended",
         description: `${student.name} has been suspended${endDateText}. Reason: ${data.reason}`,
       });
-    } else if (action === 'expel' && student) {
+    } else if (action === 'expel' && onExpel && student) {
+      onExpel(student.id);
       toast({
         title: "Student Expelled",
         description: `${student.name} has been expelled from the institution. Reason: ${data.reason}`,

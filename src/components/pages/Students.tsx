@@ -27,6 +27,7 @@ export const Students = () => {
     stats,
     addStudent,
     updateStudent,
+    updateStudentStatus,
     deleteStudent,
     refreshStudents
   } = useStudents();
@@ -177,7 +178,7 @@ export const Students = () => {
       return;
     }
 
-    // For now, we'll just show a toast. In a real app, this would update the student status
+    updateStudentStatus(id, 'archived');
     toast({
       title: "Student Archived",
       description: "Student has been moved to archived status.",
@@ -261,6 +262,7 @@ export const Students = () => {
                 onDelete={canManageStudents ? handleDeleteStudent : undefined}
                 onArchive={canManageStudents ? handleArchiveStudent : undefined}
                 onView={handleViewStudent}
+                onUpdateStatus={canManageStudents ? updateStudentStatus : undefined}
                 readOnly={!canManageStudents}
               />
             )}

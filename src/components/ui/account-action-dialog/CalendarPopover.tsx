@@ -73,15 +73,19 @@ export const CalendarPopover: React.FC<CalendarPopoverProps> = ({
           </Button>
         </PopoverTrigger>
         <PopoverContent 
-          className="w-auto p-0 z-[9999]" 
+          className="w-auto p-0 bg-white border shadow-lg"
           align="center"
           side="top"
           sideOffset={10}
-          avoidCollisions={true}
-          collisionPadding={20}
-          style={{ position: 'fixed' }}
+          style={{ 
+            position: 'fixed',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            zIndex: 9999
+          }}
         >
-          <div className="p-3 border-b bg-background">
+          <div className="p-3 border-b bg-white">
             <div className="flex items-center justify-between mb-2">
               <Button
                 variant="outline"
@@ -133,7 +137,7 @@ export const CalendarPopover: React.FC<CalendarPopoverProps> = ({
             month={calendarMonth}
             onMonthChange={setCalendarMonth}
             initialFocus
-            className="p-3 pointer-events-auto bg-background"
+            className="p-3 bg-white"
           />
         </PopoverContent>
       </Popover>

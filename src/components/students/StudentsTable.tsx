@@ -1,14 +1,7 @@
 
 import React, { useState } from 'react';
-import { MoreHorizontal, Eye, Edit, Archive, Trash2, Clock } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuSeparator,
-} from '@/components/ui/dropdown-menu';
+import { StudentTableActions } from './StudentTableActions';
+import { StudentTableDialogs } from './StudentTableDialogs';
 import {
   Table,
   TableBody,
@@ -18,10 +11,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
-import { AccountActionDialog } from '@/components/ui/account-action-dialog';
 import { Student } from '@/hooks/useStudents';
-import { useToast } from '@/hooks/use-toast';
 
 interface StudentsTableProps {
   students: Student[];
@@ -29,6 +19,7 @@ interface StudentsTableProps {
   onDelete?: (id: string) => void;
   onArchive?: (id: string) => void;
   onView: (student: Student) => void;
+  onUpdateStatus?: (id: string, status: 'active' | 'inactive' | 'suspended' | 'archived' | 'expelled') => void;
   readOnly?: boolean;
 }
 
@@ -38,9 +29,9 @@ export const StudentsTable: React.FC<StudentsTableProps> = ({
   onDelete,
   onArchive,
   onView,
+  onUpdateStatus,
   readOnly = false
 }) => {
-  const { toast } = useToast();
   const [confirmDialog, setConfirmDialog] = useState<{
     open: boolean;
     type: 'delete';
@@ -50,7 +41,7 @@ export const StudentsTable: React.FC<StudentsTableProps> = ({
 
   const [accountActionDialog, setAccountActionDialog] = useState<{
     open: boolean;
-    action: 'archive' | 'suspend';
+    action: 'archive' | 'suspend' | 'expel';
     student: Student | null;
   }>({ open: false, action: 'archive', student: null });
 
@@ -67,12 +58,28 @@ export const StudentsTable: React.FC<StudentsTableProps> = ({
     }
   };
 
-  const handleDelete = (student: Student) => {
-    setConfirmDialog({
+  const getAccountStatusColor = (status: string) => {
+    switch (status.toLowerCase()) {
+      case 'active':
+        return 'bg-green-100 text-green-800';
+      case 'suspended':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'archived':
+        return 'bg-gray-100 text-gray-800';
+      case 'expelled':
+        return 'bg-red-100 text-red-800';
+      case 'inactive':
+        return 'bg-orange-100 text-orange-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const handleSuspend = (student: Student) => {
+    setAccountActionDialog({
       open: true,
-      type: 'delete',
-      studentName: student.name,
-      studentId: student.id
+      action: 'suspend',
+      student
     });
   };
 
@@ -84,50 +91,32 @@ export const StudentsTable: React.FC<StudentsTableProps> = ({
     });
   };
 
-  const handleSuspend = (student: Student) => {
+  const handleExpel = (student: Student) => {
     setAccountActionDialog({
       open: true,
-      action: 'suspend',
+      action: 'expel',
       student
     });
   };
 
-  const confirmDelete = () => {
-    if (onDelete) {
-      onDelete(confirmDialog.studentId);
-      toast({
-        title: "Student Deleted",
-        description: `${confirmDialog.studentName} has been removed from the system.`,
-        variant: "destructive"
-      });
-    }
-    setConfirmDialog({ open: false, type: 'delete', studentName: '', studentId: '' });
+  const handleDelete = (student: Student) => {
+    setConfirmDialog({
+      open: true,
+      type: 'delete',
+      studentName: student.name,
+      studentId: student.id
+    });
   };
 
-  const handleAccountAction = (data: {
-    reason: string;
-    customReason?: string;
-    suspensionEndDate?: Date;
-    nextSteps?: string;
-  }) => {
-    const { action, student } = accountActionDialog;
-    
-    if (action === 'archive' && onArchive && student) {
-      onArchive(student.id);
-      toast({
-        title: "Student Archived",
-        description: `${student.name} has been archived. Reason: ${data.reason}`,
-      });
-    } else if (action === 'suspend' && student) {
-      // For now, we'll just show a toast. In a real app, this would update the student status
-      const endDateText = data.suspensionEndDate ? ` until ${data.suspensionEndDate.toLocaleDateString()}` : '';
-      toast({
-        title: "Student Suspended",
-        description: `${student.name} has been suspended${endDateText}. Reason: ${data.reason}`,
-      });
+  const handleStatusUpdate = (action: 'archive' | 'suspend' | 'expel', studentId: string) => {
+    if (onUpdateStatus) {
+      const statusMap = {
+        archive: 'archived' as const,
+        suspend: 'suspended' as const,
+        expel: 'expelled' as const
+      };
+      onUpdateStatus(studentId, statusMap[action]);
     }
-    
-    setAccountActionDialog({ open: false, action: 'archive', student: null });
   };
 
   if (students.length === 0) {
@@ -151,6 +140,7 @@ export const StudentsTable: React.FC<StudentsTableProps> = ({
               <TableHead>Parent/Guardian</TableHead>
               <TableHead>Contact</TableHead>
               <TableHead>Fees Status</TableHead>
+              <TableHead>Account Status</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -168,47 +158,22 @@ export const StudentsTable: React.FC<StudentsTableProps> = ({
                     {student.fees}
                   </Badge>
                 </TableCell>
+                <TableCell>
+                  <Badge variant="secondary" className={getAccountStatusColor(student.status)}>
+                    {student.status.charAt(0).toUpperCase() + student.status.slice(1)}
+                  </Badge>
+                </TableCell>
                 <TableCell className="text-right">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="h-8 w-8 p-0">
-                        <span className="sr-only">Open menu</span>
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="bg-white border shadow-lg z-50">
-                      <DropdownMenuItem onClick={() => onView(student)}>
-                        <Eye className="mr-2 h-4 w-4" />
-                        View Details
-                      </DropdownMenuItem>
-                      {!readOnly && onEdit && (
-                        <DropdownMenuItem onClick={() => onEdit(student)}>
-                          <Edit className="mr-2 h-4 w-4" />
-                          Edit
-                        </DropdownMenuItem>
-                      )}
-                      {!readOnly && (
-                        <>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem onClick={() => handleSuspend(student)}>
-                            <Clock className="mr-2 h-4 w-4" />
-                            Suspend
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleArchive(student)}>
-                            <Archive className="mr-2 h-4 w-4" />
-                            Archive
-                          </DropdownMenuItem>
-                          <DropdownMenuItem 
-                            onClick={() => handleDelete(student)}
-                            className="text-red-600"
-                          >
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            Delete
-                          </DropdownMenuItem>
-                        </>
-                      )}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                  <StudentTableActions
+                    student={student}
+                    onView={onView}
+                    onEdit={onEdit}
+                    onArchive={handleArchive}
+                    onSuspend={handleSuspend}
+                    onExpel={handleExpel}
+                    onDelete={handleDelete}
+                    readOnly={readOnly}
+                  />
                 </TableCell>
               </TableRow>
             ))}
@@ -216,25 +181,18 @@ export const StudentsTable: React.FC<StudentsTableProps> = ({
         </Table>
       </div>
 
-      <ConfirmationDialog
-        open={confirmDialog.open}
-        onOpenChange={(open) => setConfirmDialog({ ...confirmDialog, open })}
-        title="Delete Student"
-        description={`Are you sure you want to permanently delete ${confirmDialog.studentName}? This action cannot be undone and will remove all student records.`}
-        confirmText="Delete"
-        cancelText="Cancel"
-        onConfirm={confirmDelete}
-        variant="destructive"
-        type="delete"
-      />
-
-      <AccountActionDialog
-        open={accountActionDialog.open}
-        onOpenChange={(open) => setAccountActionDialog({ ...accountActionDialog, open })}
-        action={accountActionDialog.action}
-        personName={accountActionDialog.student?.name || ''}
-        personType="student"
-        onConfirm={handleAccountAction}
+      <StudentTableDialogs
+        confirmDialog={confirmDialog}
+        setConfirmDialog={setConfirmDialog}
+        accountActionDialog={accountActionDialog}
+        setAccountActionDialog={setAccountActionDialog}
+        onDelete={onDelete}
+        onArchive={(id) => {
+          if (onArchive) onArchive(id);
+          handleStatusUpdate('archive', id);
+        }}
+        onSuspend={(id) => handleStatusUpdate('suspend', id)}
+        onExpel={(id) => handleStatusUpdate('expel', id)}
       />
     </>
   );
