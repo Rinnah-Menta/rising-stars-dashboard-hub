@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { RefreshCw } from 'lucide-react';
@@ -46,7 +45,7 @@ export const Students = () => {
 
   const isTeacher = user?.role === 'teacher';
   const isAdmin = user?.role === 'admin';
-  // Fix TypeScript error by properly comparing both boolean and string values
+  // Fix TypeScript error by properly handling both boolean and string values
   const isClassTeacher = isTeacher && (profileData?.isClassTeacher === true || profileData?.isClassTeacher === 'true');
   const canManageStudents = isAdmin || isClassTeacher;
 
