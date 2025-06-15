@@ -1,8 +1,7 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { RefreshCw } from 'lucide-react';
-import { useStudents } from '@/hooks/useStudents';
+import { useStudents, Student } from '@/hooks/useStudents';
 import { StudentsStats } from '@/components/students/StudentsStats';
 import { StudentsTable } from '@/components/students/StudentsTable';
 import { StudentPageHeader } from '@/components/students/StudentPageHeader';
