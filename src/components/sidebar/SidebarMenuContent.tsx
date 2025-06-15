@@ -6,11 +6,13 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/components/ui/sidebar';
+import { NotificationBadge } from '@/components/ui/notification-badge';
 
 interface MenuItem {
   title: string;
   icon: React.ComponentType<{ className?: string }>;
   id: string;
+  badge?: number;
 }
 
 interface SidebarMenuContentProps {
@@ -35,11 +37,17 @@ export const SidebarMenuContent: React.FC<SidebarMenuContentProps> = ({ menuItem
             isActive={location.pathname === (item.id === 'dashboard' ? '/' : `/${item.id}`)}
           >
             <button 
-              className="flex items-center space-x-2 w-full"
+              className="flex items-center space-x-2 w-full relative"
               onClick={() => handleMenuClick(item.id)}
             >
               <item.icon className="h-4 w-4" />
               <span>{item.title}</span>
+              {item.badge && item.badge > 0 && (
+                <NotificationBadge 
+                  count={item.badge} 
+                  className="static ml-auto -mr-1"
+                />
+              )}
             </button>
           </SidebarMenuButton>
         </SidebarMenuItem>

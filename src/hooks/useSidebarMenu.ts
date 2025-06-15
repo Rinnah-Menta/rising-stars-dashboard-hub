@@ -1,6 +1,7 @@
 
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfile } from '@/contexts/ProfileContext';
+import { useNotifications } from '@/hooks/useNotifications';
 import { 
   Home, 
   GraduationCap, 
@@ -26,6 +27,7 @@ import {
 export const useSidebarMenu = () => {
   const { user } = useAuth();
   const { profileData } = useProfile();
+  const { unreadCount } = useNotifications();
 
   const isBooleanTrue = (value: boolean | string | undefined): boolean => {
     return value === true || value === 'true';
@@ -79,7 +81,12 @@ export const useSidebarMenu = () => {
       communication: { title: 'Communication', icon: MessageSquare, id: 'communication' },
       library: { title: 'Library', icon: Book, id: 'library' },
       attendance: { title: 'Attendance', icon: UserCheck, id: 'attendance' },
-      notifications: { title: 'Notifications', icon: Bell, id: 'notifications' },
+      notifications: { 
+        title: 'Notifications', 
+        icon: Bell, 
+        id: 'notifications',
+        badge: user?.role === 'admin' ? unreadCount : undefined
+      },
       help: { title: 'Help & Support', icon: HelpCircle, id: 'help' },
       facilities: { title: 'Facilities', icon: Building, id: 'facilities' },
       grades: { title: 'My Grades', icon: Award, id: 'grades' },
