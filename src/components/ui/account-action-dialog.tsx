@@ -266,12 +266,18 @@ export const AccountActionDialog: React.FC<AccountActionDialogProps> = ({
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent 
-                  className="w-auto p-0 z-[100]" 
+                  className="w-auto p-0 z-[200]" 
                   align="center" 
-                  side="bottom"
-                  sideOffset={8}
+                  side="top"
+                  sideOffset={10}
                   avoidCollisions={true}
-                  collisionPadding={16}
+                  collisionPadding={20}
+                  style={{
+                    position: 'fixed',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -50%)',
+                  }}
                 >
                   <div className="p-3 border-b bg-background">
                     <div className="flex items-center justify-between mb-2">
@@ -287,7 +293,7 @@ export const AccountActionDialog: React.FC<AccountActionDialogProps> = ({
                           <SelectTrigger className="w-32">
                             <SelectValue />
                           </SelectTrigger>
-                          <SelectContent className="z-[110]">
+                          <SelectContent className="z-[210]">
                             {months.map((month, index) => (
                               <SelectItem key={index} value={index.toString()}>
                                 {month}
@@ -299,7 +305,7 @@ export const AccountActionDialog: React.FC<AccountActionDialogProps> = ({
                           <SelectTrigger className="w-20">
                             <SelectValue />
                           </SelectTrigger>
-                          <SelectContent className="z-[110]">
+                          <SelectContent className="z-[210]">
                             {years.map((year) => (
                               <SelectItem key={year} value={year.toString()}>
                                 {year}
