@@ -1,5 +1,7 @@
 
 import { useState, useEffect } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
+import { useProfile } from '@/contexts/ProfileContext';
 
 export interface Student {
   id: string;
@@ -14,7 +16,9 @@ export interface Student {
 }
 
 export const useStudents = () => {
-  const [students, setStudents] = useState<Student[]>([]);
+  const { user } = useAuth();
+  const { profileData } = useProfile();
+  const [allStudents, setAllStudents] = useState<Student[]>([]);
   const [filteredStudents, setFilteredStudents] = useState<Student[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
@@ -25,9 +29,25 @@ export const useStudents = () => {
     loadStudents();
   }, []);
 
-  // Filter students based on search and status
+  // Filter students based on search, status, and teacher's classes
   useEffect(() => {
-    let filtered = students;
+    let filtered = allStudents;
+
+    // Filter by teacher's classes if user is a teacher
+    if (user?.role === 'teacher' && profileData?.classesTaught) {
+      try {
+        const classesTaught = Array.isArray(profileData.classesTaught) 
+          ? profileData.classesTaught 
+          : JSON.parse(profileData.classesTaught || '[]');
+        
+        filtered = filtered.filter(student => 
+          classesTaught.includes(student.class)
+        );
+      } catch (error) {
+        console.error('Error parsing classes taught:', error);
+        filtered = [];
+      }
+    }
 
     if (searchTerm) {
       filtered = filtered.filter(student =>
@@ -42,7 +62,7 @@ export const useStudents = () => {
     }
 
     setFilteredStudents(filtered);
-  }, [students, searchTerm, filterStatus]);
+  }, [allStudents, searchTerm, filterStatus, user, profileData]);
 
   const loadStudents = () => {
     setLoading(true);
@@ -57,17 +77,19 @@ export const useStudents = () => {
         { id: 'SS006', name: 'Samuel Okello', class: 'P.6A', age: 12, parent: 'Helen Okello', phone: '+256 705 678 901', fees: 'Paid' },
         { id: 'SS007', name: 'Grace Nalubega', class: 'P.5B', age: 11, parent: 'Moses Nalubega', phone: '+256 706 789 012', fees: 'Pending' },
         { id: 'SS008', name: 'Emmanuel Kato', class: 'P.7A', age: 13, parent: 'Sarah Kato', phone: '+256 707 890 123', fees: 'Paid' },
+        { id: 'SS009', name: 'Alice Tendo', class: 'P.5A', age: 11, parent: 'Paul Tendo', phone: '+256 708 901 234', fees: 'Paid' },
+        { id: 'SS010', name: 'Peter Ssempala', class: 'P.6B', age: 12, parent: 'Mary Ssempala', phone: '+256 709 012 345', fees: 'Overdue' },
       ];
-      setStudents(mockStudents);
+      setAllStudents(mockStudents);
       setLoading(false);
     }, 1000);
   };
 
   const getStats = () => {
-    const total = students.length;
-    const paid = students.filter(s => s.fees === 'Paid').length;
-    const pending = students.filter(s => s.fees === 'Pending').length;
-    const overdue = students.filter(s => s.fees === 'Overdue').length;
+    const total = filteredStudents.length;
+    const paid = filteredStudents.filter(s => s.fees === 'Paid').length;
+    const pending = filteredStudents.filter(s => s.fees === 'Pending').length;
+    const overdue = filteredStudents.filter(s => s.fees === 'Overdue').length;
     
     return { total, paid, pending, overdue };
   };
@@ -75,13 +97,13 @@ export const useStudents = () => {
   const addStudent = (student: Omit<Student, 'id'>) => {
     const newStudent = {
       ...student,
-      id: `SS${String(students.length + 1).padStart(3, '0')}`
+      id: `SS${String(allStudents.length + 1).padStart(3, '0')}`
     };
-    setStudents(prev => [...prev, newStudent]);
+    setAllStudents(prev => [...prev, newStudent]);
   };
 
   const updateStudent = (id: string, updates: Partial<Student>) => {
-    setStudents(prev => 
+    setAllStudents(prev => 
       prev.map(student => 
         student.id === id ? { ...student, ...updates } : student
       )
@@ -89,12 +111,12 @@ export const useStudents = () => {
   };
 
   const deleteStudent = (id: string) => {
-    setStudents(prev => prev.filter(student => student.id !== id));
+    setAllStudents(prev => prev.filter(student => student.id !== id));
   };
 
   return {
     students: filteredStudents,
-    allStudents: students,
+    allStudents,
     loading,
     searchTerm,
     setSearchTerm,

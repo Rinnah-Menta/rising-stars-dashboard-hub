@@ -48,6 +48,19 @@ export const Students = () => {
 
   const isTeacher = user?.role === 'teacher';
   const isAdmin = user?.role === 'admin';
+  const isClassTeacher = isTeacher && (profileData?.isClassTeacher === true || profileData?.isClassTeacher === 'true');
+  const canManageStudents = isAdmin || isClassTeacher;
+
+  const getTeacherClasses = () => {
+    if (!profileData?.classesTaught) return [];
+    try {
+      return Array.isArray(profileData.classesTaught) 
+        ? profileData.classesTaught 
+        : JSON.parse(profileData.classesTaught || '[]');
+    } catch {
+      return [];
+    }
+  };
 
   const handleAddStudent = (studentData: Omit<Student, 'id'>) => {
     if (isTeacher) {
@@ -120,6 +133,15 @@ export const Students = () => {
   };
 
   const handleDeleteStudent = (id: string) => {
+    if (!canManageStudents) {
+      toast({
+        title: "Access Denied",
+        description: "Only class teachers and admins can delete students.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     if (isTeacher && user && profileData) {
       const student = students.find(s => s.id === id);
       if (student) {
@@ -168,6 +190,21 @@ export const Students = () => {
     });
   };
 
+  const getPageDescription = () => {
+    if (isAdmin) {
+      return 'Manage student information and track fees';
+    }
+    if (isClassTeacher) {
+      const classes = getTeacherClasses();
+      return `Manage students from your classes: ${classes.join(', ')} (requires admin approval)`;
+    }
+    if (isTeacher) {
+      const classes = getTeacherClasses();
+      return `View students from your classes: ${classes.join(', ')} (read-only)`;
+    }
+    return 'View student information';
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -175,15 +212,20 @@ export const Students = () => {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
             <h1 className="text-2xl md:text-3xl font-bold">Students Management</h1>
-            <p className="text-gray-600 mt-1">
-              {isTeacher ? 'Manage your class students (requires admin approval)' : 'Manage student information and track fees'}
-            </p>
+            <p className="text-gray-600 mt-1">{getPageDescription()}</p>
+            {isTeacher && !canManageStudents && (
+              <p className="text-sm text-amber-600 mt-1">
+                ⚠️ You have read-only access. Contact admin to become a class teacher for full access.
+              </p>
+            )}
           </div>
           <div className="flex flex-wrap gap-2">
-            <Button onClick={() => setShowAddDialog(true)} className="bg-blue-600 hover:bg-blue-700">
-              <UserPlus className="h-4 w-4 mr-2" />
-              Add Student
-            </Button>
+            {canManageStudents && (
+              <Button onClick={() => setShowAddDialog(true)} className="bg-blue-600 hover:bg-blue-700">
+                <UserPlus className="h-4 w-4 mr-2" />
+                Add Student
+              </Button>
+            )}
             <Button variant="outline" onClick={handleExport}>
               <Download className="h-4 w-4 mr-2" />
               Export
@@ -204,7 +246,14 @@ export const Students = () => {
         <Card>
           <CardHeader>
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-              <CardTitle>Student List ({students.length})</CardTitle>
+              <CardTitle>
+                Student List ({students.length})
+                {isTeacher && getTeacherClasses().length > 0 && (
+                  <span className="text-sm font-normal text-gray-500 ml-2">
+                    • Classes: {getTeacherClasses().join(', ')}
+                  </span>
+                )}
+              </CardTitle>
               <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
                 <div className="relative">
                   <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
@@ -239,9 +288,10 @@ export const Students = () => {
             ) : (
               <StudentsTable
                 students={students}
-                onEdit={handleEditStudent}
-                onDelete={handleDeleteStudent}
+                onEdit={canManageStudents ? handleEditStudent : undefined}
+                onDelete={canManageStudents ? handleDeleteStudent : undefined}
                 onView={handleViewStudent}
+                readOnly={!canManageStudents}
               />
             )}
           </CardContent>
@@ -249,21 +299,24 @@ export const Students = () => {
       </AnimatedInView>
 
       {/* Dialogs */}
-      <StudentDialog
-        open={showAddDialog}
-        onOpenChange={(open) => {
-          setShowAddDialog(open);
-          if (!open) setEditingStudent(null);
-        }}
-        student={editingStudent}
-        onSave={editingStudent ? handleUpdateStudent : handleAddStudent}
-      />
+      {canManageStudents && (
+        <StudentDialog
+          open={showAddDialog}
+          onOpenChange={(open) => {
+            setShowAddDialog(open);
+            if (!open) setEditingStudent(null);
+          }}
+          student={editingStudent}
+          onSave={editingStudent ? handleUpdateStudent : handleAddStudent}
+          teacherClasses={isTeacher ? getTeacherClasses() : undefined}
+        />
+      )}
 
       <StudentDetailsDialog
         open={showDetailsDialog}
         onOpenChange={setShowDetailsDialog}
         student={selectedStudent}
-        onEdit={handleEditStudent}
+        onEdit={canManageStudents ? handleEditStudent : undefined}
       />
 
       <ConfirmationDialog

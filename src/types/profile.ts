@@ -21,4 +21,6 @@ export interface ProfileData {
   isClassTeacher?: boolean;
   isDepartmentHead?: boolean;
   headOfDepartment?: string;
+  classesTaught?: string[]; // Classes the teacher teaches
+  subjectsTaught?: string[]; // Subjects the teacher teaches
 }

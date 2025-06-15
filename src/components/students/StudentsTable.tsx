@@ -3,23 +3,25 @@ import React, { useState } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Eye, Edit, Trash2, Phone, Users } from 'lucide-react';
+import { Eye, Edit, Trash2, Phone, Users, Lock } from 'lucide-react';
 import { Student } from '@/hooks/useStudents';
 import { useToast } from '@/hooks/use-toast';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 
 interface StudentsTableProps {
   students: Student[];
-  onEdit: (student: Student) => void;
-  onDelete: (id: string) => void;
+  onEdit?: (student: Student) => void;
+  onDelete?: (id: string) => void;
   onView: (student: Student) => void;
+  readOnly?: boolean;
 }
 
 export const StudentsTable: React.FC<StudentsTableProps> = ({
   students,
   onEdit,
   onDelete,
-  onView
+  onView,
+  readOnly = false
 }) => {
   const { toast } = useToast();
   const [deleteConfirmation, setDeleteConfirmation] = useState<{
@@ -64,12 +66,24 @@ export const StudentsTable: React.FC<StudentsTableProps> = ({
       <div className="text-center py-8 text-gray-500">
         <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
         <p>No students found matching your criteria.</p>
+        {readOnly && (
+          <p className="text-sm mt-2">Make sure your profile includes the classes you teach.</p>
+        )}
       </div>
     );
   }
 
   return (
     <>
+      {readOnly && (
+        <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-md flex items-center gap-2">
+          <Lock className="h-4 w-4 text-amber-600" />
+          <span className="text-sm text-amber-700">
+            Read-only mode: You can view student information but cannot make changes.
+          </span>
+        </div>
+      )}
+      
       <div className="overflow-x-auto">
         <Table>
           <TableHeader>
@@ -123,22 +137,26 @@ export const StudentsTable: React.FC<StudentsTableProps> = ({
                     >
                       <Eye className="h-4 w-4" />
                     </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => onEdit(student)}
-                      className="h-8 w-8 p-0"
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleDeleteClick(student)}
-                      className="h-8 w-8 p-0 text-red-600 hover:text-red-800"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    {!readOnly && onEdit && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => onEdit(student)}
+                        className="h-8 w-8 p-0"
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                    )}
+                    {!readOnly && onDelete && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDeleteClick(student)}
+                        className="h-8 w-8 p-0 text-red-600 hover:text-red-800"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    )}
                   </div>
                 </TableCell>
               </TableRow>
@@ -147,17 +165,19 @@ export const StudentsTable: React.FC<StudentsTableProps> = ({
         </Table>
       </div>
 
-      <ConfirmationDialog
-        open={deleteConfirmation.open}
-        onOpenChange={(open) => setDeleteConfirmation({ open, student: null })}
-        title="Delete Student"
-        description={`Are you sure you want to delete ${deleteConfirmation.student?.name}? This action cannot be undone.`}
-        confirmText="Delete"
-        cancelText="Cancel"
-        onConfirm={handleDeleteConfirm}
-        variant="destructive"
-        type="delete"
-      />
+      {!readOnly && (
+        <ConfirmationDialog
+          open={deleteConfirmation.open}
+          onOpenChange={(open) => setDeleteConfirmation({ open, student: null })}
+          title="Delete Student"
+          description={`Are you sure you want to delete ${deleteConfirmation.student?.name}? This action cannot be undone.`}
+          confirmText="Delete"
+          cancelText="Cancel"
+          onConfirm={handleDeleteConfirm}
+          variant="destructive"
+          type="delete"
+        />
+      )}
     </>
   );
 };

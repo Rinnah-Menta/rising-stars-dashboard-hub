@@ -14,13 +14,15 @@ interface StudentDialogProps {
   onOpenChange: (open: boolean) => void;
   student?: Student;
   onSave: (student: Omit<Student, 'id'> | Student) => void;
+  teacherClasses?: string[]; // Classes the teacher can add students to
 }
 
 export const StudentDialog: React.FC<StudentDialogProps> = ({
   open,
   onOpenChange,
   student,
-  onSave
+  onSave,
+  teacherClasses
 }) => {
   const { toast } = useToast();
   const [formData, setFormData] = useState({
@@ -72,6 +74,16 @@ export const StudentDialog: React.FC<StudentDialogProps> = ({
       return;
     }
 
+    // Validate class selection for teachers
+    if (teacherClasses && !teacherClasses.includes(formData.class)) {
+      toast({
+        title: "Error",
+        description: "You can only add students to classes you teach.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     const studentData = {
       ...formData,
       age: parseInt(formData.age),
@@ -89,13 +101,19 @@ export const StudentDialog: React.FC<StudentDialogProps> = ({
     });
   };
 
-  const classes = ['P.1A', 'P.1B', 'P.2A', 'P.2B', 'P.3A', 'P.3B', 'P.4A', 'P.4B', 'P.5A', 'P.5B', 'P.6A', 'P.6B', 'P.7A', 'P.7B'];
+  const allClasses = ['P.1A', 'P.1B', 'P.2A', 'P.2B', 'P.3A', 'P.3B', 'P.4A', 'P.4B', 'P.5A', 'P.5B', 'P.6A', 'P.6B', 'P.7A', 'P.7B'];
+  const availableClasses = teacherClasses || allClasses;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md max-h-[85vh] p-0">
         <DialogHeader className="px-6 py-4 border-b">
           <DialogTitle>{student ? 'Edit Student' : 'Add New Student'}</DialogTitle>
+          {teacherClasses && (
+            <p className="text-sm text-gray-600">
+              You can only add students to your classes: {teacherClasses.join(', ')}
+            </p>
+          )}
         </DialogHeader>
         <ScrollArea className="max-h-[60vh] px-6">
           <form onSubmit={handleSubmit} className="space-y-4 py-4">
@@ -137,7 +155,7 @@ export const StudentDialog: React.FC<StudentDialogProps> = ({
                   <SelectValue placeholder="Select class" />
                 </SelectTrigger>
                 <SelectContent>
-                  {classes.map(cls => (
+                  {availableClasses.map(cls => (
                     <SelectItem key={cls} value={cls}>{cls}</SelectItem>
                   ))}
                 </SelectContent>
