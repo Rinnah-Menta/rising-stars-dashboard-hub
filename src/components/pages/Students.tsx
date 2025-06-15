@@ -1,22 +1,19 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { RefreshCw } from 'lucide-react';
-import { useStudents, Student } from '@/hooks/useStudents';
-import { usePendingStudentOperations } from '@/hooks/usePendingStudentOperations';
+import { useStudents } from '@/hooks/useStudents';
 import { StudentsStats } from '@/components/students/StudentsStats';
 import { StudentsTable } from '@/components/students/StudentsTable';
 import { StudentPageHeader } from '@/components/students/StudentPageHeader';
 import { StudentFilters } from '@/components/students/StudentFilters';
 import { StudentManagement } from '@/components/students/StudentManagement';
-import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/contexts/AuthContext';
-import { useProfile } from '@/contexts/ProfileContext';
+import { useStudentPermissions } from '@/components/students/StudentPermissions';
+import { useStudentPageLogic } from '@/components/students/StudentPageLogic';
+import { useStudentOperationHandlers } from '@/components/students/StudentOperationHandlers';
 import AnimatedInView from '@/components/AnimatedInView';
 
 export const Students = () => {
-  const { user } = useAuth();
-  const { profileData } = useProfile();
   const {
     students,
     loading,
@@ -32,185 +29,58 @@ export const Students = () => {
     refreshStudents
   } = useStudents();
 
-  const { addPendingOperation } = usePendingStudentOperations();
-  const { toast } = useToast();
-  
-  const [showAddDialog, setShowAddDialog] = useState(false);
-  const [showDetailsDialog, setShowDetailsDialog] = useState(false);
-  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
-  const [editingStudent, setEditingStudent] = useState<Student | null>(null);
-  const [confirmationDialog, setConfirmationDialog] = useState<{
-    open: boolean;
-    type: 'add' | 'edit';
-    data: any;
-  }>({ open: false, type: 'add', data: null });
+  const {
+    isTeacher,
+    isAdmin,
+    isClassTeacher,
+    canManageStudents,
+    getTeacherClasses,
+    getPageDescription
+  } = useStudentPermissions();
 
-  const isTeacher = user?.role === 'teacher';
-  const isAdmin = user?.role === 'admin';
-  
-  const checkIsClassTeacher = (): boolean => {
-    if (!isTeacher || !profileData?.isClassTeacher) return false;
-    const value = profileData.isClassTeacher;
-    return value === true || value === 'true';
-  };
-  
-  const isClassTeacher = checkIsClassTeacher();
-  const canManageStudents = isAdmin || isClassTeacher;
+  const {
+    showAddDialog,
+    setShowAddDialog,
+    showDetailsDialog,
+    setShowDetailsDialog,
+    selectedStudent,
+    editingStudent,
+    setEditingStudent,
+    confirmationDialog,
+    setConfirmationDialog,
+    handleViewStudent,
+    openAddDialog,
+    closeAddDialog,
+    openEditDialog
+  } = useStudentPageLogic();
 
-  const getTeacherClasses = () => {
-    if (!profileData?.classesTaught) return [];
-    try {
-      return Array.isArray(profileData.classesTaught) 
-        ? profileData.classesTaught 
-        : JSON.parse(profileData.classesTaught || '[]');
-    } catch {
-      return [];
-    }
-  };
+  const {
+    handleAddStudent,
+    handleEditStudent,
+    handleUpdateStudent,
+    handleConfirmOperation,
+    handleDeleteStudent,
+    handleArchiveStudent,
+    handleExport
+  } = useStudentOperationHandlers({
+    isTeacher,
+    canManageStudents,
+    addStudent,
+    updateStudent,
+    updateStudentStatus,
+    deleteStudent,
+    students,
+    setConfirmationDialog,
+    setEditingStudent
+  });
 
-  const handleAddStudent = (studentData: Omit<Student, 'id'>) => {
-    if (isTeacher) {
-      setConfirmationDialog({
-        open: true,
-        type: 'add',
-        data: studentData
-      });
-    } else {
-      addStudent(studentData);
-    }
-  };
-
-  const handleEditStudent = (student: Student) => {
-    setEditingStudent(student);
-    setShowAddDialog(true);
+  const onEditStudent = (student: Student) => {
+    handleEditStudent(student);
+    openEditDialog(student);
   };
 
-  const handleUpdateStudent = (studentData: Student) => {
-    if (isTeacher) {
-      setConfirmationDialog({
-        open: true,
-        type: 'edit',
-        data: { studentData, originalStudent: editingStudent }
-      });
-    } else {
-      updateStudent(studentData.id, studentData);
-    }
-    setEditingStudent(null);
-  };
-
-  const handleConfirmOperation = () => {
-    const { type, data } = confirmationDialog;
-    
-    if (isTeacher && user && profileData) {
-      const teacherName = `${profileData.firstName} ${profileData.lastName}`;
-      
-      if (type === 'add') {
-        addPendingOperation({
-          type: 'add',
-          studentData: data,
-          teacherName
-        });
-        
-        toast({
-          title: "Request Submitted",
-          description: "Your request to add a student has been sent to admin for approval.",
-        });
-      } else if (type === 'edit') {
-        addPendingOperation({
-          type: 'edit',
-          studentData: data.studentData,
-          originalStudent: data.originalStudent,
-          teacherName
-        });
-        
-        toast({
-          title: "Request Submitted",
-          description: "Your request to edit student information has been sent to admin for approval.",
-        });
-      }
-    }
-    
-    setConfirmationDialog({ open: false, type: 'add', data: null });
-  };
-
-  const handleViewStudent = (student: Student) => {
-    setSelectedStudent(student);
-    setShowDetailsDialog(true);
-  };
-
-  const handleDeleteStudent = (id: string) => {
-    if (!canManageStudents) {
-      toast({
-        title: "Access Denied",
-        description: "Only class teachers and admins can delete students.",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    if (isTeacher && user && profileData) {
-      const student = students.find(s => s.id === id);
-      if (student) {
-        const teacherName = `${profileData.firstName} ${profileData.lastName}`;
-        addPendingOperation({
-          type: 'delete',
-          studentData: student,
-          teacherName
-        });
-        
-        toast({
-          title: "Request Submitted",
-          description: "Your request to delete the student has been sent to admin for approval.",
-        });
-      }
-    } else {
-      deleteStudent(id);
-    }
-  };
-
-  const handleArchiveStudent = (id: string) => {
-    if (!canManageStudents) {
-      toast({
-        title: "Access Denied",
-        description: "Only class teachers and admins can archive students.",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    updateStudentStatus(id, 'archived');
-    toast({
-      title: "Student Archived",
-      description: "Student has been moved to archived status.",
-    });
-  };
-
-  const handleExport = () => {
-    const csvContent = [
-      ['Student ID', 'Name', 'Class', 'Age', 'Parent/Guardian', 'Contact', 'Fees Status'],
-      ...students.map(student => [
-        student.id,
-        student.name,
-        student.class,
-        student.age.toString(),
-        student.parent,
-        student.phone,
-        student.fees
-      ])
-    ].map(row => row.join(',')).join('\n');
-
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'students.csv';
-    a.click();
-    window.URL.revokeObjectURL(url);
-
-    toast({
-      title: "Export successful",
-      description: "Students data has been exported to CSV.",
-    });
+  const onConfirmOperation = () => {
+    handleConfirmOperation(confirmationDialog);
   };
 
   return (
@@ -220,10 +90,11 @@ export const Students = () => {
         isTeacher={isTeacher}
         isClassTeacher={isClassTeacher}
         getTeacherClasses={getTeacherClasses}
-        onAddStudent={() => setShowAddDialog(true)}
+        onAddStudent={openAddDialog}
         onExport={handleExport}
         onRefresh={refreshStudents}
         loading={loading}
+        getPageDescription={getPageDescription}
       />
 
       <StudentsStats stats={stats} />
@@ -258,7 +129,7 @@ export const Students = () => {
             ) : (
               <StudentsTable
                 students={students}
-                onEdit={canManageStudents ? handleEditStudent : undefined}
+                onEdit={canManageStudents ? onEditStudent : undefined}
                 onDelete={canManageStudents ? handleDeleteStudent : undefined}
                 onArchive={canManageStudents ? handleArchiveStudent : undefined}
                 onView={handleViewStudent}
@@ -285,8 +156,9 @@ export const Students = () => {
         getTeacherClasses={getTeacherClasses}
         handleAddStudent={handleAddStudent}
         handleUpdateStudent={handleUpdateStudent}
-        handleEditStudent={handleEditStudent}
-        handleConfirmOperation={handleConfirmOperation}
+        handleEditStudent={onEditStudent}
+        handleConfirmOperation={onConfirmOperation}
+        onCloseAddDialog={closeAddDialog}
       />
     </div>
   );

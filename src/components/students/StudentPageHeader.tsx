@@ -13,6 +13,7 @@ interface StudentPageHeaderProps {
   onExport: () => void;
   onRefresh: () => void;
   loading: boolean;
+  getPageDescription: () => string;
 }
 
 export const StudentPageHeader: React.FC<StudentPageHeaderProps> = ({
@@ -23,23 +24,9 @@ export const StudentPageHeader: React.FC<StudentPageHeaderProps> = ({
   onAddStudent,
   onExport,
   onRefresh,
-  loading
+  loading,
+  getPageDescription
 }) => {
-  const getPageDescription = () => {
-    if (!isTeacher) {
-      return 'Manage student information and track fees';
-    }
-    if (isClassTeacher) {
-      const classes = getTeacherClasses();
-      return `Manage students from your classes: ${classes.join(', ')} (requires admin approval)`;
-    }
-    if (isTeacher) {
-      const classes = getTeacherClasses();
-      return `View students from your classes: ${classes.join(', ')} (read-only)`;
-    }
-    return 'View student information';
-  };
-
   return (
     <AnimatedInView>
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">

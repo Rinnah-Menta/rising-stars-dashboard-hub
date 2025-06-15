@@ -26,6 +26,7 @@ interface StudentManagementProps {
   handleUpdateStudent: (studentData: Student) => void;
   handleEditStudent: (student: Student) => void;
   handleConfirmOperation: () => void;
+  onCloseAddDialog: () => void;
 }
 
 export const StudentManagement: React.FC<StudentManagementProps> = ({
@@ -44,17 +45,17 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({
   handleAddStudent,
   handleUpdateStudent,
   handleEditStudent,
-  handleConfirmOperation
+  handleConfirmOperation,
+  onCloseAddDialog
 }) => {
   return (
     <>
-      {/* Dialogs */}
       {canManageStudents && (
         <StudentDialog
           open={showAddDialog}
           onOpenChange={(open) => {
             setShowAddDialog(open);
-            if (!open) setEditingStudent(null);
+            if (!open) onCloseAddDialog();
           }}
           student={editingStudent}
           onSave={editingStudent ? handleUpdateStudent : handleAddStudent}
