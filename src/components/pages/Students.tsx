@@ -1,16 +1,14 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, UserPlus, Download, Filter, RefreshCw } from 'lucide-react';
+import { RefreshCw } from 'lucide-react';
 import { useStudents, Student } from '@/hooks/useStudents';
 import { usePendingStudentOperations } from '@/hooks/usePendingStudentOperations';
 import { StudentsStats } from '@/components/students/StudentsStats';
 import { StudentsTable } from '@/components/students/StudentsTable';
-import { StudentDialog } from '@/components/students/StudentDialog';
-import { StudentDetailsDialog } from '@/components/students/StudentDetailsDialog';
-import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
+import { StudentPageHeader } from '@/components/students/StudentPageHeader';
+import { StudentFilters } from '@/components/students/StudentFilters';
+import { StudentManagement } from '@/components/students/StudentManagement';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfile } from '@/contexts/ProfileContext';
@@ -48,6 +46,7 @@ export const Students = () => {
 
   const isTeacher = user?.role === 'teacher';
   const isAdmin = user?.role === 'admin';
+  // Fix TypeScript error by properly comparing both boolean and string values
   const isClassTeacher = isTeacher && (profileData?.isClassTeacher === true || profileData?.isClassTeacher === 'true');
   const canManageStudents = isAdmin || isClassTeacher;
 
@@ -190,53 +189,19 @@ export const Students = () => {
     });
   };
 
-  const getPageDescription = () => {
-    if (isAdmin) {
-      return 'Manage student information and track fees';
-    }
-    if (isClassTeacher) {
-      const classes = getTeacherClasses();
-      return `Manage students from your classes: ${classes.join(', ')} (requires admin approval)`;
-    }
-    if (isTeacher) {
-      const classes = getTeacherClasses();
-      return `View students from your classes: ${classes.join(', ')} (read-only)`;
-    }
-    return 'View student information';
-  };
-
   return (
     <div className="space-y-6">
       {/* Header */}
-      <AnimatedInView>
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div>
-            <h1 className="text-2xl md:text-3xl font-bold">Students Management</h1>
-            <p className="text-gray-600 mt-1">{getPageDescription()}</p>
-            {isTeacher && !canManageStudents && (
-              <p className="text-sm text-amber-600 mt-1">
-                ⚠️ You have read-only access. Contact admin to become a class teacher for full access.
-              </p>
-            )}
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {canManageStudents && (
-              <Button onClick={() => setShowAddDialog(true)} className="bg-blue-600 hover:bg-blue-700">
-                <UserPlus className="h-4 w-4 mr-2" />
-                Add Student
-              </Button>
-            )}
-            <Button variant="outline" onClick={handleExport}>
-              <Download className="h-4 w-4 mr-2" />
-              Export
-            </Button>
-            <Button variant="outline" onClick={refreshStudents} disabled={loading}>
-              <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-              Refresh
-            </Button>
-          </div>
-        </div>
-      </AnimatedInView>
+      <StudentPageHeader
+        canManageStudents={canManageStudents}
+        isTeacher={isTeacher}
+        isClassTeacher={isClassTeacher}
+        getTeacherClasses={getTeacherClasses}
+        onAddStudent={() => setShowAddDialog(true)}
+        onExport={handleExport}
+        onRefresh={refreshStudents}
+        loading={loading}
+      />
 
       {/* Statistics */}
       <StudentsStats stats={stats} />
@@ -254,29 +219,12 @@ export const Students = () => {
                   </span>
                 )}
               </CardTitle>
-              <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-                <div className="relative">
-                  <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                  <Input 
-                    placeholder="Search students..." 
-                    className="pl-10 w-full sm:w-64"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                  />
-                </div>
-                <Select value={filterStatus} onValueChange={setFilterStatus}>
-                  <SelectTrigger className="w-full sm:w-40">
-                    <Filter className="h-4 w-4 mr-2" />
-                    <SelectValue placeholder="Filter by fees" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Students</SelectItem>
-                    <SelectItem value="Paid">Paid</SelectItem>
-                    <SelectItem value="Pending">Pending</SelectItem>
-                    <SelectItem value="Overdue">Overdue</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+              <StudentFilters
+                searchTerm={searchTerm}
+                setSearchTerm={setSearchTerm}
+                filterStatus={filterStatus}
+                setFilterStatus={setFilterStatus}
+              />
             </div>
           </CardHeader>
           <CardContent>
@@ -298,36 +246,24 @@ export const Students = () => {
         </Card>
       </AnimatedInView>
 
-      {/* Dialogs */}
-      {canManageStudents && (
-        <StudentDialog
-          open={showAddDialog}
-          onOpenChange={(open) => {
-            setShowAddDialog(open);
-            if (!open) setEditingStudent(null);
-          }}
-          student={editingStudent}
-          onSave={editingStudent ? handleUpdateStudent : handleAddStudent}
-          teacherClasses={isTeacher ? getTeacherClasses() : undefined}
-        />
-      )}
-
-      <StudentDetailsDialog
-        open={showDetailsDialog}
-        onOpenChange={setShowDetailsDialog}
-        student={selectedStudent}
-        onEdit={canManageStudents ? handleEditStudent : undefined}
-      />
-
-      <ConfirmationDialog
-        open={confirmationDialog.open}
-        onOpenChange={(open) => setConfirmationDialog({ ...confirmationDialog, open })}
-        title={`Submit ${confirmationDialog.type === 'add' ? 'Add' : 'Edit'} Request`}
-        description={`This request will be sent to the admin for approval. ${confirmationDialog.type === 'add' ? 'The student will be added after approval.' : 'Changes will be applied after approval.'}`}
-        confirmText="Submit Request"
-        cancelText="Cancel"
-        onConfirm={handleConfirmOperation}
-        type={confirmationDialog.type === 'add' ? 'add' : 'edit'}
+      {/* Student Management Dialogs */}
+      <StudentManagement
+        showAddDialog={showAddDialog}
+        setShowAddDialog={setShowAddDialog}
+        showDetailsDialog={showDetailsDialog}
+        setShowDetailsDialog={setShowDetailsDialog}
+        selectedStudent={selectedStudent}
+        editingStudent={editingStudent}
+        setEditingStudent={setEditingStudent}
+        confirmationDialog={confirmationDialog}
+        setConfirmationDialog={setConfirmationDialog}
+        canManageStudents={canManageStudents}
+        isTeacher={isTeacher}
+        getTeacherClasses={getTeacherClasses}
+        handleAddStudent={handleAddStudent}
+        handleUpdateStudent={handleUpdateStudent}
+        handleEditStudent={handleEditStudent}
+        handleConfirmOperation={handleConfirmOperation}
       />
     </div>
   );
