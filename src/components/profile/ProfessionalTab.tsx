@@ -5,6 +5,7 @@ import { ProfileField } from './ProfileField';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface ProfessionalTabProps {
@@ -26,10 +27,23 @@ export const ProfessionalTab: React.FC<ProfessionalTabProps> = ({
     handleInputChange(field, checked.toString());
   };
 
-  const handleArrayInputChange = (field: string, value: string) => {
-    // Convert comma-separated string to array
-    const arrayValue = value.split(',').map(item => item.trim()).filter(item => item);
-    handleInputChange(field, JSON.stringify(arrayValue));
+  const handleMultiSelectChange = (field: string, value: string) => {
+    try {
+      const currentValues = Array.isArray(formData[field]) 
+        ? formData[field] 
+        : JSON.parse(formData[field] || '[]');
+      
+      let newValues;
+      if (currentValues.includes(value)) {
+        newValues = currentValues.filter((item: string) => item !== value);
+      } else {
+        newValues = [...currentValues, value];
+      }
+      
+      handleInputChange(field, JSON.stringify(newValues));
+    } catch {
+      handleInputChange(field, JSON.stringify([value]));
+    }
   };
 
   const getArrayDisplayValue = (field: string) => {
@@ -46,6 +60,32 @@ export const ProfessionalTab: React.FC<ProfessionalTabProps> = ({
       return formData[field] || '';
     }
   };
+
+  const getSelectedValues = (field: string): string[] => {
+    try {
+      const value = formData[field];
+      if (Array.isArray(value)) {
+        return value;
+      }
+      if (typeof value === 'string' && value.startsWith('[')) {
+        return JSON.parse(value);
+      }
+      return [];
+    } catch {
+      return [];
+    }
+  };
+
+  const availableClasses = [
+    'P.1A', 'P.1B', 'P.2A', 'P.2B', 'P.3A', 'P.3B', 
+    'P.4A', 'P.4B', 'P.5A', 'P.5B', 'P.6A', 'P.6B', 'P.7A', 'P.7B'
+  ];
+
+  const availableSubjects = [
+    'Mathematics', 'English', 'Science', 'Social Studies', 
+    'Religious Education', 'Physical Education', 'Art & Craft',
+    'Computer Studies', 'Music', 'Local Language'
+  ];
 
   const showResponsibilities = user?.role === 'teacher' || user?.role === 'non-teaching';
 
@@ -100,37 +140,85 @@ export const ProfessionalTab: React.FC<ProfessionalTabProps> = ({
             <div className="space-y-2">
               <Label htmlFor="classesTaught" className="text-sm">Classes Taught</Label>
               {isEditing ? (
-                <Input
-                  id="classesTaught"
-                  value={getArrayDisplayValue('classesTaught')}
-                  onChange={(e) => handleArrayInputChange('classesTaught', e.target.value)}
-                  placeholder="e.g., P.5A, P.6B, P.7A"
-                  className="h-9"
-                />
+                <div className="space-y-2">
+                  <Select onValueChange={(value) => handleMultiSelectChange('classesTaught', value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select classes to add" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableClasses.map((className) => (
+                        <SelectItem 
+                          key={className} 
+                          value={className}
+                          className={getSelectedValues('classesTaught').includes(className) ? 'bg-blue-50' : ''}
+                        >
+                          {className} {getSelectedValues('classesTaught').includes(className) ? '✓' : ''}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {getSelectedValues('classesTaught').length > 0 && (
+                    <div className="flex flex-wrap gap-2">
+                      {getSelectedValues('classesTaught').map((className) => (
+                        <span 
+                          key={className}
+                          className="bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-xs cursor-pointer hover:bg-blue-200"
+                          onClick={() => handleMultiSelectChange('classesTaught', className)}
+                        >
+                          {className} ×
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
               ) : (
                 <div className="px-3 py-2 bg-gray-50 rounded-md text-sm">
                   {getArrayDisplayValue('classesTaught') || 'Not specified'}
                 </div>
               )}
-              <p className="text-xs text-gray-500">Comma-separated list of classes</p>
+              <p className="text-xs text-gray-500">Click to select/deselect classes</p>
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="subjectsTaught" className="text-sm">Subjects Taught</Label>
               {isEditing ? (
-                <Input
-                  id="subjectsTaught"
-                  value={getArrayDisplayValue('subjectsTaught')}
-                  onChange={(e) => handleArrayInputChange('subjectsTaught', e.target.value)}
-                  placeholder="e.g., Mathematics, Science, English"
-                  className="h-9"
-                />
+                <div className="space-y-2">
+                  <Select onValueChange={(value) => handleMultiSelectChange('subjectsTaught', value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select subjects to add" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableSubjects.map((subject) => (
+                        <SelectItem 
+                          key={subject} 
+                          value={subject}
+                          className={getSelectedValues('subjectsTaught').includes(subject) ? 'bg-green-50' : ''}
+                        >
+                          {subject} {getSelectedValues('subjectsTaught').includes(subject) ? '✓' : ''}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {getSelectedValues('subjectsTaught').length > 0 && (
+                    <div className="flex flex-wrap gap-2">
+                      {getSelectedValues('subjectsTaught').map((subject) => (
+                        <span 
+                          key={subject}
+                          className="bg-green-100 text-green-800 px-2 py-1 rounded-md text-xs cursor-pointer hover:bg-green-200"
+                          onClick={() => handleMultiSelectChange('subjectsTaught', subject)}
+                        >
+                          {subject} ×
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
               ) : (
                 <div className="px-3 py-2 bg-gray-50 rounded-md text-sm">
                   {getArrayDisplayValue('subjectsTaught') || 'Not specified'}
                 </div>
               )}
-              <p className="text-xs text-gray-500">Comma-separated list of subjects</p>
+              <p className="text-xs text-gray-500">Click to select/deselect subjects</p>
             </div>
           </>
         )}
