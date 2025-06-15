@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useNavigation } from '@/contexts/NavigationContext';
 
 export interface Notification {
   id: string;
@@ -14,14 +15,23 @@ export interface Notification {
 
 export const useNotifications = () => {
   const { user } = useAuth();
+  const { currentPage } = useNavigation();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [hasViewedControlPanel, setHasViewedControlPanel] = useState(false);
 
   useEffect(() => {
     if (user?.role === 'admin') {
       loadNotifications();
     }
   }, [user]);
+
+  // Clear control panel badge when user visits notifications page
+  useEffect(() => {
+    if (currentPage === 'notifications' && user?.role === 'admin') {
+      setHasViewedControlPanel(true);
+    }
+  }, [currentPage, user]);
 
   const loadNotifications = () => {
     // Simulate notifications from various user activities
@@ -90,12 +100,26 @@ export const useNotifications = () => {
     return notifications.filter(n => n.status === 'pending').length;
   };
 
+  const getControlPanelBadgeCount = () => {
+    // Show badge count only if user hasn't viewed control panel or notifications page
+    if (hasViewedControlPanel || currentPage === 'notifications') {
+      return 0;
+    }
+    return getPendingCount();
+  };
+
+  const clearControlPanelBadge = () => {
+    setHasViewedControlPanel(true);
+  };
+
   return {
     notifications,
     unreadCount,
     pendingCount: getPendingCount(),
+    controlPanelBadgeCount: getControlPanelBadgeCount(),
     markAsRead,
     markAllAsRead,
+    clearControlPanelBadge,
     refreshNotifications: loadNotifications
   };
 };

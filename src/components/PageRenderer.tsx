@@ -23,6 +23,7 @@ import { Settings } from './pages/Settings';
 import { Timetable } from './pages/Timetable';
 import { Assignments } from './pages/Assignments';
 import { Results } from './pages/Results';
+import { Notifications } from './pages/Notifications';
 
 export const PageRenderer = () => {
   const { currentPage } = useNavigation();
@@ -74,6 +75,8 @@ export const PageRenderer = () => {
       return <Assignments />;
     case 'results':
       return <Results />;
+    case 'notifications':
+      return <Notifications />;
     default:
       return <div>Page not found</div>;
   }

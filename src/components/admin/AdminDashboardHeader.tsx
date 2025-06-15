@@ -27,7 +27,12 @@ export const AdminDashboardHeader: React.FC<AdminDashboardHeaderProps> = ({
   activeView,
   onViewChange
 }) => {
-  const { pendingCount } = useNotifications();
+  const { pendingCount, controlPanelBadgeCount, clearControlPanelBadge } = useNotifications();
+
+  const handleControlPanelClick = () => {
+    clearControlPanelBadge();
+    onViewChange('control');
+  };
 
   return (
     <div className="space-y-4 sm:space-y-6">
@@ -70,13 +75,13 @@ export const AdminDashboardHeader: React.FC<AdminDashboardHeaderProps> = ({
         <div className="relative">
           <Button
             variant={activeView === 'control' ? 'default' : 'outline'}
-            onClick={() => onViewChange('control')}
+            onClick={handleControlPanelClick}
             className="flex items-center space-x-2 relative"
           >
             <Settings className="h-4 w-4" />
             <span>Control Panel</span>
           </Button>
-          <NotificationBadge count={pendingCount} />
+          <NotificationBadge count={controlPanelBadgeCount} />
         </div>
 
         <Button
