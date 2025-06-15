@@ -118,11 +118,33 @@ const REASONS = {
       'Violation of school policies',
       'Other'
     ]
+  },
+  terminate: {
+    teacher: [
+      'Gross misconduct',
+      'Criminal conviction',
+      'Breach of professional ethics',
+      'Inappropriate conduct with students',
+      'Violation of school policies',
+      'Performance issues',
+      'Contract violations',
+      'Other'
+    ],
+    staff: [
+      'Gross misconduct',
+      'Criminal conviction',
+      'Theft or fraud',
+      'Harassment or discrimination',
+      'Violation of school policies',
+      'Performance issues',
+      'Contract violations',
+      'Other'
+    ]
   }
 };
 
 interface ReasonSelectorProps {
-  action: 'archive' | 'delete' | 'suspend' | 'expel';
+  action: 'archive' | 'delete' | 'suspend' | 'expel' | 'terminate';
   personType: 'student' | 'teacher' | 'staff';
   reason: string;
   setReason: (reason: string) => void;
@@ -138,16 +160,20 @@ export const ReasonSelector: React.FC<ReasonSelectorProps> = ({
   customReason,
   setCustomReason
 }) => {
+  // For terminate action with students, use expel reasons
+  const reasonKey = action === 'terminate' && personType === 'student' ? 'expel' : action;
+  const reasons = REASONS[reasonKey]?.[personType] || [];
+
   return (
     <>
       <div className="space-y-2">
-        <Label htmlFor="reason">Reason for {action}</Label>
+        <Label htmlFor="reason">Reason for {action === 'terminate' && personType === 'teacher' ? 'termination' : action}</Label>
         <Select value={reason} onValueChange={setReason}>
           <SelectTrigger>
             <SelectValue placeholder="Select a reason" />
           </SelectTrigger>
           <SelectContent>
-            {REASONS[action][personType].map((reasonOption) => (
+            {reasons.map((reasonOption) => (
               <SelectItem key={reasonOption} value={reasonOption}>
                 {reasonOption}
               </SelectItem>

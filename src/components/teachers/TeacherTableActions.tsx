@@ -17,7 +17,7 @@ interface TeacherTableActionsProps {
   onEdit?: (teacher: Teacher) => void;
   onArchive: (teacher: Teacher) => void;
   onSuspend: (teacher: Teacher) => void;
-  onExpel: (teacher: Teacher) => void;
+  onTerminate: (teacher: Teacher) => void;
   onDelete: (teacher: Teacher) => void;
   readOnly?: boolean;
 }
@@ -28,7 +28,7 @@ export const TeacherTableActions: React.FC<TeacherTableActionsProps> = ({
   onEdit,
   onArchive,
   onSuspend,
-  onExpel,
+  onTerminate,
   onDelete,
   readOnly = false
 }) => {
@@ -63,11 +63,11 @@ export const TeacherTableActions: React.FC<TeacherTableActionsProps> = ({
               Archive
             </DropdownMenuItem>
             <DropdownMenuItem 
-              onClick={() => onExpel(teacher)}
+              onClick={() => onTerminate(teacher)}
               className="text-red-600"
             >
               <UserX className="mr-2 h-4 w-4" />
-              Expel
+              Terminate
             </DropdownMenuItem>
             <DropdownMenuItem 
               onClick={() => onDelete(teacher)}

@@ -19,7 +19,7 @@ import { DialogIcon } from './account-action-dialog/DialogIcon';
 interface AccountActionDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  action: 'archive' | 'delete' | 'suspend' | 'expel';
+  action: 'archive' | 'delete' | 'suspend' | 'expel' | 'terminate';
   personName: string;
   personType: 'student' | 'teacher' | 'staff';
   onConfirm: (data: {
@@ -53,8 +53,33 @@ export const AccountActionDialog: React.FC<AccountActionDialogProps> = ({
         return `Suspend ${personType}`;
       case 'expel':
         return `Expel ${personType}`;
+      case 'terminate':
+        return `Terminate ${personType}`;
       default:
         return 'Account Action';
+    }
+  };
+
+  const getActionText = () => {
+    if (action === 'terminate' && personType === 'teacher') return 'terminating';
+    if (action === 'expel' && personType === 'student') return 'expelling';
+    return `${action}ing`;
+  };
+
+  const getButtonText = () => {
+    switch (action) {
+      case 'archive':
+        return 'Archive';
+      case 'delete':
+        return 'Delete';
+      case 'suspend':
+        return 'Suspend';
+      case 'expel':
+        return 'Expel';
+      case 'terminate':
+        return 'Terminate';
+      default:
+        return 'Confirm';
     }
   };
 
@@ -85,7 +110,7 @@ export const AccountActionDialog: React.FC<AccountActionDialogProps> = ({
             <DialogTitle>{getTitle()}</DialogTitle>
           </div>
           <DialogDescription>
-            Provide details for {action}ing {personName}'s account.
+            Provide details for {getActionText()} {personName}'s account.
           </DialogDescription>
         </DialogHeader>
         
@@ -125,9 +150,9 @@ export const AccountActionDialog: React.FC<AccountActionDialogProps> = ({
           <Button 
             onClick={handleSubmit}
             disabled={!isValid}
-            variant={action === 'delete' || action === 'expel' ? 'destructive' : 'default'}
+            variant={action === 'delete' || action === 'expel' || action === 'terminate' ? 'destructive' : 'default'}
           >
-            {action === 'archive' ? 'Archive' : action === 'delete' ? 'Delete' : action === 'suspend' ? 'Suspend' : 'Expel'}
+            {getButtonText()}
           </Button>
         </DialogFooter>
       </DialogContent>

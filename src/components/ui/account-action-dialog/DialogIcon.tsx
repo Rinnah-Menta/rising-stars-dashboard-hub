@@ -3,7 +3,7 @@ import React from 'react';
 import { Archive, Trash2, Clock, UserX, AlertTriangle } from 'lucide-react';
 
 interface DialogIconProps {
-  action: 'archive' | 'delete' | 'suspend' | 'expel';
+  action: 'archive' | 'delete' | 'suspend' | 'expel' | 'terminate';
 }
 
 export const DialogIcon: React.FC<DialogIconProps> = ({ action }) => {
@@ -15,6 +15,7 @@ export const DialogIcon: React.FC<DialogIconProps> = ({ action }) => {
     case 'suspend':
       return <Clock className="h-6 w-6 text-yellow-600" />;
     case 'expel':
+    case 'terminate':
       return <UserX className="h-6 w-6 text-red-700" />;
     default:
       return <AlertTriangle className="h-6 w-6 text-gray-600" />;

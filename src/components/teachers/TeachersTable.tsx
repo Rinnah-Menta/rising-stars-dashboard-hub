@@ -22,7 +22,7 @@ export interface Teacher {
   qualification: string;
   experience: string;
   joinDate: string;
-  status: 'active' | 'on-leave' | 'inactive' | 'suspended' | 'archived' | 'expelled';
+  status: 'active' | 'on-leave' | 'inactive' | 'suspended' | 'archived' | 'terminated';
   classesTaught?: string[];
 }
 
@@ -52,7 +52,7 @@ export const TeachersTable: React.FC<TeachersTableProps> = ({
 
   const [accountActionDialog, setAccountActionDialog] = useState<{
     open: boolean;
-    action: 'archive' | 'suspend' | 'expel';
+    action: 'archive' | 'suspend' | 'terminate';
     teacher: Teacher | null;
   }>({ open: false, action: 'archive', teacher: null });
 
@@ -81,10 +81,10 @@ export const TeachersTable: React.FC<TeachersTableProps> = ({
     });
   };
 
-  const handleExpel = (teacher: Teacher) => {
+  const handleTerminate = (teacher: Teacher) => {
     setAccountActionDialog({
       open: true,
-      action: 'expel',
+      action: 'terminate',
       teacher
     });
   };
@@ -132,7 +132,7 @@ export const TeachersTable: React.FC<TeachersTableProps> = ({
                     onEdit={onEdit}
                     onArchive={handleArchive}
                     onSuspend={handleSuspend}
-                    onExpel={handleExpel}
+                    onTerminate={handleTerminate}
                     onDelete={handleDelete}
                     readOnly={readOnly}
                   />
