@@ -45,8 +45,15 @@ export const Students = () => {
 
   const isTeacher = user?.role === 'teacher';
   const isAdmin = user?.role === 'admin';
-  // Fix TypeScript error by properly converting to boolean
-  const isClassTeacher = isTeacher && Boolean(profileData?.isClassTeacher === true || profileData?.isClassTeacher === 'true');
+  
+  // Helper function to properly check if user is a class teacher
+  const checkIsClassTeacher = (): boolean => {
+    if (!isTeacher || !profileData?.isClassTeacher) return false;
+    const value = profileData.isClassTeacher;
+    return value === true || value === 'true';
+  };
+  
+  const isClassTeacher = checkIsClassTeacher();
   const canManageStudents = isAdmin || isClassTeacher;
 
   const getTeacherClasses = () => {
