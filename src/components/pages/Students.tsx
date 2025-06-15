@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -87,8 +86,7 @@ export const Students = () => {
       const teacherName = `${profileData.firstName} ${profileData.lastName}`;
       
       if (type === 'add') {
-        addPen |
-        dingOperation({
+        addPendingOperation({
           type: 'add',
           studentData: data,
           teacherName
