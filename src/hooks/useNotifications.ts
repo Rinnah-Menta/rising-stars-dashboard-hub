@@ -13,6 +13,11 @@ export interface Notification {
   status: 'pending' | 'approved' | 'rejected';
 }
 
+const STORAGE_KEYS = {
+  NOTIFICATIONS: 'admin_notifications',
+  HAS_VIEWED_CONTROL_PANEL: 'admin_has_viewed_control_panel'
+};
+
 export const useNotifications = () => {
   const { user } = useAuth();
   const { currentPage } = useNavigation();
@@ -20,9 +25,10 @@ export const useNotifications = () => {
   const [unreadCount, setUnreadCount] = useState(0);
   const [hasViewedControlPanel, setHasViewedControlPanel] = useState(false);
 
+  // Load persisted state on mount
   useEffect(() => {
     if (user?.role === 'admin') {
-      loadNotifications();
+      loadPersistedState();
     }
   }, [user]);
 
@@ -30,8 +36,35 @@ export const useNotifications = () => {
   useEffect(() => {
     if (currentPage === 'notifications' && user?.role === 'admin') {
       setHasViewedControlPanel(true);
+      localStorage.setItem(STORAGE_KEYS.HAS_VIEWED_CONTROL_PANEL, 'true');
     }
   }, [currentPage, user]);
+
+  // Persist notifications whenever they change
+  useEffect(() => {
+    if (user?.role === 'admin' && notifications.length > 0) {
+      localStorage.setItem(STORAGE_KEYS.NOTIFICATIONS, JSON.stringify(notifications));
+      const newUnreadCount = notifications.filter(n => !n.read && n.status === 'pending').length;
+      setUnreadCount(newUnreadCount);
+    }
+  }, [notifications, user]);
+
+  const loadPersistedState = () => {
+    // Load notifications from localStorage or create default ones
+    const savedNotifications = localStorage.getItem(STORAGE_KEYS.NOTIFICATIONS);
+    const savedHasViewedControlPanel = localStorage.getItem(STORAGE_KEYS.HAS_VIEWED_CONTROL_PANEL) === 'true';
+    
+    if (savedNotifications) {
+      const parsedNotifications = JSON.parse(savedNotifications);
+      setNotifications(parsedNotifications);
+      setUnreadCount(parsedNotifications.filter(n => !n.read && n.status === 'pending').length);
+    } else {
+      // Create initial notifications only if none exist
+      loadNotifications();
+    }
+    
+    setHasViewedControlPanel(savedHasViewedControlPanel);
+  };
 
   const loadNotifications = () => {
     // Simulate notifications from various user activities
@@ -75,6 +108,7 @@ export const useNotifications = () => {
     ];
 
     setNotifications(mockNotifications);
+    localStorage.setItem(STORAGE_KEYS.NOTIFICATIONS, JSON.stringify(mockNotifications));
     setUnreadCount(mockNotifications.filter(n => !n.read && n.status === 'pending').length);
   };
 
@@ -86,14 +120,12 @@ export const useNotifications = () => {
           : notification
       )
     );
-    setUnreadCount(prev => Math.max(0, prev - 1));
   };
 
   const markAllAsRead = () => {
     setNotifications(prev => 
       prev.map(notification => ({ ...notification, read: true }))
     );
-    setUnreadCount(0);
   };
 
   const getPendingCount = () => {
@@ -110,6 +142,7 @@ export const useNotifications = () => {
 
   const clearControlPanelBadge = () => {
     setHasViewedControlPanel(true);
+    localStorage.setItem(STORAGE_KEYS.HAS_VIEWED_CONTROL_PANEL, 'true');
   };
 
   return {
