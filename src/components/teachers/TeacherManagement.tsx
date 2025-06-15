@@ -134,14 +134,21 @@ export const TeacherManagement = () => {
   };
 
   const handleSaveTeacher = (teacherData: any) => {
+    // Convert classes string to classesTaught array if needed
+    const processedData = {
+      ...teacherData,
+      classesTaught: teacherData.classes ? teacherData.classes.split(', ').filter((c: string) => c.trim() !== '') : []
+    };
+    delete processedData.classes;
+
     if (editingTeacher) {
-      setTeachers(prev => prev.map(t => t.id === editingTeacher.id ? { ...editingTeacher, ...teacherData } : t));
+      setTeachers(prev => prev.map(t => t.id === editingTeacher.id ? { ...editingTeacher, ...processedData } : t));
     } else {
       const newTeacher: Teacher = {
         id: `TCH${String(teachers.length + 1).padStart(3, '0')}`,
         joinDate: new Date().toISOString().split('T')[0],
         status: 'active',
-        ...teacherData
+        ...processedData
       };
       setTeachers(prev => [...prev, newTeacher]);
     }
