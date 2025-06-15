@@ -5,9 +5,13 @@ import { UserPlus, Download } from 'lucide-react';
 
 interface TeacherPageHeaderProps {
   onAddTeacher: () => void;
+  onExport: () => void;
 }
 
-export const TeacherPageHeader: React.FC<TeacherPageHeaderProps> = ({ onAddTeacher }) => {
+export const TeacherPageHeader: React.FC<TeacherPageHeaderProps> = ({ 
+  onAddTeacher, 
+  onExport 
+}) => {
   return (
     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
       <h1 className="text-2xl font-bold">Teachers Management</h1>
@@ -16,7 +20,7 @@ export const TeacherPageHeader: React.FC<TeacherPageHeaderProps> = ({ onAddTeach
           <UserPlus className="h-4 w-4 mr-2" />
           Add Teacher
         </Button>
-        <Button variant="outline">
+        <Button variant="outline" onClick={onExport}>
           <Download className="h-4 w-4 mr-2" />
           Export
         </Button>

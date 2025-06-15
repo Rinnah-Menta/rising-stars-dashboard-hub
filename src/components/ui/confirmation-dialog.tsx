@@ -10,7 +10,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { AlertTriangle, Trash2, Edit, UserPlus } from 'lucide-react';
+import { AlertTriangle, Trash2, Edit, UserPlus, Archive } from 'lucide-react';
 
 interface ConfirmationDialogProps {
   open: boolean;
@@ -21,7 +21,7 @@ interface ConfirmationDialogProps {
   cancelText?: string;
   onConfirm: () => void;
   variant?: 'default' | 'destructive';
-  type?: 'delete' | 'edit' | 'add';
+  type?: 'delete' | 'edit' | 'add' | 'archive';
 }
 
 export const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
@@ -43,6 +43,8 @@ export const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
         return <Edit className="h-6 w-6 text-blue-600" />;
       case 'add':
         return <UserPlus className="h-6 w-6 text-green-600" />;
+      case 'archive':
+        return <Archive className="h-6 w-6 text-orange-600" />;
       default:
         return <AlertTriangle className="h-6 w-6 text-yellow-600" />;
     }
