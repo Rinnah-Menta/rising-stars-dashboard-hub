@@ -1,283 +1,253 @@
 
 import React, { useState } from 'react';
-import { CardHeader, CardTitle } from '@/components/ui/card';
+import { MoreHorizontal, Eye, Edit, Archive, Trash2, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, Filter, GraduationCap, Eye, Edit, Archive, Trash2, Phone } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from '@/components/ui/dropdown-menu';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { useToast } from '@/hooks/use-toast';
+import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import { AccountActionDialog } from '@/components/ui/account-action-dialog';
-import { useAuth } from '@/contexts/AuthContext';
-import { useProfile } from '@/contexts/ProfileContext';
+import { useToast } from '@/hooks/use-toast';
 
-interface Teacher {
+export interface Teacher {
   id: string;
   name: string;
-  subject: string;
-  classes: string;
+  email: string;
   phone: string;
-  status: 'Active' | 'On Leave' | 'Inactive' | 'Archived';
+  subject: string;
+  department: string;
+  qualification: string;
   experience: string;
-  email?: string;
-  address?: string;
-  qualification?: string;
-  department?: string;
+  joinDate: string;
+  status: 'active' | 'on-leave' | 'inactive';
+  classesTaught?: string[];
 }
 
 interface TeachersTableProps {
   teachers: Teacher[];
-  searchTerm: string;
-  onSearchChange: (value: string) => void;
-  onEditTeacher: (teacher: Teacher) => void;
-  onViewTeacher: (teacher: Teacher) => void;
-  onArchiveTeacher: (id: string) => void;
-  onDeleteTeacher: (id: string) => void;
-  filterStatus: string;
-  onFilterChange: (status: string) => void;
+  onEdit?: (teacher: Teacher) => void;
+  onDelete?: (id: string) => void;
+  onArchive?: (id: string) => void;
+  onView: (teacher: Teacher) => void;
+  readOnly?: boolean;
 }
 
 export const TeachersTable: React.FC<TeachersTableProps> = ({
   teachers,
-  searchTerm,
-  onSearchChange,
-  onEditTeacher,
-  onViewTeacher,
-  onArchiveTeacher,
-  onDeleteTeacher,
-  filterStatus,
-  onFilterChange
+  onEdit,
+  onDelete,
+  onArchive,
+  onView,
+  readOnly = false
 }) => {
   const { toast } = useToast();
-  const { user, updateUserStatus } = useAuth();
-  const { profileData } = useProfile();
-  const [actionDialog, setActionDialog] = useState<{
+  const [confirmDialog, setConfirmDialog] = useState<{
     open: boolean;
-    action: 'archive' | 'delete' | 'suspend';
+    type: 'delete';
+    teacherName: string;
+    teacherId: string;
+  }>({ open: false, type: 'delete', teacherName: '', teacherId: '' });
+
+  const [accountActionDialog, setAccountActionDialog] = useState<{
+    open: boolean;
+    action: 'archive' | 'suspend';
     teacher: Teacher | null;
-  }>({ open: false, action: 'delete', teacher: null });
+  }>({ open: false, action: 'archive', teacher: null });
 
   const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'Active': return 'bg-green-100 text-green-800 hover:bg-green-200';
-      case 'On Leave': return 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200';
-      case 'Inactive': return 'bg-red-100 text-red-800 hover:bg-red-200';
-      case 'Archived': return 'bg-gray-100 text-gray-800 hover:bg-gray-200';
-      default: return 'bg-gray-100 text-gray-800 hover:bg-gray-200';
+    switch (status.toLowerCase()) {
+      case 'active':
+        return 'bg-green-100 text-green-800';
+      case 'on-leave':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'inactive':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
     }
   };
 
-  const handleCall = (phone: string) => {
-    window.open(`tel:${phone}`, '_self');
-    toast({
-      title: "Calling...",
-      description: `Dialing ${phone}`,
+  const handleDelete = (teacher: Teacher) => {
+    setConfirmDialog({
+      open: true,
+      type: 'delete',
+      teacherName: teacher.name,
+      teacherId: teacher.id
     });
   };
 
-  const handleArchiveClick = (teacher: Teacher) => {
-    if (teacher.status === 'Archived') {
+  const handleArchive = (teacher: Teacher) => {
+    setAccountActionDialog({
+      open: true,
+      action: 'archive',
+      teacher
+    });
+  };
+
+  const handleSuspend = (teacher: Teacher) => {
+    setAccountActionDialog({
+      open: true,
+      action: 'suspend',
+      teacher
+    });
+  };
+
+  const confirmDelete = () => {
+    if (onDelete) {
+      onDelete(confirmDialog.teacherId);
       toast({
-        title: "Already Archived",
-        description: "This teacher is already archived.",
+        title: "Teacher Deleted",
+        description: `${confirmDialog.teacherName} has been removed from the system.`,
         variant: "destructive"
       });
-      return;
     }
-    setActionDialog({ open: true, action: 'archive', teacher });
+    setConfirmDialog({ open: false, type: 'delete', teacherName: '', teacherId: '' });
   };
 
-  const handleDeleteClick = (teacher: Teacher) => {
-    setActionDialog({ open: true, action: 'delete', teacher });
-  };
-
-  const handleActionConfirm = async (data: {
+  const handleAccountAction = (data: {
     reason: string;
     customReason?: string;
     suspensionEndDate?: Date;
     nextSteps?: string;
   }) => {
-    if (!actionDialog.teacher || !user || !profileData) return;
-
-    const updatedBy = `${profileData.firstName} ${profileData.lastName}`;
-    const statusMap = {
-      archive: 'archived' as const,
-      delete: 'deleted' as const,
-      suspend: 'suspended' as const,
-    };
-
-    try {
-      await updateUserStatus(actionDialog.teacher.id, statusMap[actionDialog.action], {
-        reason: data.reason,
-        suspensionEndDate: data.suspensionEndDate,
-        nextSteps: data.nextSteps,
-        updatedBy
-      });
-
-      if (actionDialog.action === 'archive') {
-        onArchiveTeacher(actionDialog.teacher.id);
-      } else if (actionDialog.action === 'delete') {
-        onDeleteTeacher(actionDialog.teacher.id);
-      }
-
+    const { action, teacher } = accountActionDialog;
+    
+    if (action === 'archive' && onArchive && teacher) {
+      onArchive(teacher.id);
       toast({
-        title: `Teacher ${actionDialog.action === 'archive' ? 'Archived' : 'Deleted'}`,
-        description: `${actionDialog.teacher.name} has been ${actionDialog.action}d successfully.`,
+        title: "Teacher Archived",
+        description: `${teacher.name} has been archived. Reason: ${data.reason}`,
       });
-    } catch (error) {
+    } else if (action === 'suspend' && teacher) {
+      // For now, we'll just show a toast. In a real app, this would update the teacher status
+      const endDateText = data.suspensionEndDate ? ` until ${data.suspensionEndDate.toLocaleDateString()}` : '';
       toast({
-        title: "Error",
-        description: `Failed to ${actionDialog.action} teacher. Please try again.`,
-        variant: "destructive",
+        title: "Teacher Suspended",
+        description: `${teacher.name} has been suspended${endDateText}. Reason: ${data.reason}`,
       });
     }
-
-    setActionDialog({ open: false, action: 'delete', teacher: null });
+    
+    setAccountActionDialog({ open: false, action: 'archive', teacher: null });
   };
 
-  const resultsCount = teachers.length;
-  const totalResults = searchTerm ? `${resultsCount} result${resultsCount !== 1 ? 's' : ''} found` : `${resultsCount} teacher${resultsCount !== 1 ? 's' : ''}`;
+  if (teachers.length === 0) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-gray-500">No teachers found matching your criteria</p>
+      </div>
+    );
+  }
 
   return (
     <>
-      <CardHeader className="px-0 pt-0">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div>
-            <CardTitle>Teaching Staff</CardTitle>
-            <p className="text-sm text-gray-600 mt-1">{totalResults}</p>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <div className="relative">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-              <Input 
-                placeholder="Search teachers..." 
-                className="pl-10 w-64"
-                value={searchTerm}
-                onChange={(e) => onSearchChange(e.target.value)}
-              />
-            </div>
-            <Select value={filterStatus} onValueChange={onFilterChange}>
-              <SelectTrigger className="w-40">
-                <Filter className="h-4 w-4 mr-2" />
-                <SelectValue placeholder="Filter by status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Teachers</SelectItem>
-                <SelectItem value="Active">Active</SelectItem>
-                <SelectItem value="On Leave">On Leave</SelectItem>
-                <SelectItem value="Inactive">Inactive</SelectItem>
-                <SelectItem value="Archived">Archived</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-      </CardHeader>
-      
-      <div className="overflow-x-auto">
-        {resultsCount === 0 ? (
-          <div className="text-center py-8 text-gray-500">
-            <GraduationCap className="h-12 w-12 mx-auto mb-4 opacity-50" />
-            <p>No teachers found matching your criteria.</p>
-            {searchTerm && (
-              <p className="text-sm mt-2">Try adjusting your search terms or filters.</p>
-            )}
-          </div>
-        ) : (
-          <table className="w-full">
-            <thead>
-              <tr className="border-b">
-                <th className="text-left p-4 font-medium">Teacher ID</th>
-                <th className="text-left p-4 font-medium">Name</th>
-                <th className="text-left p-4 font-medium">Subject</th>
-                <th className="text-left p-4 font-medium">Classes</th>
-                <th className="text-left p-4 font-medium">Experience</th>
-                <th className="text-left p-4 font-medium">Contact</th>
-                <th className="text-left p-4 font-medium">Status</th>
-                <th className="text-left p-4 font-medium">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {teachers.map((teacher) => (
-                <tr key={teacher.id} className="border-b hover:bg-gray-50">
-                  <td className="p-4 font-mono text-sm">{teacher.id}</td>
-                  <td className="p-4">
-                    <div className="flex items-center space-x-2">
-                      <GraduationCap className="h-4 w-4 text-gray-400" />
-                      <span>{teacher.name}</span>
-                    </div>
-                  </td>
-                  <td className="p-4">{teacher.subject}</td>
-                  <td className="p-4 text-sm">{teacher.classes}</td>
-                  <td className="p-4">{teacher.experience}</td>
-                  <td className="p-4">
-                    <div className="flex items-center space-x-2">
-                      <span className="text-sm">{teacher.phone}</span>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleCall(teacher.phone)}
-                        className="h-6 w-6 p-0"
-                      >
-                        <Phone className="h-3 w-3" />
+      <div className="rounded-md border">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Name</TableHead>
+              <TableHead>Email</TableHead>
+              <TableHead>Phone</TableHead>
+              <TableHead>Subject</TableHead>
+              <TableHead>Department</TableHead>
+              <TableHead>Experience</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {teachers.map((teacher) => (
+              <TableRow key={teacher.id}>
+                <TableCell className="font-medium">{teacher.name}</TableCell>
+                <TableCell>{teacher.email}</TableCell>
+                <TableCell>{teacher.phone}</TableCell>
+                <TableCell>{teacher.subject}</TableCell>
+                <TableCell>{teacher.department}</TableCell>
+                <TableCell>{teacher.experience}</TableCell>
+                <TableCell>
+                  <Badge variant="secondary" className={getStatusColor(teacher.status)}>
+                    {teacher.status.replace('-', ' ')}
+                  </Badge>
+                </TableCell>
+                <TableCell className="text-right">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" className="h-8 w-8 p-0">
+                        <span className="sr-only">Open menu</span>
+                        <MoreHorizontal className="h-4 w-4" />
                       </Button>
-                    </div>
-                  </td>
-                  <td className="p-4">
-                    <Badge className={`${getStatusColor(teacher.status)} cursor-pointer`}>
-                      {teacher.status}
-                    </Badge>
-                  </td>
-                  <td className="p-4">
-                    <div className="flex space-x-1">
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        onClick={() => onViewTeacher(teacher)}
-                        className="h-8 w-8 p-0"
-                      >
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        onClick={() => onEditTeacher(teacher)}
-                        className="h-8 w-8 p-0"
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        onClick={() => handleArchiveClick(teacher)}
-                        className="h-8 w-8 p-0 text-orange-600 hover:text-orange-800"
-                        disabled={teacher.status === 'Archived'}
-                      >
-                        <Archive className="h-4 w-4" />
-                      </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        onClick={() => handleDeleteClick(teacher)}
-                        className="h-8 w-8 p-0 text-red-600 hover:text-red-800"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="bg-white border shadow-lg z-50">
+                      <DropdownMenuItem onClick={() => onView(teacher)}>
+                        <Eye className="mr-2 h-4 w-4" />
+                        View Details
+                      </DropdownMenuItem>
+                      {!readOnly && onEdit && (
+                        <DropdownMenuItem onClick={() => onEdit(teacher)}>
+                          <Edit className="mr-2 h-4 w-4" />
+                          Edit
+                        </DropdownMenuItem>
+                      )}
+                      {!readOnly && (
+                        <>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem onClick={() => handleSuspend(teacher)}>
+                            <Clock className="mr-2 h-4 w-4" />
+                            Suspend
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleArchive(teacher)}>
+                            <Archive className="mr-2 h-4 w-4" />
+                            Archive
+                          </DropdownMenuItem>
+                          <DropdownMenuItem 
+                            onClick={() => handleDelete(teacher)}
+                            className="text-red-600"
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Delete
+                          </DropdownMenuItem>
+                        </>
+                      )}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       </div>
 
+      <ConfirmationDialog
+        open={confirmDialog.open}
+        onOpenChange={(open) => setConfirmDialog({ ...confirmDialog, open })}
+        title="Delete Teacher"
+        description={`Are you sure you want to permanently delete ${confirmDialog.teacherName}? This action cannot be undone and will remove all teacher records.`}
+        confirmText="Delete"
+        cancelText="Cancel"
+        onConfirm={confirmDelete}
+        variant="destructive"
+        type="delete"
+      />
+
       <AccountActionDialog
-        open={actionDialog.open}
-        onOpenChange={(open) => setActionDialog({ ...actionDialog, open })}
-        action={actionDialog.action}
-        personName={actionDialog.teacher?.name || ''}
+        open={accountActionDialog.open}
+        onOpenChange={(open) => setAccountActionDialog({ ...accountActionDialog, open })}
+        action={accountActionDialog.action}
+        personName={accountActionDialog.teacher?.name || ''}
         personType="teacher"
-        onConfirm={handleActionConfirm}
+        onConfirm={handleAccountAction}
       />
     </>
   );

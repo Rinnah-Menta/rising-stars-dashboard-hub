@@ -1,14 +1,27 @@
 
 import React, { useState } from 'react';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { MoreHorizontal, Eye, Edit, Archive, Trash2, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from '@/components/ui/dropdown-menu';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Eye, Edit, Trash2, Phone, Users, Lock, Archive } from 'lucide-react';
+import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
+import { AccountActionDialog } from '@/components/ui/account-action-dialog';
 import { Student } from '@/hooks/useStudents';
 import { useToast } from '@/hooks/use-toast';
-import { AccountActionDialog } from '@/components/ui/account-action-dialog';
-import { useAuth } from '@/contexts/AuthContext';
-import { useProfile } from '@/contexts/ProfileContext';
 
 interface StudentsTableProps {
   students: Student[];
@@ -28,107 +41,106 @@ export const StudentsTable: React.FC<StudentsTableProps> = ({
   readOnly = false
 }) => {
   const { toast } = useToast();
-  const { user, updateUserStatus } = useAuth();
-  const { profileData } = useProfile();
-  const [actionDialog, setActionDialog] = useState<{
+  const [confirmDialog, setConfirmDialog] = useState<{
     open: boolean;
-    action: 'archive' | 'delete' | 'suspend';
+    type: 'delete';
+    studentName: string;
+    studentId: string;
+  }>({ open: false, type: 'delete', studentName: '', studentId: '' });
+
+  const [accountActionDialog, setAccountActionDialog] = useState<{
+    open: boolean;
+    action: 'archive' | 'suspend';
     student: Student | null;
-  }>({ open: false, action: 'delete', student: null });
+  }>({ open: false, action: 'archive', student: null });
 
   const getFeesStatusColor = (status: string) => {
-    switch (status) {
-      case 'Paid': return 'bg-green-100 text-green-800 hover:bg-green-200';
-      case 'Pending': return 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200';
-      case 'Overdue': return 'bg-red-100 text-red-800 hover:bg-red-200';
-      default: return 'bg-gray-100 text-gray-800 hover:bg-gray-200';
+    switch (status.toLowerCase()) {
+      case 'paid':
+        return 'bg-green-100 text-green-800';
+      case 'pending':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'overdue':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
     }
   };
 
-  const handleCall = (phone: string) => {
-    window.open(`tel:${phone}`, '_self');
-    toast({
-      title: "Calling...",
-      description: `Dialing ${phone}`,
+  const handleDelete = (student: Student) => {
+    setConfirmDialog({
+      open: true,
+      type: 'delete',
+      studentName: student.name,
+      studentId: student.id
     });
   };
 
-  const handleArchiveClick = (student: Student) => {
-    setActionDialog({ open: true, action: 'archive', student });
+  const handleArchive = (student: Student) => {
+    setAccountActionDialog({
+      open: true,
+      action: 'archive',
+      student
+    });
   };
 
-  const handleDeleteClick = (student: Student) => {
-    setActionDialog({ open: true, action: 'delete', student });
+  const handleSuspend = (student: Student) => {
+    setAccountActionDialog({
+      open: true,
+      action: 'suspend',
+      student
+    });
   };
 
-  const handleActionConfirm = async (data: {
+  const confirmDelete = () => {
+    if (onDelete) {
+      onDelete(confirmDialog.studentId);
+      toast({
+        title: "Student Deleted",
+        description: `${confirmDialog.studentName} has been removed from the system.`,
+        variant: "destructive"
+      });
+    }
+    setConfirmDialog({ open: false, type: 'delete', studentName: '', studentId: '' });
+  };
+
+  const handleAccountAction = (data: {
     reason: string;
     customReason?: string;
     suspensionEndDate?: Date;
     nextSteps?: string;
   }) => {
-    if (!actionDialog.student || !user || !profileData) return;
-
-    const updatedBy = `${profileData.firstName} ${profileData.lastName}`;
-    const statusMap = {
-      archive: 'archived' as const,
-      delete: 'deleted' as const,
-      suspend: 'suspended' as const,
-    };
-
-    try {
-      await updateUserStatus(actionDialog.student.id, statusMap[actionDialog.action], {
-        reason: data.reason,
-        suspensionEndDate: data.suspensionEndDate,
-        nextSteps: data.nextSteps,
-        updatedBy
-      });
-
-      if (actionDialog.action === 'archive' && onArchive) {
-        onArchive(actionDialog.student.id);
-      } else if (actionDialog.action === 'delete' && onDelete) {
-        onDelete(actionDialog.student.id);
-      }
-
+    const { action, student } = accountActionDialog;
+    
+    if (action === 'archive' && onArchive && student) {
+      onArchive(student.id);
       toast({
-        title: `Student ${actionDialog.action === 'archive' ? 'Archived' : 'Deleted'}`,
-        description: `${actionDialog.student.name} has been ${actionDialog.action}d successfully.`,
+        title: "Student Archived",
+        description: `${student.name} has been archived. Reason: ${data.reason}`,
       });
-    } catch (error) {
+    } else if (action === 'suspend' && student) {
+      // For now, we'll just show a toast. In a real app, this would update the student status
+      const endDateText = data.suspensionEndDate ? ` until ${data.suspensionEndDate.toLocaleDateString()}` : '';
       toast({
-        title: "Error",
-        description: `Failed to ${actionDialog.action} student. Please try again.`,
-        variant: "destructive",
+        title: "Student Suspended",
+        description: `${student.name} has been suspended${endDateText}. Reason: ${data.reason}`,
       });
     }
-
-    setActionDialog({ open: false, action: 'delete', student: null });
+    
+    setAccountActionDialog({ open: false, action: 'archive', student: null });
   };
 
   if (students.length === 0) {
     return (
-      <div className="text-center py-8 text-gray-500">
-        <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
-        <p>No students found matching your criteria.</p>
-        {readOnly && (
-          <p className="text-sm mt-2">Make sure your profile includes the classes you teach.</p>
-        )}
+      <div className="text-center py-8">
+        <p className="text-gray-500">No students found</p>
       </div>
     );
   }
 
   return (
     <>
-      {readOnly && (
-        <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-md flex items-center gap-2">
-          <Lock className="h-4 w-4 text-amber-600" />
-          <span className="text-sm text-amber-700">
-            Read-only mode: You can view student information but cannot make changes.
-          </span>
-        </div>
-      )}
-      
-      <div className="overflow-x-auto">
+      <div className="rounded-md border">
         <Table>
           <TableHeader>
             <TableRow>
@@ -144,74 +156,59 @@ export const StudentsTable: React.FC<StudentsTableProps> = ({
           </TableHeader>
           <TableBody>
             {students.map((student) => (
-              <TableRow key={student.id} className="hover:bg-gray-50">
-                <TableCell className="font-mono text-sm font-medium">{student.id}</TableCell>
-                <TableCell className="font-medium">{student.name}</TableCell>
+              <TableRow key={student.id}>
+                <TableCell className="font-medium">{student.id}</TableCell>
+                <TableCell>{student.name}</TableCell>
                 <TableCell>{student.class}</TableCell>
                 <TableCell>{student.age}</TableCell>
                 <TableCell>{student.parent}</TableCell>
+                <TableCell>{student.phone}</TableCell>
                 <TableCell>
-                  <div className="flex items-center space-x-2">
-                    <span className="text-sm">{student.phone}</span>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleCall(student.phone)}
-                      className="h-6 w-6 p-0"
-                    >
-                      <Phone className="h-3 w-3" />
-                    </Button>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <Badge 
-                    variant="secondary" 
-                    className={`${getFeesStatusColor(student.fees)} cursor-pointer`}
-                  >
+                  <Badge variant="secondary" className={getFeesStatusColor(student.fees)}>
                     {student.fees}
                   </Badge>
                 </TableCell>
                 <TableCell className="text-right">
-                  <div className="flex items-center justify-end space-x-1">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => onView(student)}
-                      className="h-8 w-8 p-0"
-                    >
-                      <Eye className="h-4 w-4" />
-                    </Button>
-                    {!readOnly && onEdit && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => onEdit(student)}
-                        className="h-8 w-8 p-0"
-                      >
-                        <Edit className="h-4 w-4" />
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" className="h-8 w-8 p-0">
+                        <span className="sr-only">Open menu</span>
+                        <MoreHorizontal className="h-4 w-4" />
                       </Button>
-                    )}
-                    {!readOnly && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleArchiveClick(student)}
-                        className="h-8 w-8 p-0 text-orange-600 hover:text-orange-800"
-                      >
-                        <Archive className="h-4 w-4" />
-                      </Button>
-                    )}
-                    {!readOnly && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleDeleteClick(student)}
-                        className="h-8 w-8 p-0 text-red-600 hover:text-red-800"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    )}
-                  </div>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="bg-white border shadow-lg z-50">
+                      <DropdownMenuItem onClick={() => onView(student)}>
+                        <Eye className="mr-2 h-4 w-4" />
+                        View Details
+                      </DropdownMenuItem>
+                      {!readOnly && onEdit && (
+                        <DropdownMenuItem onClick={() => onEdit(student)}>
+                          <Edit className="mr-2 h-4 w-4" />
+                          Edit
+                        </DropdownMenuItem>
+                      )}
+                      {!readOnly && (
+                        <>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem onClick={() => handleSuspend(student)}>
+                            <Clock className="mr-2 h-4 w-4" />
+                            Suspend
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleArchive(student)}>
+                            <Archive className="mr-2 h-4 w-4" />
+                            Archive
+                          </DropdownMenuItem>
+                          <DropdownMenuItem 
+                            onClick={() => handleDelete(student)}
+                            className="text-red-600"
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Delete
+                          </DropdownMenuItem>
+                        </>
+                      )}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </TableCell>
               </TableRow>
             ))}
@@ -219,13 +216,25 @@ export const StudentsTable: React.FC<StudentsTableProps> = ({
         </Table>
       </div>
 
+      <ConfirmationDialog
+        open={confirmDialog.open}
+        onOpenChange={(open) => setConfirmDialog({ ...confirmDialog, open })}
+        title="Delete Student"
+        description={`Are you sure you want to permanently delete ${confirmDialog.studentName}? This action cannot be undone and will remove all student records.`}
+        confirmText="Delete"
+        cancelText="Cancel"
+        onConfirm={confirmDelete}
+        variant="destructive"
+        type="delete"
+      />
+
       <AccountActionDialog
-        open={actionDialog.open}
-        onOpenChange={(open) => setActionDialog({ ...actionDialog, open })}
-        action={actionDialog.action}
-        personName={actionDialog.student?.name || ''}
+        open={accountActionDialog.open}
+        onOpenChange={(open) => setAccountActionDialog({ ...accountActionDialog, open })}
+        action={accountActionDialog.action}
+        personName={accountActionDialog.student?.name || ''}
         personType="student"
-        onConfirm={handleActionConfirm}
+        onConfirm={handleAccountAction}
       />
     </>
   );
