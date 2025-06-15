@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -23,10 +22,39 @@ export const Profile = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState<any>({});
 
-  const profileFields = [
-    'firstName', 'lastName', 'gender', 'phone', 'address', 'bio', 
-    'emergencyContact', 'emergencyPhone', 'qualification', 'experience', 'joinDate'
-  ];
+  // Dynamic profile fields based on user role
+  const getProfileFields = () => {
+    const baseFields = [
+      'firstName', 'lastName', 'gender', 'phone', 'address', 'bio', 
+      'emergencyContact', 'emergencyPhone', 'qualification', 'experience', 'joinDate'
+    ];
+
+    if (user?.role === 'teacher') {
+      return [
+        ...baseFields,
+        'subject', 'department', 'classesTaught', 'subjectsTaught',
+        'isClassTeacher', 'isDepartmentHead'
+      ];
+    }
+
+    if (user?.role === 'admin') {
+      return [
+        ...baseFields,
+        'department', 'isDepartmentHead', 'headOfDepartment'
+      ];
+    }
+
+    if (user?.role === 'non-teaching') {
+      return [
+        ...baseFields,
+        'department', 'isDepartmentHead', 'headOfDepartment'
+      ];
+    }
+
+    return baseFields;
+  };
+
+  const profileFields = getProfileFields();
 
   useEffect(() => {
     if (profileData) {

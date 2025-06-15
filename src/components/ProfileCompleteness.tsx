@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Progress } from '@/components/ui/progress';
 
@@ -11,7 +12,38 @@ export const ProfileCompleteness: React.FC<ProfileCompletenessProps> = ({ profil
 
   const filledFields = fields.filter(field => {
     const value = profileData[field];
-    return value !== null && value !== undefined && value !== '';
+    
+    // Handle null, undefined, or empty string
+    if (value === null || value === undefined || value === '') {
+      return false;
+    }
+    
+    // Handle arrays (like classesTaught, subjectsTaught)
+    if (Array.isArray(value)) {
+      return value.length > 0;
+    }
+    
+    // Handle stringified arrays
+    if (typeof value === 'string' && value.startsWith('[')) {
+      try {
+        const parsed = JSON.parse(value);
+        return Array.isArray(parsed) && parsed.length > 0;
+      } catch {
+        return false;
+      }
+    }
+    
+    // Handle boolean fields (like isClassTeacher, isDepartmentHead)
+    if (typeof value === 'boolean') {
+      return true; // Boolean fields are considered filled regardless of true/false
+    }
+    
+    // Handle string representations of booleans
+    if (value === 'true' || value === 'false') {
+      return true;
+    }
+    
+    return true;
   }).length;
   
   const completeness = Math.round((filledFields / fields.length) * 100);
@@ -28,4 +60,4 @@ export const ProfileCompleteness: React.FC<ProfileCompletenessProps> = ({ profil
       </p>
     </div>
   );
-}; 
+};
