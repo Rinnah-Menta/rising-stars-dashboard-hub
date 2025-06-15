@@ -11,36 +11,38 @@ interface AdminQuickActionsProps {
 
 export const AdminQuickActions: React.FC<AdminQuickActionsProps> = ({ onControlPanelClick }) => {
   return (
-    <AnimatedInView className="lg:col-span-2">
-      <Card>
+    <AnimatedInView>
+      <Card className="h-full">
         <CardHeader>
           <CardTitle>Admin Quick Actions</CardTitle>
         </CardHeader>
-        <CardContent className="grid grid-cols-2 gap-3">
-          <Button className="h-auto p-4 flex-col space-y-2">
-            <Users className="h-6 w-6" />
-            <span className="text-sm">Manage Users</span>
-          </Button>
-          <Button variant="outline" className="h-auto p-4 flex-col space-y-2" onClick={onControlPanelClick}>
-            <Shield className="h-6 w-6" />
-            <span className="text-sm">System Control</span>
-          </Button>
-          <Button variant="outline" className="h-auto p-4 flex-col space-y-2">
-            <BookOpen className="h-6 w-6" />
-            <span className="text-sm">All Reports</span>
-          </Button>
-          <Button variant="outline" className="h-auto p-4 flex-col space-y-2">
-            <Bell className="h-6 w-6" />
-            <span className="text-sm">Notifications</span>
-          </Button>
-          <Button variant="outline" className="h-auto p-4 flex-col space-y-2">
-            <School className="h-6 w-6" />
-            <span className="text-sm">School Settings</span>
-          </Button>
-          <Button variant="outline" className="h-auto p-4 flex-col space-y-2">
-            <DollarSign className="h-6 w-6" />
-            <span className="text-sm">Financial Control</span>
-          </Button>
+        <CardContent>
+          <div className="grid grid-cols-2 gap-3">
+            <Button className="h-auto p-4 flex-col space-y-2 text-xs">
+              <Users className="h-5 w-5" />
+              <span>Manage Users</span>
+            </Button>
+            <Button variant="outline" className="h-auto p-4 flex-col space-y-2 text-xs" onClick={onControlPanelClick}>
+              <Shield className="h-5 w-5" />
+              <span>System Control</span>
+            </Button>
+            <Button variant="outline" className="h-auto p-4 flex-col space-y-2 text-xs">
+              <BookOpen className="h-5 w-5" />
+              <span>All Reports</span>
+            </Button>
+            <Button variant="outline" className="h-auto p-4 flex-col space-y-2 text-xs">
+              <Bell className="h-5 w-5" />
+              <span>Notifications</span>
+            </Button>
+            <Button variant="outline" className="h-auto p-4 flex-col space-y-2 text-xs">
+              <School className="h-5 w-5" />
+              <span>School Settings</span>
+            </Button>
+            <Button variant="outline" className="h-auto p-4 flex-col space-y-2 text-xs">
+              <DollarSign className="h-5 w-5" />
+              <span>Financial Control</span>
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </AnimatedInView>

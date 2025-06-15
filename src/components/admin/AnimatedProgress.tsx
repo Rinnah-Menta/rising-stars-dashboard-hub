@@ -15,7 +15,7 @@ export const AnimatedProgress: React.FC<AnimatedProgressProps> = ({ value, color
   }, [value]);
 
   return (
-    <div className="w-32 bg-gray-200 rounded-full h-2">
+    <div className="w-20 sm:w-32 bg-gray-200 rounded-full h-2">
       <div 
         className={`${colorClass} h-2 rounded-full transition-all duration-700 ease-out`} 
         style={{ width: `${width}%` }}

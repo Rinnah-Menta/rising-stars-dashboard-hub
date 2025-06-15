@@ -12,12 +12,17 @@ interface AdminOverviewContentProps {
 
 export const AdminOverviewContent: React.FC<AdminOverviewContentProps> = ({ onControlPanelClick }) => {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+    <div className="space-y-6">
+      {/* Stats Cards - Always full width, responsive grid internally */}
       <AdminStatsCards />
-      <SchoolOverview />
-      <RecentActivities />
-      <GradeDistribution />
-      <AdminQuickActions onControlPanelClick={onControlPanelClick} />
+      
+      {/* Main Content Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <SchoolOverview />
+        <RecentActivities />
+        <GradeDistribution />
+        <AdminQuickActions onControlPanelClick={onControlPanelClick} />
+      </div>
     </div>
   );
 };
