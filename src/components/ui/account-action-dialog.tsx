@@ -18,7 +18,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { Input } from '@/components/ui/input';
 import { Calendar } from '@/components/ui/calendar';
 import {
   Popover,
@@ -26,7 +25,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { CalendarIcon, AlertTriangle, Archive, Trash2, Clock } from 'lucide-react';
-import { format, addDays, addMonths, addYears } from 'date-fns';
+import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 
 interface AccountActionDialogProps {
@@ -126,16 +125,6 @@ const REASONS = {
   }
 };
 
-const SUSPENSION_PERIODS = [
-  { label: '1 week', days: 7 },
-  { label: '2 weeks', days: 14 },
-  { label: '1 month', months: 1 },
-  { label: '3 months', months: 3 },
-  { label: '6 months', months: 6 },
-  { label: '1 year', years: 1 },
-  { label: 'Custom', custom: true }
-];
-
 export const AccountActionDialog: React.FC<AccountActionDialogProps> = ({
   open,
   onOpenChange,
@@ -146,9 +135,7 @@ export const AccountActionDialog: React.FC<AccountActionDialogProps> = ({
 }) => {
   const [reason, setReason] = useState('');
   const [customReason, setCustomReason] = useState('');
-  const [suspensionPeriod, setSuspensionPeriod] = useState('');
-  const [customEndDate, setCustomEndDate] = useState<Date>();
-  const [exactEndDate, setExactEndDate] = useState<Date>();
+  const [suspensionEndDate, setSuspensionEndDate] = useState<Date>();
   const [nextSteps, setNextSteps] = useState('');
 
   const getIcon = () => {
@@ -177,46 +164,23 @@ export const AccountActionDialog: React.FC<AccountActionDialogProps> = ({
     }
   };
 
-  const calculateEndDate = () => {
-    if (!suspensionPeriod || action !== 'suspend') return undefined;
-    
-    // If exact date is selected, use that
-    if (exactEndDate) return exactEndDate;
-    
-    const period = SUSPENSION_PERIODS.find(p => p.label === suspensionPeriod);
-    if (!period) return undefined;
-    
-    if (period.custom) return customEndDate;
-    
-    const now = new Date();
-    if (period.days) return addDays(now, period.days);
-    if (period.months) return addMonths(now, period.months);
-    if (period.years) return addYears(now, period.years);
-    
-    return undefined;
-  };
-
   const handleSubmit = () => {
-    const endDate = calculateEndDate();
-    
     onConfirm({
       reason: reason === 'Other' ? customReason : reason,
       customReason: reason === 'Other' ? customReason : undefined,
-      suspensionEndDate: endDate,
+      suspensionEndDate: action === 'suspend' ? suspensionEndDate : undefined,
       nextSteps: nextSteps || undefined
     });
     
     // Reset form
     setReason('');
     setCustomReason('');
-    setSuspensionPeriod('');
-    setCustomEndDate(undefined);
-    setExactEndDate(undefined);
+    setSuspensionEndDate(undefined);
     setNextSteps('');
   };
 
   const isValid = reason && (reason !== 'Other' || customReason) && 
-    (action !== 'suspend' || (suspensionPeriod && (suspensionPeriod !== 'Custom' || customEndDate || exactEndDate)));
+    (action !== 'suspend' || suspensionEndDate);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -263,84 +227,31 @@ export const AccountActionDialog: React.FC<AccountActionDialogProps> = ({
 
           {action === 'suspend' && (
             <div className="space-y-2">
-              <Label htmlFor="suspensionPeriod">Suspension Period</Label>
-              <Select value={suspensionPeriod} onValueChange={setSuspensionPeriod}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select suspension period" />
-                </SelectTrigger>
-                <SelectContent>
-                  {SUSPENSION_PERIODS.map((period) => (
-                    <SelectItem key={period.label} value={period.label}>
-                      {period.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
-
-          {action === 'suspend' && suspensionPeriod === 'Custom' && (
-            <div className="space-y-2">
-              <Label>Custom End Date</Label>
+              <Label>Suspension End Date</Label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
                     className={cn(
                       "w-full justify-start text-left font-normal",
-                      !customEndDate && "text-muted-foreground"
+                      !suspensionEndDate && "text-muted-foreground"
                     )}
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
-                    {customEndDate ? format(customEndDate, "PPP") : "Pick a date"}
+                    {suspensionEndDate ? format(suspensionEndDate, "PPP") : "Select end date"}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
                   <Calendar
                     mode="single"
-                    selected={customEndDate}
-                    onSelect={setCustomEndDate}
+                    selected={suspensionEndDate}
+                    onSelect={setSuspensionEndDate}
                     disabled={(date) => date < new Date()}
                     initialFocus
                     className="p-3 pointer-events-auto"
                   />
                 </PopoverContent>
               </Popover>
-            </div>
-          )}
-
-          {action === 'suspend' && suspensionPeriod && suspensionPeriod !== 'Custom' && (
-            <div className="space-y-2">
-              <Label>Or select exact end date</Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className={cn(
-                      "w-full justify-start text-left font-normal",
-                      !exactEndDate && "text-muted-foreground"
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {exactEndDate ? format(exactEndDate, "PPP") : "Override with exact date"}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={exactEndDate}
-                    onSelect={setExactEndDate}
-                    disabled={(date) => date < new Date()}
-                    initialFocus
-                    className="p-3 pointer-events-auto"
-                  />
-                </PopoverContent>
-              </Popover>
-              {exactEndDate && (
-                <p className="text-xs text-gray-500">
-                  This will override the {suspensionPeriod} period
-                </p>
-              )}
             </div>
           )}
 
