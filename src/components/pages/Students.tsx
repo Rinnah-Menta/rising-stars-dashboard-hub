@@ -6,14 +6,20 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Search, UserPlus, Download, Filter, RefreshCw } from 'lucide-react';
 import { useStudents, Student } from '@/hooks/useStudents';
+import { usePendingStudentOperations } from '@/hooks/usePendingStudentOperations';
 import { StudentsStats } from '@/components/students/StudentsStats';
 import { StudentsTable } from '@/components/students/StudentsTable';
 import { StudentDialog } from '@/components/students/StudentDialog';
 import { StudentDetailsDialog } from '@/components/students/StudentDetailsDialog';
+import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
+import { useProfile } from '@/contexts/ProfileContext';
 import AnimatedInView from '@/components/AnimatedInView';
 
 export const Students = () => {
+  const { user } = useAuth();
+  const { profileData } = useProfile();
   const {
     students,
     loading,
@@ -28,14 +34,32 @@ export const Students = () => {
     refreshStudents
   } = useStudents();
 
+  const { addPendingOperation } = usePendingStudentOperations();
   const { toast } = useToast();
+  
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showDetailsDialog, setShowDetailsDialog] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [editingStudent, setEditingStudent] = useState<Student | null>(null);
+  const [confirmationDialog, setConfirmationDialog] = useState<{
+    open: boolean;
+    type: 'add' | 'edit';
+    data: any;
+  }>({ open: false, type: 'add', data: null });
+
+  const isTeacher = user?.role === 'teacher';
+  const isAdmin = user?.role === 'admin';
 
   const handleAddStudent = (studentData: Omit<Student, 'id'>) => {
-    addStudent(studentData);
+    if (isTeacher) {
+      setConfirmationDialog({
+        open: true,
+        type: 'add',
+        data: studentData
+      });
+    } else {
+      addStudent(studentData);
+    }
   };
 
   const handleEditStudent = (student: Student) => {
@@ -44,13 +68,78 @@ export const Students = () => {
   };
 
   const handleUpdateStudent = (studentData: Student) => {
-    updateStudent(studentData.id, studentData);
+    if (isTeacher) {
+      setConfirmationDialog({
+        open: true,
+        type: 'edit',
+        data: { studentData, originalStudent: editingStudent }
+      });
+    } else {
+      updateStudent(studentData.id, studentData);
+    }
     setEditingStudent(null);
+  };
+
+  const handleConfirmOperation = () => {
+    const { type, data } = confirmationDialog;
+    
+    if (isTeacher && user && profileData) {
+      const teacherName = `${profileData.firstName} ${profileData.lastName}`;
+      
+      if (type === 'add') {
+        addPen |
+        dingOperation({
+          type: 'add',
+          studentData: data,
+          teacherName
+        });
+        
+        toast({
+          title: "Request Submitted",
+          description: "Your request to add a student has been sent to admin for approval.",
+        });
+      } else if (type === 'edit') {
+        addPendingOperation({
+          type: 'edit',
+          studentData: data.studentData,
+          originalStudent: data.originalStudent,
+          teacherName
+        });
+        
+        toast({
+          title: "Request Submitted",
+          description: "Your request to edit student information has been sent to admin for approval.",
+        });
+      }
+    }
+    
+    setConfirmationDialog({ open: false, type: 'add', data: null });
   };
 
   const handleViewStudent = (student: Student) => {
     setSelectedStudent(student);
     setShowDetailsDialog(true);
+  };
+
+  const handleDeleteStudent = (id: string) => {
+    if (isTeacher && user && profileData) {
+      const student = students.find(s => s.id === id);
+      if (student) {
+        const teacherName = `${profileData.firstName} ${profileData.lastName}`;
+        addPendingOperation({
+          type: 'delete',
+          studentData: student,
+          teacherName
+        });
+        
+        toast({
+          title: "Request Submitted",
+          description: "Your request to delete the student has been sent to admin for approval.",
+        });
+      }
+    } else {
+      deleteStudent(id);
+    }
   };
 
   const handleExport = () => {
@@ -88,7 +177,9 @@ export const Students = () => {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
             <h1 className="text-2xl md:text-3xl font-bold">Students Management</h1>
-            <p className="text-gray-600 mt-1">Manage student information and track fees</p>
+            <p className="text-gray-600 mt-1">
+              {isTeacher ? 'Manage your class students (requires admin approval)' : 'Manage student information and track fees'}
+            </p>
           </div>
           <div className="flex flex-wrap gap-2">
             <Button onClick={() => setShowAddDialog(true)} className="bg-blue-600 hover:bg-blue-700">
@@ -151,7 +242,7 @@ export const Students = () => {
               <StudentsTable
                 students={students}
                 onEdit={handleEditStudent}
-                onDelete={deleteStudent}
+                onDelete={handleDeleteStudent}
                 onView={handleViewStudent}
               />
             )}
@@ -175,6 +266,17 @@ export const Students = () => {
         onOpenChange={setShowDetailsDialog}
         student={selectedStudent}
         onEdit={handleEditStudent}
+      />
+
+      <ConfirmationDialog
+        open={confirmationDialog.open}
+        onOpenChange={(open) => setConfirmationDialog({ ...confirmationDialog, open })}
+        title={`Submit ${confirmationDialog.type === 'add' ? 'Add' : 'Edit'} Request`}
+        description={`This request will be sent to the admin for approval. ${confirmationDialog.type === 'add' ? 'The student will be added after approval.' : 'Changes will be applied after approval.'}`}
+        confirmText="Submit Request"
+        cancelText="Cancel"
+        onConfirm={handleConfirmOperation}
+        type={confirmationDialog.type === 'add' ? 'add' : 'edit'}
       />
     </div>
   );

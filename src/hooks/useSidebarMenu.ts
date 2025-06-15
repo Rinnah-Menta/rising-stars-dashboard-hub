@@ -52,6 +52,21 @@ export const useSidebarMenu = () => {
     return false;
   };
 
+  const shouldShowStudents = () => {
+    if (!user || !profileData) return false;
+    
+    // Admins always see students
+    if (user.role === 'admin') return true;
+    
+    // Teachers see students if they are class teachers
+    if (user.role === 'teacher' && isBooleanTrue(profileData.isClassTeacher)) {
+      return true;
+    }
+    
+    // Parents and non-teaching staff don't see students
+    return false;
+  };
+
   const getUserRoleLabel = () => {
     switch (user?.role) {
       case 'pupil': return 'Student Portal';
@@ -112,7 +127,7 @@ export const useSidebarMenu = () => {
         'calendar', 
         ...(shouldShowReports() ? ['reports'] : []),
         'classes', 
-        'students', 
+        ...(shouldShowStudents() ? ['students'] : []),
         'assignments', 
         'results', 
         'timetable', 
@@ -125,7 +140,6 @@ export const useSidebarMenu = () => {
         'dashboard', 
         'profile', 
         'calendar', 
-        'students', 
         'results', 
         'finances', 
         'communication', 

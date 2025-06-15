@@ -1,11 +1,12 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Eye, Edit, Trash2, Phone, Users } from 'lucide-react';
 import { Student } from '@/hooks/useStudents';
 import { useToast } from '@/hooks/use-toast';
+import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 
 interface StudentsTableProps {
   students: Student[];
@@ -21,6 +22,10 @@ export const StudentsTable: React.FC<StudentsTableProps> = ({
   onView
 }) => {
   const { toast } = useToast();
+  const [deleteConfirmation, setDeleteConfirmation] = useState<{
+    open: boolean;
+    student: Student | null;
+  }>({ open: false, student: null });
 
   const getFeesStatusColor = (status: string) => {
     switch (status) {
@@ -39,14 +44,19 @@ export const StudentsTable: React.FC<StudentsTableProps> = ({
     });
   };
 
-  const handleDelete = (id: string, name: string) => {
-    if (window.confirm(`Are you sure you want to delete ${name}?`)) {
-      onDelete(id);
+  const handleDeleteClick = (student: Student) => {
+    setDeleteConfirmation({ open: true, student });
+  };
+
+  const handleDeleteConfirm = () => {
+    if (deleteConfirmation.student) {
+      onDelete(deleteConfirmation.student.id);
       toast({
         title: "Student deleted",
-        description: `${name} has been removed from the system.`,
+        description: `${deleteConfirmation.student.name} has been removed from the system.`,
       });
     }
+    setDeleteConfirmation({ open: false, student: null });
   };
 
   if (students.length === 0) {
@@ -59,81 +69,95 @@ export const StudentsTable: React.FC<StudentsTableProps> = ({
   }
 
   return (
-    <div className="overflow-x-auto">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Student ID</TableHead>
-            <TableHead>Name</TableHead>
-            <TableHead>Class</TableHead>
-            <TableHead>Age</TableHead>
-            <TableHead>Parent/Guardian</TableHead>
-            <TableHead>Contact</TableHead>
-            <TableHead>Fees Status</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {students.map((student) => (
-            <TableRow key={student.id} className="hover:bg-gray-50">
-              <TableCell className="font-mono text-sm font-medium">{student.id}</TableCell>
-              <TableCell className="font-medium">{student.name}</TableCell>
-              <TableCell>{student.class}</TableCell>
-              <TableCell>{student.age}</TableCell>
-              <TableCell>{student.parent}</TableCell>
-              <TableCell>
-                <div className="flex items-center space-x-2">
-                  <span className="text-sm">{student.phone}</span>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleCall(student.phone)}
-                    className="h-6 w-6 p-0"
-                  >
-                    <Phone className="h-3 w-3" />
-                  </Button>
-                </div>
-              </TableCell>
-              <TableCell>
-                <Badge 
-                  variant="secondary" 
-                  className={`${getFeesStatusColor(student.fees)} cursor-pointer`}
-                >
-                  {student.fees}
-                </Badge>
-              </TableCell>
-              <TableCell className="text-right">
-                <div className="flex items-center justify-end space-x-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => onView(student)}
-                    className="h-8 w-8 p-0"
-                  >
-                    <Eye className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => onEdit(student)}
-                    className="h-8 w-8 p-0"
-                  >
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleDelete(student.id, student.name)}
-                    className="h-8 w-8 p-0 text-red-600 hover:text-red-800"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </TableCell>
+    <>
+      <div className="overflow-x-auto">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Student ID</TableHead>
+              <TableHead>Name</TableHead>
+              <TableHead>Class</TableHead>
+              <TableHead>Age</TableHead>
+              <TableHead>Parent/Guardian</TableHead>
+              <TableHead>Contact</TableHead>
+              <TableHead>Fees Status</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </div>
+          </TableHeader>
+          <TableBody>
+            {students.map((student) => (
+              <TableRow key={student.id} className="hover:bg-gray-50">
+                <TableCell className="font-mono text-sm font-medium">{student.id}</TableCell>
+                <TableCell className="font-medium">{student.name}</TableCell>
+                <TableCell>{student.class}</TableCell>
+                <TableCell>{student.age}</TableCell>
+                <TableCell>{student.parent}</TableCell>
+                <TableCell>
+                  <div className="flex items-center space-x-2">
+                    <span className="text-sm">{student.phone}</span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleCall(student.phone)}
+                      className="h-6 w-6 p-0"
+                    >
+                      <Phone className="h-3 w-3" />
+                    </Button>
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <Badge 
+                    variant="secondary" 
+                    className={`${getFeesStatusColor(student.fees)} cursor-pointer`}
+                  >
+                    {student.fees}
+                  </Badge>
+                </TableCell>
+                <TableCell className="text-right">
+                  <div className="flex items-center justify-end space-x-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => onView(student)}
+                      className="h-8 w-8 p-0"
+                    >
+                      <Eye className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => onEdit(student)}
+                      className="h-8 w-8 p-0"
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleDeleteClick(student)}
+                      className="h-8 w-8 p-0 text-red-600 hover:text-red-800"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+
+      <ConfirmationDialog
+        open={deleteConfirmation.open}
+        onOpenChange={(open) => setDeleteConfirmation({ open, student: null })}
+        title="Delete Student"
+        description={`Are you sure you want to delete ${deleteConfirmation.student?.name}? This action cannot be undone.`}
+        confirmText="Delete"
+        cancelText="Cancel"
+        onConfirm={handleDeleteConfirm}
+        variant="destructive"
+        type="delete"
+      />
+    </>
   );
 };
