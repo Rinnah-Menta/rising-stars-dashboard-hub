@@ -7,6 +7,7 @@ import {
   SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { NotificationBadge } from '@/components/ui/notification-badge';
+import { useNavigation } from '@/contexts/NavigationContext';
 
 interface MenuItem {
   title: string;
@@ -22,9 +23,11 @@ interface SidebarMenuContentProps {
 export const SidebarMenuContent: React.FC<SidebarMenuContentProps> = ({ menuItems }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { setCurrentPage } = useNavigation();
 
   const handleMenuClick = (itemId: string) => {
     const path = itemId === 'dashboard' ? '/' : `/${itemId}`;
+    setCurrentPage(itemId);
     navigate(path);
   };
 

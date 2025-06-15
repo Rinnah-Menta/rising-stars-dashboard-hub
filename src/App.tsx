@@ -21,6 +21,7 @@ import { Settings } from "@/components/pages/Settings";
 import { Timetable } from "@/components/pages/Timetable";
 import { Assignments } from "@/components/pages/Assignments";
 import { Results } from "@/components/pages/Results";
+import { Notifications } from "@/components/pages/Notifications";
 import PupilDashboard from "@/components/dashboards/PupilDashboard";
 import TeacherDashboard from "@/components/dashboards/TeacherDashboard";
 import NonTeachingDashboard from "@/components/dashboards/NonTeachingDashboard";
@@ -264,6 +265,14 @@ const AppRoutes = () => {
             <ProtectedRoute>
               <Layout>
                 <Results />
+              </Layout>
+            </ProtectedRoute>
+          } />
+
+          <Route path="/notifications" element={
+            <ProtectedRoute>
+              <Layout>
+                <Notifications />
               </Layout>
             </ProtectedRoute>
           } />

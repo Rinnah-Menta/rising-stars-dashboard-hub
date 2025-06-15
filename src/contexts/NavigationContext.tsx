@@ -1,5 +1,6 @@
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 
 type NavigationContextType = {
   currentPage: string;
@@ -18,6 +19,17 @@ export const useNavigation = () => {
 
 export const NavigationProvider = ({ children }: { children: ReactNode }) => {
   const [currentPage, setCurrentPage] = useState('dashboard');
+  const location = useLocation();
+
+  // Sync currentPage with current route
+  useEffect(() => {
+    const path = location.pathname;
+    if (path === '/' || path === '/dashboard') {
+      setCurrentPage('dashboard');
+    } else {
+      setCurrentPage(path.slice(1)); // Remove leading slash
+    }
+  }, [location.pathname]);
 
   return (
     <NavigationContext.Provider value={{ currentPage, setCurrentPage }}>
