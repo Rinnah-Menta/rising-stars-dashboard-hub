@@ -10,23 +10,11 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { Calendar } from '@/components/ui/calendar';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
-import { CalendarIcon, AlertTriangle, Archive, Trash2, Clock, ChevronLeft, ChevronRight, UserX } from 'lucide-react';
-import { format, addMonths, subMonths, startOfToday } from 'date-fns';
-import { cn } from '@/lib/utils';
+import { startOfToday } from 'date-fns';
+import { ReasonSelector } from './account-action-dialog/ReasonSelector';
+import { CalendarPopover } from './account-action-dialog/CalendarPopover';
+import { DialogIcon } from './account-action-dialog/DialogIcon';
 
 interface AccountActionDialogProps {
   open: boolean;
@@ -42,117 +30,6 @@ interface AccountActionDialogProps {
   }) => void;
 }
 
-const REASONS = {
-  archive: {
-    student: [
-      'Graduated',
-      'Transferred to another school',
-      'Left due to relocation',
-      'Medical reasons',
-      'Academic performance',
-      'Other'
-    ],
-    teacher: [
-      'Resigned',
-      'Contract ended',
-      'Transferred to another branch',
-      'Retirement',
-      'Medical leave',
-      'Performance issues',
-      'Other'
-    ],
-    staff: [
-      'Resigned',
-      'Contract ended',
-      'Position eliminated',
-      'Transferred',
-      'Retirement',
-      'Performance issues',
-      'Other'
-    ]
-  },
-  delete: {
-    student: [
-      'Expelled for misconduct',
-      'Falsified records',
-      'Repeated violations',
-      'Safety concerns',
-      'Legal issues',
-      'Other'
-    ],
-    teacher: [
-      'Terminated for cause',
-      'Misconduct',
-      'Violation of policies',
-      'Criminal activity',
-      'Breach of contract',
-      'Other'
-    ],
-    staff: [
-      'Terminated for cause',
-      'Misconduct',
-      'Violation of policies',
-      'Criminal activity',
-      'Breach of contract',
-      'Other'
-    ]
-  },
-  suspend: {
-    student: [
-      'Disciplinary action',
-      'Academic probation',
-      'Behavioral issues',
-      'Investigation pending',
-      'Medical suspension',
-      'Other'
-    ],
-    teacher: [
-      'Investigation pending',
-      'Performance review',
-      'Policy violation',
-      'Medical leave',
-      'Disciplinary action',
-      'Other'
-    ],
-    staff: [
-      'Investigation pending',
-      'Performance review',
-      'Policy violation',
-      'Medical leave',
-      'Disciplinary action',
-      'Other'
-    ]
-  },
-  expel: {
-    student: [
-      'Serious misconduct',
-      'Repeated disciplinary violations',
-      'Violence or threats',
-      'Drug or alcohol violations',
-      'Criminal activity',
-      'Safety concerns',
-      'Academic dishonesty',
-      'Other'
-    ],
-    teacher: [
-      'Gross misconduct',
-      'Criminal conviction',
-      'Breach of professional ethics',
-      'Inappropriate conduct with students',
-      'Violation of school policies',
-      'Other'
-    ],
-    staff: [
-      'Gross misconduct',
-      'Criminal conviction',
-      'Theft or fraud',
-      'Harassment or discrimination',
-      'Violation of school policies',
-      'Other'
-    ]
-  }
-};
-
 export const AccountActionDialog: React.FC<AccountActionDialogProps> = ({
   open,
   onOpenChange,
@@ -165,22 +42,6 @@ export const AccountActionDialog: React.FC<AccountActionDialogProps> = ({
   const [customReason, setCustomReason] = useState('');
   const [suspensionEndDate, setSuspensionEndDate] = useState<Date>(startOfToday());
   const [nextSteps, setNextSteps] = useState('');
-  const [calendarMonth, setCalendarMonth] = useState(new Date());
-
-  const getIcon = () => {
-    switch (action) {
-      case 'archive':
-        return <Archive className="h-6 w-6 text-orange-600" />;
-      case 'delete':
-        return <Trash2 className="h-6 w-6 text-red-600" />;
-      case 'suspend':
-        return <Clock className="h-6 w-6 text-yellow-600" />;
-      case 'expel':
-        return <UserX className="h-6 w-6 text-red-700" />;
-      default:
-        return <AlertTriangle className="h-6 w-6 text-gray-600" />;
-    }
-  };
 
   const getTitle = () => {
     switch (action) {
@@ -215,38 +76,12 @@ export const AccountActionDialog: React.FC<AccountActionDialogProps> = ({
   const isValid = reason && (reason !== 'Other' || customReason) && 
     (action !== 'suspend' || suspensionEndDate);
 
-  const handleMonthChange = (direction: 'prev' | 'next') => {
-    setCalendarMonth(direction === 'next' ? addMonths(calendarMonth, 1) : subMonths(calendarMonth, 1));
-  };
-
-  const handleYearChange = (year: string) => {
-    const newDate = new Date(calendarMonth);
-    newDate.setFullYear(parseInt(year));
-    setCalendarMonth(newDate);
-  };
-
-  const handleMonthSelect = (month: string) => {
-    const newDate = new Date(calendarMonth);
-    newDate.setMonth(parseInt(month));
-    setCalendarMonth(newDate);
-  };
-
-  const currentYear = calendarMonth.getFullYear();
-  const currentMonth = calendarMonth.getMonth();
-  const years = Array.from({ length: 10 }, (_, i) => currentYear + i);
-  const months = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December'
-  ];
-
-  const today = startOfToday();
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <div className="flex items-center space-x-3">
-            {getIcon()}
+            <DialogIcon action={action} />
             <DialogTitle>{getTitle()}</DialogTitle>
           </div>
           <DialogDescription>
@@ -255,116 +90,20 @@ export const AccountActionDialog: React.FC<AccountActionDialogProps> = ({
         </DialogHeader>
         
         <div className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="reason">Reason for {action}</Label>
-            <Select value={reason} onValueChange={setReason}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select a reason" />
-              </SelectTrigger>
-              <SelectContent>
-                {REASONS[action][personType].map((reasonOption) => (
-                  <SelectItem key={reasonOption} value={reasonOption}>
-                    {reasonOption}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {reason === 'Other' && (
-            <div className="space-y-2">
-              <Label htmlFor="customReason">Custom Reason</Label>
-              <Textarea
-                id="customReason"
-                placeholder="Please specify the reason..."
-                value={customReason}
-                onChange={(e) => setCustomReason(e.target.value)}
-                rows={3}
-              />
-            </div>
-          )}
+          <ReasonSelector
+            action={action}
+            personType={personType}
+            reason={reason}
+            setReason={setReason}
+            customReason={customReason}
+            setCustomReason={setCustomReason}
+          />
 
           {action === 'suspend' && (
-            <div className="space-y-2">
-              <Label>Suspension End Date</Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className={cn(
-                      "w-full justify-start text-left font-normal",
-                      !suspensionEndDate && "text-muted-foreground"
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {suspensionEndDate ? format(suspensionEndDate, "PPP") : "Select end date"}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent 
-                  className="w-auto p-0" 
-                  align="center"
-                  side="top"
-                  sideOffset={10}
-                  avoidCollisions={true}
-                  collisionPadding={20}
-                >
-                  <div className="p-3 border-b bg-background">
-                    <div className="flex items-center justify-between mb-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleMonthChange('prev')}
-                      >
-                        <ChevronLeft className="h-4 w-4" />
-                      </Button>
-                      <div className="flex space-x-2">
-                        <Select value={currentMonth.toString()} onValueChange={handleMonthSelect}>
-                          <SelectTrigger className="w-32">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {months.map((month, index) => (
-                              <SelectItem key={index} value={index.toString()}>
-                                {month}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <Select value={currentYear.toString()} onValueChange={handleYearChange}>
-                          <SelectTrigger className="w-20">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {years.map((year) => (
-                              <SelectItem key={year} value={year.toString()}>
-                                {year}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleMonthChange('next')}
-                      >
-                        <ChevronRight className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                  <Calendar
-                    mode="single"
-                    selected={suspensionEndDate}
-                    onSelect={setSuspensionEndDate}
-                    disabled={(date) => date < today}
-                    month={calendarMonth}
-                    onMonthChange={setCalendarMonth}
-                    initialFocus
-                    className="p-3 pointer-events-auto bg-background"
-                  />
-                </PopoverContent>
-              </Popover>
-            </div>
+            <CalendarPopover
+              suspensionEndDate={suspensionEndDate}
+              setSuspensionEndDate={setSuspensionEndDate}
+            />
           )}
 
           <div className="space-y-2">
