@@ -5,20 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { GraduationCap, Phone, Mail, MapPin, Calendar, BookOpen, Users, Award } from 'lucide-react';
-
-interface Teacher {
-  id: string;
-  name: string;
-  subject: string;
-  classes: string;
-  phone: string;
-  status: 'Active' | 'On Leave' | 'Inactive' | 'Archived';
-  experience: string;
-  email?: string;
-  address?: string;
-  qualification?: string;
-  department?: string;
-}
+import { Teacher } from './TeachersTable';
 
 interface TeacherViewDialogProps {
   open: boolean;
@@ -37,10 +24,9 @@ export const TeacherViewDialog: React.FC<TeacherViewDialogProps> = ({
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'Active': return 'bg-green-100 text-green-800';
-      case 'On Leave': return 'bg-yellow-100 text-yellow-800';
-      case 'Inactive': return 'bg-red-100 text-red-800';
-      case 'Archived': return 'bg-gray-100 text-gray-800';
+      case 'active': return 'bg-green-100 text-green-800';
+      case 'on-leave': return 'bg-yellow-100 text-yellow-800';
+      case 'inactive': return 'bg-red-100 text-red-800';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
@@ -85,7 +71,7 @@ export const TeacherViewDialog: React.FC<TeacherViewDialogProps> = ({
                   <Users className="h-4 w-4 text-green-600" />
                   <span className="font-medium">Classes Taught</span>
                 </div>
-                <p className="text-lg">{teacher.classes}</p>
+                <p className="text-lg">{teacher.classesTaught?.join(', ') || 'N/A'}</p>
               </CardContent>
             </Card>
 
@@ -125,12 +111,6 @@ export const TeacherViewDialog: React.FC<TeacherViewDialogProps> = ({
                   <div className="flex items-center gap-2">
                     <Mail className="h-4 w-4 text-gray-600" />
                     <span>{teacher.email}</span>
-                  </div>
-                )}
-                {teacher.address && (
-                  <div className="flex items-center gap-2">
-                    <MapPin className="h-4 w-4 text-gray-600" />
-                    <span>{teacher.address}</span>
                   </div>
                 )}
               </div>
