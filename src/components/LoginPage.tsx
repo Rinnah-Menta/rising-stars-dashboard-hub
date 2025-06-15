@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,12 +9,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useAuth } from '@/contexts/AuthContext';
 import { LogIn, Star } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { AccountStatusPage } from './AccountStatusPage';
+import { localDatabase } from '@/data/localDatabase';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [userType, setUserType] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [restrictedUser, setRestrictedUser] = useState<any>(null);
   const { login } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -23,22 +27,31 @@ const LoginPage = () => {
     setIsLoading(true);
 
     try {
-    const result = await login(email, password);
-    
-    if (result.success) {
-      toast({
-        title: "Login Successful",
-        description: "Welcome to Springing Stars Junior School!",
-      });
+      const result = await login(email, password);
+      
+      if (result.success) {
+        toast({
+          title: "Login Successful",
+          description: "Welcome to Springing Stars Junior School!",
+        });
         // Navigate to dashboard after successful login
         navigate('/');
-    } else {
-      toast({
-        title: "Login Failed",
-        description: result.error,
-        variant: "destructive",
-      });
-    }
+      } else {
+        // Check if the login failed due to account status
+        if (result.accountStatus && result.accountStatus !== 'active') {
+          const user = localDatabase.users.find(u => u.email === email && u.password === password);
+          if (user) {
+            setRestrictedUser(user);
+            return;
+          }
+        }
+        
+        toast({
+          title: "Login Failed",
+          description: result.error,
+          variant: "destructive",
+        });
+      }
     } catch (error) {
       toast({
         title: "Login Failed",
@@ -46,9 +59,14 @@ const LoginPage = () => {
         variant: "destructive",
       });
     } finally {
-    setIsLoading(false);
+      setIsLoading(false);
     }
   };
+
+  // Show account status page if user is restricted
+  if (restrictedUser) {
+    return <AccountStatusPage user={restrictedUser} />;
+  }
 
   const getDemoCredentials = () => {
     const credentials = {

@@ -6,7 +6,9 @@ import { Badge } from '@/components/ui/badge';
 import { Eye, Edit, Trash2, Phone, Users, Lock, Archive } from 'lucide-react';
 import { Student } from '@/hooks/useStudents';
 import { useToast } from '@/hooks/use-toast';
-import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
+import { AccountActionDialog } from '@/components/ui/account-action-dialog';
+import { useAuth } from '@/contexts/AuthContext';
+import { useProfile } from '@/contexts/ProfileContext';
 
 interface StudentsTableProps {
   students: Student[];
@@ -26,11 +28,13 @@ export const StudentsTable: React.FC<StudentsTableProps> = ({
   readOnly = false
 }) => {
   const { toast } = useToast();
-  const [confirmationDialog, setConfirmationDialog] = useState<{
+  const { user, updateUserStatus } = useAuth();
+  const { profileData } = useProfile();
+  const [actionDialog, setActionDialog] = useState<{
     open: boolean;
-    type: 'archive' | 'delete';
+    action: 'archive' | 'delete' | 'suspend';
     student: Student | null;
-  }>({ open: false, type: 'delete', student: null });
+  }>({ open: false, action: 'delete', student: null });
 
   const getFeesStatusColor = (status: string) => {
     switch (status) {
@@ -50,30 +54,55 @@ export const StudentsTable: React.FC<StudentsTableProps> = ({
   };
 
   const handleArchiveClick = (student: Student) => {
-    setConfirmationDialog({ open: true, type: 'archive', student });
+    setActionDialog({ open: true, action: 'archive', student });
   };
 
   const handleDeleteClick = (student: Student) => {
-    setConfirmationDialog({ open: true, type: 'delete', student });
+    setActionDialog({ open: true, action: 'delete', student });
   };
 
-  const handleConfirmAction = () => {
-    if (!confirmationDialog.student) return;
+  const handleActionConfirm = async (data: {
+    reason: string;
+    customReason?: string;
+    suspensionEndDate?: Date;
+    nextSteps?: string;
+  }) => {
+    if (!actionDialog.student || !user || !profileData) return;
 
-    if (confirmationDialog.type === 'archive' && onArchive) {
-      onArchive(confirmationDialog.student.id);
-      toast({
-        title: "Student Archived",
-        description: `${confirmationDialog.student.name} has been archived.`,
+    const updatedBy = `${profileData.firstName} ${profileData.lastName}`;
+    const statusMap = {
+      archive: 'archived' as const,
+      delete: 'deleted' as const,
+      suspend: 'suspended' as const,
+    };
+
+    try {
+      await updateUserStatus(actionDialog.student.id, statusMap[actionDialog.action], {
+        reason: data.reason,
+        suspensionEndDate: data.suspensionEndDate,
+        nextSteps: data.nextSteps,
+        updatedBy
       });
-    } else if (confirmationDialog.type === 'delete' && onDelete) {
-      onDelete(confirmationDialog.student.id);
+
+      if (actionDialog.action === 'archive' && onArchive) {
+        onArchive(actionDialog.student.id);
+      } else if (actionDialog.action === 'delete' && onDelete) {
+        onDelete(actionDialog.student.id);
+      }
+
       toast({
-        title: "Student Deleted",
-        description: `${confirmationDialog.student.name} has been deleted permanently.`,
+        title: `Student ${actionDialog.action === 'archive' ? 'Archived' : 'Deleted'}`,
+        description: `${actionDialog.student.name} has been ${actionDialog.action}d successfully.`,
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: `Failed to ${actionDialog.action} student. Please try again.`,
+        variant: "destructive",
       });
     }
-    setConfirmationDialog({ open: false, type: 'delete', student: null });
+
+    setActionDialog({ open: false, action: 'delete', student: null });
   };
 
   if (students.length === 0) {
@@ -162,7 +191,7 @@ export const StudentsTable: React.FC<StudentsTableProps> = ({
                         <Edit className="h-4 w-4" />
                       </Button>
                     )}
-                    {!readOnly && onArchive && (
+                    {!readOnly && (
                       <Button
                         variant="ghost"
                         size="sm"
@@ -172,7 +201,7 @@ export const StudentsTable: React.FC<StudentsTableProps> = ({
                         <Archive className="h-4 w-4" />
                       </Button>
                     )}
-                    {!readOnly && onDelete && (
+                    {!readOnly && (
                       <Button
                         variant="ghost"
                         size="sm"
@@ -190,23 +219,14 @@ export const StudentsTable: React.FC<StudentsTableProps> = ({
         </Table>
       </div>
 
-      {!readOnly && (
-        <ConfirmationDialog
-          open={confirmationDialog.open}
-          onOpenChange={(open) => setConfirmationDialog({ ...confirmationDialog, open })}
-          title={confirmationDialog.type === 'archive' ? 'Archive Student' : 'Delete Student'}
-          description={
-            confirmationDialog.type === 'archive' 
-              ? `Are you sure you want to archive ${confirmationDialog.student?.name}? They will be moved to archived status.`
-              : `Are you sure you want to delete ${confirmationDialog.student?.name}? This action cannot be undone.`
-          }
-          confirmText={confirmationDialog.type === 'archive' ? 'Archive' : 'Delete'}
-          cancelText="Cancel"
-          onConfirm={handleConfirmAction}
-          variant={confirmationDialog.type === 'delete' ? 'destructive' : 'default'}
-          type={confirmationDialog.type}
-        />
-      )}
+      <AccountActionDialog
+        open={actionDialog.open}
+        onOpenChange={(open) => setActionDialog({ ...actionDialog, open })}
+        action={actionDialog.action}
+        personName={actionDialog.student?.name || ''}
+        personType="student"
+        onConfirm={handleActionConfirm}
+      />
     </>
   );
 };

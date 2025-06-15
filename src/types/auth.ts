@@ -1,3 +1,4 @@
+
 export interface User {
   id: string;
   email: string;
@@ -22,6 +23,13 @@ export interface User {
   avatar?: string;
   class?: string;
   children?: string[];
+  // Account status fields
+  accountStatus: 'active' | 'suspended' | 'archived' | 'deleted';
+  statusReason?: string;
+  statusDate?: string;
+  suspensionEndDate?: string;
+  statusUpdatedBy?: string;
+  nextSteps?: string;
 }
 
 export interface AuthState {

@@ -7,7 +7,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Search, Filter, GraduationCap, Eye, Edit, Archive, Trash2, Phone } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
+import { AccountActionDialog } from '@/components/ui/account-action-dialog';
+import { useAuth } from '@/contexts/AuthContext';
+import { useProfile } from '@/contexts/ProfileContext';
 
 interface Teacher {
   id: string;
@@ -47,11 +49,13 @@ export const TeachersTable: React.FC<TeachersTableProps> = ({
   onFilterChange
 }) => {
   const { toast } = useToast();
-  const [confirmationDialog, setConfirmationDialog] = useState<{
+  const { user, updateUserStatus } = useAuth();
+  const { profileData } = useProfile();
+  const [actionDialog, setActionDialog] = useState<{
     open: boolean;
-    type: 'archive' | 'delete';
+    action: 'archive' | 'delete' | 'suspend';
     teacher: Teacher | null;
-  }>({ open: false, type: 'delete', teacher: null });
+  }>({ open: false, action: 'delete', teacher: null });
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -80,30 +84,55 @@ export const TeachersTable: React.FC<TeachersTableProps> = ({
       });
       return;
     }
-    setConfirmationDialog({ open: true, type: 'archive', teacher });
+    setActionDialog({ open: true, action: 'archive', teacher });
   };
 
   const handleDeleteClick = (teacher: Teacher) => {
-    setConfirmationDialog({ open: true, type: 'delete', teacher });
+    setActionDialog({ open: true, action: 'delete', teacher });
   };
 
-  const handleConfirmAction = () => {
-    if (!confirmationDialog.teacher) return;
+  const handleActionConfirm = async (data: {
+    reason: string;
+    customReason?: string;
+    suspensionEndDate?: Date;
+    nextSteps?: string;
+  }) => {
+    if (!actionDialog.teacher || !user || !profileData) return;
 
-    if (confirmationDialog.type === 'archive') {
-      onArchiveTeacher(confirmationDialog.teacher.id);
-      toast({
-        title: "Teacher Archived",
-        description: `${confirmationDialog.teacher.name} has been archived.`,
+    const updatedBy = `${profileData.firstName} ${profileData.lastName}`;
+    const statusMap = {
+      archive: 'archived' as const,
+      delete: 'deleted' as const,
+      suspend: 'suspended' as const,
+    };
+
+    try {
+      await updateUserStatus(actionDialog.teacher.id, statusMap[actionDialog.action], {
+        reason: data.reason,
+        suspensionEndDate: data.suspensionEndDate,
+        nextSteps: data.nextSteps,
+        updatedBy
       });
-    } else {
-      onDeleteTeacher(confirmationDialog.teacher.id);
+
+      if (actionDialog.action === 'archive') {
+        onArchiveTeacher(actionDialog.teacher.id);
+      } else if (actionDialog.action === 'delete') {
+        onDeleteTeacher(actionDialog.teacher.id);
+      }
+
       toast({
-        title: "Teacher Deleted",
-        description: `${confirmationDialog.teacher.name} has been deleted permanently.`,
+        title: `Teacher ${actionDialog.action === 'archive' ? 'Archived' : 'Deleted'}`,
+        description: `${actionDialog.teacher.name} has been ${actionDialog.action}d successfully.`,
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: `Failed to ${actionDialog.action} teacher. Please try again.`,
+        variant: "destructive",
       });
     }
-    setConfirmationDialog({ open: false, type: 'delete', teacher: null });
+
+    setActionDialog({ open: false, action: 'delete', teacher: null });
   };
 
   const resultsCount = teachers.length;
@@ -242,20 +271,13 @@ export const TeachersTable: React.FC<TeachersTableProps> = ({
         )}
       </div>
 
-      <ConfirmationDialog
-        open={confirmationDialog.open}
-        onOpenChange={(open) => setConfirmationDialog({ ...confirmationDialog, open })}
-        title={confirmationDialog.type === 'archive' ? 'Archive Teacher' : 'Delete Teacher'}
-        description={
-          confirmationDialog.type === 'archive' 
-            ? `Are you sure you want to archive ${confirmationDialog.teacher?.name}? They will be moved to archived status.`
-            : `Are you sure you want to delete ${confirmationDialog.teacher?.name}? This action cannot be undone.`
-        }
-        confirmText={confirmationDialog.type === 'archive' ? 'Archive' : 'Delete'}
-        cancelText="Cancel"
-        onConfirm={handleConfirmAction}
-        variant={confirmationDialog.type === 'delete' ? 'destructive' : 'default'}
-        type={confirmationDialog.type}
+      <AccountActionDialog
+        open={actionDialog.open}
+        onOpenChange={(open) => setActionDialog({ ...actionDialog, open })}
+        action={actionDialog.action}
+        personName={actionDialog.teacher?.name || ''}
+        personType="teacher"
+        onConfirm={handleActionConfirm}
       />
     </>
   );
