@@ -31,6 +31,8 @@ interface TeachersTableProps {
   onEdit?: (teacher: Teacher) => void;
   onDelete?: (id: string) => void;
   onArchive?: (id: string) => void;
+  onSuspend?: (id: string) => void;
+  onTerminate?: (id: string) => void;
   onView: (teacher: Teacher) => void;
   readOnly?: boolean;
 }
@@ -40,6 +42,8 @@ export const TeachersTable: React.FC<TeachersTableProps> = ({
   onEdit,
   onDelete,
   onArchive,
+  onSuspend,
+  onTerminate,
   onView,
   readOnly = false
 }) => {
@@ -150,6 +154,8 @@ export const TeachersTable: React.FC<TeachersTableProps> = ({
         setAccountActionDialog={setAccountActionDialog}
         onDelete={onDelete}
         onArchive={onArchive}
+        onSuspend={onSuspend}
+        onTerminate={onTerminate}
       />
     </>
   );

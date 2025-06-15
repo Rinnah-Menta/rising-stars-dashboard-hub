@@ -12,7 +12,15 @@ import { useTeacherFilters } from '@/hooks/useTeacherFilters';
 import { exportTeachersToCSV } from '@/utils/teacherExport';
 
 export const TeacherManagement = () => {
-  const { teachers, addTeacher, updateTeacher, archiveTeacher, deleteTeacher } = useTeacherData();
+  const { 
+    teachers, 
+    addTeacher, 
+    updateTeacher, 
+    archiveTeacher, 
+    suspendTeacher, 
+    terminateTeacher, 
+    deleteTeacher 
+  } = useTeacherData();
   const { 
     filteredTeachers, 
     searchTerm, 
@@ -81,6 +89,8 @@ export const TeacherManagement = () => {
             onEdit={handleEditTeacher}
             onView={handleViewTeacher}
             onArchive={archiveTeacher}
+            onSuspend={suspendTeacher}
+            onTerminate={terminateTeacher}
             onDelete={deleteTeacher}
           />
         </CardContent>

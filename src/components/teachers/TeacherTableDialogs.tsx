@@ -30,6 +30,8 @@ interface TeacherTableDialogsProps {
   }>>;
   onDelete?: (id: string) => void;
   onArchive?: (id: string) => void;
+  onSuspend?: (id: string) => void;
+  onTerminate?: (id: string) => void;
 }
 
 export const TeacherTableDialogs: React.FC<TeacherTableDialogsProps> = ({
@@ -38,7 +40,9 @@ export const TeacherTableDialogs: React.FC<TeacherTableDialogsProps> = ({
   accountActionDialog,
   setAccountActionDialog,
   onDelete,
-  onArchive
+  onArchive,
+  onSuspend,
+  onTerminate
 }) => {
   const { toast } = useToast();
 
@@ -68,13 +72,15 @@ export const TeacherTableDialogs: React.FC<TeacherTableDialogsProps> = ({
         title: "Teacher Archived",
         description: `${teacher.name} has been archived. Reason: ${data.reason}`,
       });
-    } else if (action === 'suspend' && teacher) {
+    } else if (action === 'suspend' && onSuspend && teacher) {
+      onSuspend(teacher.id);
       const endDateText = data.suspensionEndDate ? ` until ${data.suspensionEndDate.toLocaleDateString()}` : '';
       toast({
         title: "Teacher Suspended",
         description: `${teacher.name} has been suspended${endDateText}. Reason: ${data.reason}`,
       });
-    } else if (action === 'terminate' && teacher) {
+    } else if (action === 'terminate' && onTerminate && teacher) {
+      onTerminate(teacher.id);
       toast({
         title: "Teacher Terminated",
         description: `${teacher.name} has been terminated from the institution. Reason: ${data.reason}`,

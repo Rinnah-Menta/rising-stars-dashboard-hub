@@ -114,8 +114,20 @@ export const useTeacherData = () => {
     setTeachers(prev => prev.map(t => t.id === editingTeacher.id ? { ...editingTeacher, ...processedData } : t));
   };
 
+  const updateTeacherStatus = (id: string, status: Teacher['status']) => {
+    setTeachers(prev => prev.map(t => t.id === id ? { ...t, status } : t));
+  };
+
   const archiveTeacher = (id: string) => {
-    setTeachers(prev => prev.map(t => t.id === id ? { ...t, status: 'inactive' as const } : t));
+    updateTeacherStatus(id, 'archived');
+  };
+
+  const suspendTeacher = (id: string) => {
+    updateTeacherStatus(id, 'suspended');
+  };
+
+  const terminateTeacher = (id: string) => {
+    updateTeacherStatus(id, 'terminated');
   };
 
   const deleteTeacher = (id: string) => {
@@ -126,7 +138,10 @@ export const useTeacherData = () => {
     teachers,
     addTeacher,
     updateTeacher,
+    updateTeacherStatus,
     archiveTeacher,
+    suspendTeacher,
+    terminateTeacher,
     deleteTeacher
   };
 };
