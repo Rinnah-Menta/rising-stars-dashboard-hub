@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Eye, Edit, Trash2, Phone, Users, Lock } from 'lucide-react';
+import { Eye, Edit, Trash2, Phone, Users, Lock, Archive } from 'lucide-react';
 import { Student } from '@/hooks/useStudents';
 import { useToast } from '@/hooks/use-toast';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
@@ -12,6 +12,7 @@ interface StudentsTableProps {
   students: Student[];
   onEdit?: (student: Student) => void;
   onDelete?: (id: string) => void;
+  onArchive?: (id: string) => void;
   onView: (student: Student) => void;
   readOnly?: boolean;
 }
@@ -20,14 +21,16 @@ export const StudentsTable: React.FC<StudentsTableProps> = ({
   students,
   onEdit,
   onDelete,
+  onArchive,
   onView,
   readOnly = false
 }) => {
   const { toast } = useToast();
-  const [deleteConfirmation, setDeleteConfirmation] = useState<{
+  const [confirmationDialog, setConfirmationDialog] = useState<{
     open: boolean;
+    type: 'archive' | 'delete';
     student: Student | null;
-  }>({ open: false, student: null });
+  }>({ open: false, type: 'delete', student: null });
 
   const getFeesStatusColor = (status: string) => {
     switch (status) {
@@ -46,19 +49,31 @@ export const StudentsTable: React.FC<StudentsTableProps> = ({
     });
   };
 
-  const handleDeleteClick = (student: Student) => {
-    setDeleteConfirmation({ open: true, student });
+  const handleArchiveClick = (student: Student) => {
+    setConfirmationDialog({ open: true, type: 'archive', student });
   };
 
-  const handleDeleteConfirm = () => {
-    if (deleteConfirmation.student) {
-      onDelete(deleteConfirmation.student.id);
+  const handleDeleteClick = (student: Student) => {
+    setConfirmationDialog({ open: true, type: 'delete', student });
+  };
+
+  const handleConfirmAction = () => {
+    if (!confirmationDialog.student) return;
+
+    if (confirmationDialog.type === 'archive' && onArchive) {
+      onArchive(confirmationDialog.student.id);
       toast({
-        title: "Student deleted",
-        description: `${deleteConfirmation.student.name} has been removed from the system.`,
+        title: "Student Archived",
+        description: `${confirmationDialog.student.name} has been archived.`,
+      });
+    } else if (confirmationDialog.type === 'delete' && onDelete) {
+      onDelete(confirmationDialog.student.id);
+      toast({
+        title: "Student Deleted",
+        description: `${confirmationDialog.student.name} has been deleted permanently.`,
       });
     }
-    setDeleteConfirmation({ open: false, student: null });
+    setConfirmationDialog({ open: false, type: 'delete', student: null });
   };
 
   if (students.length === 0) {
@@ -128,7 +143,7 @@ export const StudentsTable: React.FC<StudentsTableProps> = ({
                   </Badge>
                 </TableCell>
                 <TableCell className="text-right">
-                  <div className="flex items-center justify-end space-x-2">
+                  <div className="flex items-center justify-end space-x-1">
                     <Button
                       variant="ghost"
                       size="sm"
@@ -145,6 +160,16 @@ export const StudentsTable: React.FC<StudentsTableProps> = ({
                         className="h-8 w-8 p-0"
                       >
                         <Edit className="h-4 w-4" />
+                      </Button>
+                    )}
+                    {!readOnly && onArchive && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleArchiveClick(student)}
+                        className="h-8 w-8 p-0 text-orange-600 hover:text-orange-800"
+                      >
+                        <Archive className="h-4 w-4" />
                       </Button>
                     )}
                     {!readOnly && onDelete && (
@@ -167,15 +192,19 @@ export const StudentsTable: React.FC<StudentsTableProps> = ({
 
       {!readOnly && (
         <ConfirmationDialog
-          open={deleteConfirmation.open}
-          onOpenChange={(open) => setDeleteConfirmation({ open, student: null })}
-          title="Delete Student"
-          description={`Are you sure you want to delete ${deleteConfirmation.student?.name}? This action cannot be undone.`}
-          confirmText="Delete"
+          open={confirmationDialog.open}
+          onOpenChange={(open) => setConfirmationDialog({ ...confirmationDialog, open })}
+          title={confirmationDialog.type === 'archive' ? 'Archive Student' : 'Delete Student'}
+          description={
+            confirmationDialog.type === 'archive' 
+              ? `Are you sure you want to archive ${confirmationDialog.student?.name}? They will be moved to archived status.`
+              : `Are you sure you want to delete ${confirmationDialog.student?.name}? This action cannot be undone.`
+          }
+          confirmText={confirmationDialog.type === 'archive' ? 'Archive' : 'Delete'}
           cancelText="Cancel"
-          onConfirm={handleDeleteConfirm}
-          variant="destructive"
-          type="delete"
+          onConfirm={handleConfirmAction}
+          variant={confirmationDialog.type === 'delete' ? 'destructive' : 'default'}
+          type={confirmationDialog.type}
         />
       )}
     </>

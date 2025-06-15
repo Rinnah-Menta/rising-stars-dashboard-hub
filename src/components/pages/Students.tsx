@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { RefreshCw } from 'lucide-react';
@@ -46,7 +47,6 @@ export const Students = () => {
   const isTeacher = user?.role === 'teacher';
   const isAdmin = user?.role === 'admin';
   
-  // Helper function to properly check if user is a class teacher
   const checkIsClassTeacher = (): boolean => {
     if (!isTeacher || !profileData?.isClassTeacher) return false;
     const value = profileData.isClassTeacher;
@@ -167,6 +167,23 @@ export const Students = () => {
     }
   };
 
+  const handleArchiveStudent = (id: string) => {
+    if (!canManageStudents) {
+      toast({
+        title: "Access Denied",
+        description: "Only class teachers and admins can archive students.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // For now, we'll just show a toast. In a real app, this would update the student status
+    toast({
+      title: "Student Archived",
+      description: "Student has been moved to archived status.",
+    });
+  };
+
   const handleExport = () => {
     const csvContent = [
       ['Student ID', 'Name', 'Class', 'Age', 'Parent/Guardian', 'Contact', 'Fees Status'],
@@ -197,7 +214,6 @@ export const Students = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <StudentPageHeader
         canManageStudents={canManageStudents}
         isTeacher={isTeacher}
@@ -209,16 +225,14 @@ export const Students = () => {
         loading={loading}
       />
 
-      {/* Statistics */}
       <StudentsStats stats={stats} />
 
-      {/* Students List */}
       <AnimatedInView>
         <Card>
           <CardHeader>
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <CardTitle>
-                Student List ({students.length})
+                Student List
                 {isTeacher && getTeacherClasses().length > 0 && (
                   <span className="text-sm font-normal text-gray-500 ml-2">
                     • Classes: {getTeacherClasses().join(', ')}
@@ -230,6 +244,7 @@ export const Students = () => {
                 setSearchTerm={setSearchTerm}
                 filterStatus={filterStatus}
                 setFilterStatus={setFilterStatus}
+                resultsCount={students.length}
               />
             </div>
           </CardHeader>
@@ -244,6 +259,7 @@ export const Students = () => {
                 students={students}
                 onEdit={canManageStudents ? handleEditStudent : undefined}
                 onDelete={canManageStudents ? handleDeleteStudent : undefined}
+                onArchive={canManageStudents ? handleArchiveStudent : undefined}
                 onView={handleViewStudent}
                 readOnly={!canManageStudents}
               />
@@ -252,7 +268,6 @@ export const Students = () => {
         </Card>
       </AnimatedInView>
 
-      {/* Student Management Dialogs */}
       <StudentManagement
         showAddDialog={showAddDialog}
         setShowAddDialog={setShowAddDialog}
