@@ -24,7 +24,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { CalendarIcon, AlertTriangle, Archive, Trash2, Clock, ChevronLeft, ChevronRight } from 'lucide-react';
-import { format, addMonths, subMonths, startOfMonth, endOfMonth } from 'date-fns';
+import { format, addMonths, subMonths, startOfToday } from 'date-fns';
 import { cn } from '@/lib/utils';
 
 interface AccountActionDialogProps {
@@ -134,7 +134,7 @@ export const AccountActionDialog: React.FC<AccountActionDialogProps> = ({
 }) => {
   const [reason, setReason] = useState('');
   const [customReason, setCustomReason] = useState('');
-  const [suspensionEndDate, setSuspensionEndDate] = useState<Date>();
+  const [suspensionEndDate, setSuspensionEndDate] = useState<Date>(startOfToday());
   const [nextSteps, setNextSteps] = useState('');
   const [calendarMonth, setCalendarMonth] = useState(new Date());
 
@@ -175,7 +175,7 @@ export const AccountActionDialog: React.FC<AccountActionDialogProps> = ({
     // Reset form
     setReason('');
     setCustomReason('');
-    setSuspensionEndDate(undefined);
+    setSuspensionEndDate(startOfToday());
     setNextSteps('');
   };
 
@@ -205,6 +205,8 @@ export const AccountActionDialog: React.FC<AccountActionDialogProps> = ({
     'January', 'February', 'March', 'April', 'May', 'June',
     'July', 'August', 'September', 'October', 'November', 'December'
   ];
+
+  const today = startOfToday();
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -266,18 +268,12 @@ export const AccountActionDialog: React.FC<AccountActionDialogProps> = ({
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent 
-                  className="w-auto p-0 z-[200]" 
-                  align="center" 
+                  className="w-auto p-0" 
+                  align="center"
                   side="top"
                   sideOffset={10}
                   avoidCollisions={true}
                   collisionPadding={20}
-                  style={{
-                    position: 'fixed',
-                    top: '50%',
-                    left: '50%',
-                    transform: 'translate(-50%, -50%)',
-                  }}
                 >
                   <div className="p-3 border-b bg-background">
                     <div className="flex items-center justify-between mb-2">
@@ -293,7 +289,7 @@ export const AccountActionDialog: React.FC<AccountActionDialogProps> = ({
                           <SelectTrigger className="w-32">
                             <SelectValue />
                           </SelectTrigger>
-                          <SelectContent className="z-[210]">
+                          <SelectContent>
                             {months.map((month, index) => (
                               <SelectItem key={index} value={index.toString()}>
                                 {month}
@@ -305,7 +301,7 @@ export const AccountActionDialog: React.FC<AccountActionDialogProps> = ({
                           <SelectTrigger className="w-20">
                             <SelectValue />
                           </SelectTrigger>
-                          <SelectContent className="z-[210]">
+                          <SelectContent>
                             {years.map((year) => (
                               <SelectItem key={year} value={year.toString()}>
                                 {year}
@@ -327,7 +323,7 @@ export const AccountActionDialog: React.FC<AccountActionDialogProps> = ({
                     mode="single"
                     selected={suspensionEndDate}
                     onSelect={setSuspensionEndDate}
-                    disabled={(date) => date < new Date()}
+                    disabled={(date) => date < today}
                     month={calendarMonth}
                     onMonthChange={setCalendarMonth}
                     initialFocus
