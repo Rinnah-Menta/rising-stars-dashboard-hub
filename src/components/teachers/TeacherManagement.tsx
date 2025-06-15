@@ -1,18 +1,25 @@
 
 import React, { useState } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { TeachersStats } from './TeachersStats';
 import { TeacherPageHeader } from './TeacherPageHeader';
 import { TeachersTable, Teacher } from './TeachersTable';
 import { TeacherDialog } from './TeacherDialog';
 import { TeacherViewDialog } from './TeacherViewDialog';
+import { TeacherFilters } from './TeacherFilters';
 import { useTeacherData } from '@/hooks/useTeacherData';
 import { useTeacherFilters } from '@/hooks/useTeacherFilters';
 import { exportTeachersToCSV } from '@/utils/teacherExport';
 
 export const TeacherManagement = () => {
   const { teachers, addTeacher, updateTeacher, archiveTeacher, deleteTeacher } = useTeacherData();
-  const { filteredTeachers } = useTeacherFilters(teachers);
+  const { 
+    filteredTeachers, 
+    searchTerm, 
+    setSearchTerm, 
+    filterStatus, 
+    setFilterStatus 
+  } = useTeacherFilters(teachers);
   
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
@@ -56,6 +63,18 @@ export const TeacherManagement = () => {
       <TeachersStats teachers={filteredTeachers} />
       
       <Card>
+        <CardHeader>
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <CardTitle>Teacher List</CardTitle>
+            <TeacherFilters
+              searchTerm={searchTerm}
+              setSearchTerm={setSearchTerm}
+              filterStatus={filterStatus}
+              setFilterStatus={setFilterStatus}
+              resultsCount={filteredTeachers.length}
+            />
+          </div>
+        </CardHeader>
         <CardContent className="p-6">
           <TeachersTable
             teachers={filteredTeachers}
