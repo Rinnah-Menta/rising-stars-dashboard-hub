@@ -86,6 +86,7 @@ export const StudentDialog: React.FC<StudentDialogProps> = ({
     const studentData = {
       ...formData,
       age: parseInt(formData.age),
+      status: student?.status || 'active' as const,
       ...(student && { id: student.id })
     };
 
