@@ -20,12 +20,12 @@ interface TeacherTableDialogsProps {
   }>>;
   accountActionDialog: {
     open: boolean;
-    action: 'archive' | 'suspend';
+    action: 'archive' | 'suspend' | 'expel';
     teacher: Teacher | null;
   };
   setAccountActionDialog: React.Dispatch<React.SetStateAction<{
     open: boolean;
-    action: 'archive' | 'suspend';
+    action: 'archive' | 'suspend' | 'expel';
     teacher: Teacher | null;
   }>>;
   onDelete?: (id: string) => void;
@@ -73,6 +73,12 @@ export const TeacherTableDialogs: React.FC<TeacherTableDialogsProps> = ({
       toast({
         title: "Teacher Suspended",
         description: `${teacher.name} has been suspended${endDateText}. Reason: ${data.reason}`,
+      });
+    } else if (action === 'expel' && teacher) {
+      toast({
+        title: "Teacher Expelled",
+        description: `${teacher.name} has been expelled from the institution. Reason: ${data.reason}`,
+        variant: "destructive"
       });
     }
     

@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { MoreHorizontal, Eye, Edit, Archive, Trash2, Clock } from 'lucide-react';
+import { MoreHorizontal, Eye, Edit, Archive, Trash2, Clock, UserX } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -17,6 +17,7 @@ interface TeacherTableActionsProps {
   onEdit?: (teacher: Teacher) => void;
   onArchive: (teacher: Teacher) => void;
   onSuspend: (teacher: Teacher) => void;
+  onExpel: (teacher: Teacher) => void;
   onDelete: (teacher: Teacher) => void;
   readOnly?: boolean;
 }
@@ -27,6 +28,7 @@ export const TeacherTableActions: React.FC<TeacherTableActionsProps> = ({
   onEdit,
   onArchive,
   onSuspend,
+  onExpel,
   onDelete,
   readOnly = false
 }) => {
@@ -59,6 +61,13 @@ export const TeacherTableActions: React.FC<TeacherTableActionsProps> = ({
             <DropdownMenuItem onClick={() => onArchive(teacher)}>
               <Archive className="mr-2 h-4 w-4" />
               Archive
+            </DropdownMenuItem>
+            <DropdownMenuItem 
+              onClick={() => onExpel(teacher)}
+              className="text-red-600"
+            >
+              <UserX className="mr-2 h-4 w-4" />
+              Expel
             </DropdownMenuItem>
             <DropdownMenuItem 
               onClick={() => onDelete(teacher)}

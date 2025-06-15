@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import {
   Dialog,
@@ -23,14 +24,14 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { CalendarIcon, AlertTriangle, Archive, Trash2, Clock, ChevronLeft, ChevronRight } from 'lucide-react';
+import { CalendarIcon, AlertTriangle, Archive, Trash2, Clock, ChevronLeft, ChevronRight, UserX } from 'lucide-react';
 import { format, addMonths, subMonths, startOfToday } from 'date-fns';
 import { cn } from '@/lib/utils';
 
 interface AccountActionDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  action: 'archive' | 'delete' | 'suspend';
+  action: 'archive' | 'delete' | 'suspend' | 'expel';
   personName: string;
   personType: 'student' | 'teacher' | 'staff';
   onConfirm: (data: {
@@ -121,6 +122,34 @@ const REASONS = {
       'Disciplinary action',
       'Other'
     ]
+  },
+  expel: {
+    student: [
+      'Serious misconduct',
+      'Repeated disciplinary violations',
+      'Violence or threats',
+      'Drug or alcohol violations',
+      'Criminal activity',
+      'Safety concerns',
+      'Academic dishonesty',
+      'Other'
+    ],
+    teacher: [
+      'Gross misconduct',
+      'Criminal conviction',
+      'Breach of professional ethics',
+      'Inappropriate conduct with students',
+      'Violation of school policies',
+      'Other'
+    ],
+    staff: [
+      'Gross misconduct',
+      'Criminal conviction',
+      'Theft or fraud',
+      'Harassment or discrimination',
+      'Violation of school policies',
+      'Other'
+    ]
   }
 };
 
@@ -146,6 +175,8 @@ export const AccountActionDialog: React.FC<AccountActionDialogProps> = ({
         return <Trash2 className="h-6 w-6 text-red-600" />;
       case 'suspend':
         return <Clock className="h-6 w-6 text-yellow-600" />;
+      case 'expel':
+        return <UserX className="h-6 w-6 text-red-700" />;
       default:
         return <AlertTriangle className="h-6 w-6 text-gray-600" />;
     }
@@ -159,6 +190,8 @@ export const AccountActionDialog: React.FC<AccountActionDialogProps> = ({
         return `Delete ${personType}`;
       case 'suspend':
         return `Suspend ${personType}`;
+      case 'expel':
+        return `Expel ${personType}`;
       default:
         return 'Account Action';
     }
@@ -353,9 +386,9 @@ export const AccountActionDialog: React.FC<AccountActionDialogProps> = ({
           <Button 
             onClick={handleSubmit}
             disabled={!isValid}
-            variant={action === 'delete' ? 'destructive' : 'default'}
+            variant={action === 'delete' || action === 'expel' ? 'destructive' : 'default'}
           >
-            {action === 'archive' ? 'Archive' : action === 'delete' ? 'Delete' : 'Suspend'}
+            {action === 'archive' ? 'Archive' : action === 'delete' ? 'Delete' : action === 'suspend' ? 'Suspend' : 'Expel'}
           </Button>
         </DialogFooter>
       </DialogContent>
