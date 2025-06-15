@@ -208,7 +208,7 @@ export const AccountActionDialog: React.FC<AccountActionDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <div className="flex items-center space-x-3">
             {getIcon()}
@@ -265,8 +265,15 @@ export const AccountActionDialog: React.FC<AccountActionDialogProps> = ({
                     {suspensionEndDate ? format(suspensionEndDate, "PPP") : "Select end date"}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <div className="p-3 border-b">
+                <PopoverContent 
+                  className="w-auto p-0 z-[100]" 
+                  align="center" 
+                  side="bottom"
+                  sideOffset={8}
+                  avoidCollisions={true}
+                  collisionPadding={16}
+                >
+                  <div className="p-3 border-b bg-background">
                     <div className="flex items-center justify-between mb-2">
                       <Button
                         variant="outline"
@@ -280,7 +287,7 @@ export const AccountActionDialog: React.FC<AccountActionDialogProps> = ({
                           <SelectTrigger className="w-32">
                             <SelectValue />
                           </SelectTrigger>
-                          <SelectContent>
+                          <SelectContent className="z-[110]">
                             {months.map((month, index) => (
                               <SelectItem key={index} value={index.toString()}>
                                 {month}
@@ -292,7 +299,7 @@ export const AccountActionDialog: React.FC<AccountActionDialogProps> = ({
                           <SelectTrigger className="w-20">
                             <SelectValue />
                           </SelectTrigger>
-                          <SelectContent>
+                          <SelectContent className="z-[110]">
                             {years.map((year) => (
                               <SelectItem key={year} value={year.toString()}>
                                 {year}
@@ -318,7 +325,7 @@ export const AccountActionDialog: React.FC<AccountActionDialogProps> = ({
                     month={calendarMonth}
                     onMonthChange={setCalendarMonth}
                     initialFocus
-                    className="p-3 pointer-events-auto"
+                    className="p-3 pointer-events-auto bg-background"
                   />
                 </PopoverContent>
               </Popover>
