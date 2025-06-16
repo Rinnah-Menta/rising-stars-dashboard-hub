@@ -15,18 +15,35 @@ import {
   AlertDialogTitle, 
   AlertDialogTrigger 
 } from '@/components/ui/alert-dialog';
-import { BookOpen, Users, Clock, MapPin, Plus, Search, Filter, Edit, Trash2, UserPlus } from 'lucide-react';
+import { BookOpen, Users, Clock, MapPin, Plus, Search, Filter, Edit, Trash2, UserPlus, Eye } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
+import { ClassDialog } from '@/components/classes/ClassDialog';
+import { ClassDetailsDialog } from '@/components/classes/ClassDetailsDialog';
+
+interface ClassData {
+  id: string;
+  name: string;
+  teacher: string;
+  students: number;
+  room: string;
+  schedule: string;
+  subjects: string[];
+  level: string;
+  capacity: number;
+  academicYear: string;
+}
 
 export const Classes = () => {
   const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterLevel, setFilterLevel] = useState('all');
   const [showCreateForm, setShowCreateForm] = useState(false);
-  const [editingClass, setEditingClass] = useState(null);
+  const [showDetailsDialog, setShowDetailsDialog] = useState(false);
+  const [editingClass, setEditingClass] = useState<ClassData | null>(null);
+  const [viewingClass, setViewingClass] = useState<ClassData | null>(null);
 
-  const [classes, setClasses] = useState([
+  const [classes, setClasses] = useState<ClassData[]>([
     { 
       id: 'P4A', 
       name: 'Primary 4A', 
@@ -114,15 +131,37 @@ export const Classes = () => {
   const classLevels = [...new Set(classes.map(cls => cls.level))];
 
   const handleCreateClass = () => {
+    setEditingClass(null);
     setShowCreateForm(true);
   };
 
-  const handleEditClass = (classItem) => {
+  const handleEditClass = (classItem: ClassData) => {
     setEditingClass(classItem);
     setShowCreateForm(true);
   };
 
-  const handleDeleteClass = (classId) => {
+  const handleViewClass = (classItem: ClassData) => {
+    setViewingClass(classItem);
+    setShowDetailsDialog(true);
+  };
+
+  const handleSaveClass = (classData: ClassData) => {
+    if (editingClass) {
+      setClasses(classes.map(cls => cls.id === editingClass.id ? classData : cls));
+      toast({
+        title: "Class Updated",
+        description: `${classData.name} has been updated successfully.`,
+      });
+    } else {
+      setClasses([...classes, { ...classData, students: 0 }]);
+      toast({
+        title: "Class Created",
+        description: `${classData.name} has been created successfully.`,
+      });
+    }
+  };
+
+  const handleDeleteClass = (classId: string) => {
     setClasses(classes.filter(cls => cls.id !== classId));
     toast({
       title: "Class Deleted",
@@ -130,7 +169,15 @@ export const Classes = () => {
     });
   };
 
-  const getUtilizationColor = (students, capacity) => {
+  const handleManageStudents = (classItem: ClassData) => {
+    toast({
+      title: "Manage Students",
+      description: `Opening student management for ${classItem.name}`,
+    });
+    // This would typically navigate to student management with class filter
+  };
+
+  const getUtilizationColor = (students: number, capacity: number) => {
     const percentage = (students / capacity) * 100;
     if (percentage >= 95) return 'text-red-600';
     if (percentage >= 85) return 'text-orange-600';
@@ -219,6 +266,9 @@ export const Classes = () => {
                   </div>
                   {(user?.role === 'admin' || user?.role === 'teacher') && (
                     <div className="flex space-x-1">
+                      <Button variant="ghost" size="sm" onClick={() => handleViewClass(classItem)}>
+                        <Eye className="h-4 w-4" />
+                      </Button>
                       <Button variant="ghost" size="sm" onClick={() => handleEditClass(classItem)}>
                         <Edit className="h-4 w-4" />
                       </Button>
@@ -300,11 +350,11 @@ export const Classes = () => {
               </div>
 
               <div className="flex space-x-2 pt-4">
-                <Button variant="outline" size="sm" className="flex-1">
+                <Button variant="outline" size="sm" className="flex-1" onClick={() => handleViewClass(classItem)}>
                   View Details
                 </Button>
                 {(user?.role === 'admin' || user?.role === 'teacher') && (
-                  <Button variant="outline" size="sm" className="flex-1">
+                  <Button variant="outline" size="sm" className="flex-1" onClick={() => handleManageStudents(classItem)}>
                     <UserPlus className="h-4 w-4 mr-1" />
                     Manage Students
                   </Button>
@@ -334,6 +384,25 @@ export const Classes = () => {
           </CardContent>
         </Card>
       )}
+
+      {/* Dialogs */}
+      <ClassDialog
+        open={showCreateForm}
+        onOpenChange={setShowCreateForm}
+        classData={editingClass}
+        onSave={handleSaveClass}
+      />
+
+      <ClassDetailsDialog
+        open={showDetailsDialog}
+        onOpenChange={setShowDetailsDialog}
+        classData={viewingClass}
+        onEdit={(classData) => {
+          setShowDetailsDialog(false);
+          handleEditClass(classData);
+        }}
+        onManageStudents={handleManageStudents}
+      />
     </div>
   );
 };
