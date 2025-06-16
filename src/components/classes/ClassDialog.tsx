@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -74,10 +73,15 @@ export const ClassDialog: React.FC<ClassDialogProps> = ({
     const subjects = data.subjects || [];
     let processedSubjects: string[] = [];
     
+    // Handle both string array and potential string input
     if (Array.isArray(subjects)) {
       processedSubjects = subjects;
-    } else if (typeof subjects === 'string') {
-      processedSubjects = subjects.split(',').map(s => s.trim()).filter(s => s);
+    } else {
+      // If for some reason subjects is a string, split it
+      const subjectsString = subjects as unknown as string;
+      if (typeof subjectsString === 'string') {
+        processedSubjects = subjectsString.split(',').map(s => s.trim()).filter(s => s);
+      }
     }
 
     const finalData = {
