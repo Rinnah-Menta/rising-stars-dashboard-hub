@@ -1,24 +1,50 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { DollarSign, TrendingUp, TrendingDown, Users, Download, Plus } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { 
+  DollarSign, 
+  TrendingUp, 
+  TrendingDown, 
+  Users, 
+  Download, 
+  Plus,
+  ArrowUpRight,
+  ArrowDownRight,
+  Calendar,
+  Filter,
+  Search,
+  Eye,
+  MoreHorizontal
+} from 'lucide-react';
+import { PaymentDialog } from '@/components/finances/PaymentDialog';
+import { toast } from '@/hooks/use-toast';
+import { Input } from '@/components/ui/input';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 export const Finances = () => {
-  const recentTransactions = [
-    { id: 'TXN001', student: 'Sarah Nakato', amount: 450000, type: 'School Fees', date: '2024-06-10', status: 'Completed' },
-    { id: 'TXN002', student: 'John Mukasa', amount: 450000, type: 'School Fees', date: '2024-06-10', status: 'Completed' },
-    { id: 'TXN003', student: 'Mary Namuli', amount: 150000, type: 'Lunch Fees', date: '2024-06-09', status: 'Completed' },
-    { id: 'TXN004', student: 'David Ssali', amount: 75000, type: 'Transport', date: '2024-06-09', status: 'Pending' },
-    { id: 'TXN005', student: 'Ruth Auma', amount: 200000, type: 'Uniform', date: '2024-06-08', status: 'Completed' },
-  ];
+  const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [transactions, setTransactions] = useState([
+    { id: 'TXN001', student: 'Sarah Nakato', amount: 450000, type: 'School Fees', date: '2024-06-10', status: 'Completed', method: 'Mobile Money' },
+    { id: 'TXN002', student: 'John Mukasa', amount: 450000, type: 'School Fees', date: '2024-06-10', status: 'Completed', method: 'Cash' },
+    { id: 'TXN003', student: 'Mary Namuli', amount: 150000, type: 'Lunch Fees', date: '2024-06-09', status: 'Completed', method: 'Bank Transfer' },
+    { id: 'TXN004', student: 'David Ssali', amount: 75000, type: 'Transport', date: '2024-06-09', status: 'Pending', method: 'Mobile Money' },
+    { id: 'TXN005', student: 'Ruth Auma', amount: 200000, type: 'Uniform', date: '2024-06-08', status: 'Completed', method: 'Cash' },
+  ]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'Completed': return 'text-green-600 bg-green-50';
-      case 'Pending': return 'text-yellow-600 bg-yellow-50';
-      case 'Failed': return 'text-red-600 bg-red-50';
-      default: return 'text-gray-600 bg-gray-50';
+      case 'Completed': return 'text-green-700 bg-green-100 border-green-200';
+      case 'Pending': return 'text-yellow-700 bg-yellow-100 border-yellow-200';
+      case 'Failed': return 'text-red-700 bg-red-100 border-red-200';
+      default: return 'text-gray-700 bg-gray-100 border-gray-200';
     }
   };
 
@@ -30,187 +56,289 @@ export const Finances = () => {
     }).format(amount);
   };
 
+  const handleRecordPayment = (paymentData: any) => {
+    const newTransaction = {
+      id: `TXN${String(transactions.length + 1).padStart(3, '0')}`,
+      student: paymentData.studentName,
+      amount: paymentData.amount,
+      type: paymentData.paymentType,
+      date: new Date().toISOString().split('T')[0],
+      status: 'Completed',
+      method: paymentData.paymentMethod
+    };
+    
+    setTransactions(prev => [newTransaction, ...prev]);
+  };
+
+  const handleExportReport = () => {
+    toast({
+      title: "Exporting Report",
+      description: "Financial report is being generated and will be downloaded shortly.",
+    });
+    
+    // Simulate export functionality
+    setTimeout(() => {
+      toast({
+        title: "Export Complete",
+        description: "Financial report has been downloaded successfully.",
+      });
+    }, 2000);
+  };
+
+  const filteredTransactions = transactions.filter(transaction =>
+    transaction.student.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    transaction.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    transaction.type.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const stats = [
+    {
+      title: "Total Revenue",
+      value: "UGX 12.5M",
+      change: "+12% from last month",
+      icon: DollarSign,
+      iconColor: "text-green-600",
+      bgColor: "bg-green-50",
+      trend: "up"
+    },
+    {
+      title: "Outstanding Fees",
+      value: "UGX 2.1M",
+      change: "16.8% of total",
+      icon: TrendingDown,
+      iconColor: "text-red-600",
+      bgColor: "bg-red-50",
+      trend: "down"
+    },
+    {
+      title: "Paid Students",
+      value: "189",
+      change: "76.5% payment rate",
+      icon: Users,
+      iconColor: "text-blue-600",
+      bgColor: "bg-blue-50",
+      trend: "up"
+    },
+    {
+      title: "Avg Fee per Term",
+      value: "UGX 450K",
+      change: "Current term average",
+      icon: Calendar,
+      iconColor: "text-purple-600",
+      bgColor: "bg-purple-50",
+      trend: "neutral"
+    }
+  ];
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 animate-fade-in">
+      {/* Header Section */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <h1 className="text-2xl font-bold">Financial Management</h1>
-        <div className="flex flex-wrap gap-2">
-          <Button>
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Financial Management</h1>
+          <p className="text-gray-600 mt-1">Monitor payments, fees, and financial performance</p>
+        </div>
+        <div className="flex flex-wrap gap-3">
+          <Button 
+            onClick={() => setPaymentDialogOpen(true)}
+            className="bg-blue-600 hover:bg-blue-700 transition-colors shadow-lg"
+          >
             <Plus className="h-4 w-4 mr-2" />
             Record Payment
           </Button>
-          <Button variant="outline">
+          <Button 
+            variant="outline" 
+            onClick={handleExportReport}
+            className="border-gray-300 hover:bg-gray-50 transition-colors"
+          >
             <Download className="h-4 w-4 mr-2" />
             Export Report
           </Button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="text-2xl font-bold">UGX 12.5M</div>
-                <p className="text-xs text-gray-600">Total Revenue</p>
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+        {stats.map((stat, index) => (
+          <Card key={index} className="hover:shadow-lg transition-all duration-300 border-0 shadow-md">
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div className="space-y-2">
+                  <div className="text-2xl font-bold text-gray-900">{stat.value}</div>
+                  <p className="text-sm font-medium text-gray-600">{stat.title}</p>
+                </div>
+                <div className={`p-3 rounded-full ${stat.bgColor}`}>
+                  <stat.icon className={`h-6 w-6 ${stat.iconColor}`} />
+                </div>
               </div>
-              <DollarSign className="h-8 w-8 text-green-600" />
-            </div>
-            <div className="flex items-center space-x-2 mt-2">
-              <TrendingUp className="h-4 w-4 text-green-600" />
-              <span className="text-xs text-green-600">+12% from last month</span>
+              <div className="flex items-center space-x-2 mt-4">
+                {stat.trend === 'up' && <ArrowUpRight className="h-4 w-4 text-green-600" />}
+                {stat.trend === 'down' && <ArrowDownRight className="h-4 w-4 text-red-600" />}
+                <span className={`text-sm font-medium ${
+                  stat.trend === 'up' ? 'text-green-600' : 
+                  stat.trend === 'down' ? 'text-red-600' : 'text-gray-600'
+                }`}>
+                  {stat.change}
+                </span>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {/* Fee Structure and Payment Statistics */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <Card className="shadow-md border-0">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-xl font-semibold">Fee Structure (Per Term)</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {[
+                { name: 'School Fees', amount: 450000, color: 'bg-blue-50 border-l-4 border-l-blue-500' },
+                { name: 'Lunch Program', amount: 150000, color: 'bg-green-50 border-l-4 border-l-green-500' },
+                { name: 'Transport (Optional)', amount: 75000, color: 'bg-yellow-50 border-l-4 border-l-yellow-500' },
+                { name: 'Uniform & Books', amount: 200000, color: 'bg-purple-50 border-l-4 border-l-purple-500' }
+              ].map((fee, index) => (
+                <div key={index} className={`flex justify-between items-center p-4 rounded-lg ${fee.color} hover:shadow-sm transition-shadow`}>
+                  <span className="font-medium text-gray-800">{fee.name}</span>
+                  <span className="font-bold text-gray-900">{formatCurrency(fee.amount)}</span>
+                </div>
+              ))}
+              <div className="border-t pt-4 mt-6">
+                <div className="flex justify-between items-center p-4 bg-gray-50 rounded-lg">
+                  <span className="font-bold text-lg text-gray-800">Total Package</span>
+                  <span className="font-bold text-lg text-blue-600">{formatCurrency(875000)}</span>
+                </div>
+              </div>
             </div>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="text-2xl font-bold">UGX 2.1M</div>
-                <p className="text-xs text-gray-600">Outstanding Fees</p>
-              </div>
-              <TrendingDown className="h-8 w-8 text-red-600" />
-            </div>
-            <div className="flex items-center space-x-2 mt-2">
-              <span className="text-xs text-red-600">16.8% of total</span>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="text-2xl font-bold">189</div>
-                <p className="text-xs text-gray-600">Paid Students</p>
-              </div>
-              <Users className="h-8 w-8 text-blue-600" />
-            </div>
-            <div className="flex items-center space-x-2 mt-2">
-              <span className="text-xs text-blue-600">76.5% payment rate</span>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="text-2xl font-bold">UGX 450K</div>
-                <p className="text-xs text-gray-600">Avg Fee per Term</p>
-              </div>
-              <DollarSign className="h-8 w-8 text-purple-600" />
+
+        <Card className="shadow-md border-0">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-xl font-semibold">Payment Statistics</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-6">
+              {[
+                { label: 'Fees Paid', percentage: 76.5, color: 'bg-green-500', bgColor: 'bg-green-100' },
+                { label: 'Partial Payments', percentage: 15.2, color: 'bg-yellow-500', bgColor: 'bg-yellow-100' },
+                { label: 'Outstanding', percentage: 8.3, color: 'bg-red-500', bgColor: 'bg-red-100' }
+              ].map((stat, index) => (
+                <div key={index} className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-medium text-gray-700">{stat.label}</span>
+                    <span className="text-sm font-semibold text-gray-900">{stat.percentage}%</span>
+                  </div>
+                  <div className={`w-full ${stat.bgColor} rounded-full h-3 overflow-hidden`}>
+                    <div 
+                      className={`h-full ${stat.color} rounded-full transition-all duration-500 ease-out`}
+                      style={{ width: `${stat.percentage}%` }}
+                    />
+                  </div>
+                </div>
+              ))}
             </div>
           </CardContent>
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Fee Structure (Per Term)</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                <span className="font-medium">School Fees</span>
-                <span className="font-bold">UGX 450,000</span>
+      {/* Recent Transactions */}
+      <Card className="shadow-md border-0">
+        <CardHeader className="pb-4">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <CardTitle className="text-xl font-semibold">Recent Transactions</CardTitle>
+            <div className="flex items-center space-x-3">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <Input
+                  placeholder="Search transactions..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 w-64"
+                />
               </div>
-              <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                <span className="font-medium">Lunch Program</span>
-                <span className="font-bold">UGX 150,000</span>
-              </div>
-              <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                <span className="font-medium">Transport (Optional)</span>
-                <span className="font-bold">UGX 75,000</span>
-              </div>
-              <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                <span className="font-medium">Uniform & Books</span>
-                <span className="font-bold">UGX 200,000</span>
-              </div>
-              <div className="border-t pt-3">
-                <div className="flex justify-between items-center">
-                  <span className="font-bold text-lg">Total Package</span>
-                  <span className="font-bold text-lg text-blue-600">UGX 875,000</span>
-                </div>
-              </div>
+              <Button variant="outline" size="icon">
+                <Filter className="h-4 w-4" />
+              </Button>
             </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Payment Statistics</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div>
-                <div className="flex justify-between mb-2">
-                  <span className="text-sm">Fees Paid</span>
-                  <span className="text-sm font-medium">76.5%</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div className="bg-green-600 h-2 rounded-full" style={{ width: '76.5%' }}></div>
-                </div>
-              </div>
-              <div>
-                <div className="flex justify-between mb-2">
-                  <span className="text-sm">Partial Payments</span>
-                  <span className="text-sm font-medium">15.2%</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div className="bg-yellow-600 h-2 rounded-full" style={{ width: '15.2%' }}></div>
-                </div>
-              </div>
-              <div>
-                <div className="flex justify-between mb-2">
-                  <span className="text-sm">Outstanding</span>
-                  <span className="text-sm font-medium">8.3%</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div className="bg-red-600 h-2 rounded-full" style={{ width: '8.3%' }}></div>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Recent Transactions</CardTitle>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b">
-                  <th className="text-left p-4 font-medium">Transaction ID</th>
-                  <th className="text-left p-4 font-medium">Student</th>
-                  <th className="text-left p-4 font-medium">Amount</th>
-                  <th className="text-left p-4 font-medium">Type</th>
-                  <th className="text-left p-4 font-medium">Date</th>
-                  <th className="text-left p-4 font-medium">Status</th>
+                <tr className="border-b border-gray-200">
+                  <th className="text-left p-4 font-semibold text-gray-700">Transaction ID</th>
+                  <th className="text-left p-4 font-semibold text-gray-700">Student</th>
+                  <th className="text-left p-4 font-semibold text-gray-700">Amount</th>
+                  <th className="text-left p-4 font-semibold text-gray-700">Type</th>
+                  <th className="text-left p-4 font-semibold text-gray-700">Date</th>
+                  <th className="text-left p-4 font-semibold text-gray-700">Status</th>
+                  <th className="text-left p-4 font-semibold text-gray-700">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {recentTransactions.map((transaction) => (
-                  <tr key={transaction.id} className="border-b hover:bg-gray-50">
-                    <td className="p-4 font-mono text-sm">{transaction.id}</td>
-                    <td className="p-4">{transaction.student}</td>
-                    <td className="p-4 font-medium">{formatCurrency(transaction.amount)}</td>
-                    <td className="p-4">{transaction.type}</td>
-                    <td className="p-4 text-sm">{new Date(transaction.date).toLocaleDateString()}</td>
+                {filteredTransactions.map((transaction, index) => (
+                  <tr key={transaction.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
                     <td className="p-4">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(transaction.status)}`}>
+                      <span className="font-mono text-sm font-medium text-gray-600">{transaction.id}</span>
+                    </td>
+                    <td className="p-4">
+                      <span className="font-medium text-gray-900">{transaction.student}</span>
+                    </td>
+                    <td className="p-4">
+                      <span className="font-semibold text-gray-900">{formatCurrency(transaction.amount)}</span>
+                    </td>
+                    <td className="p-4">
+                      <span className="text-gray-700">{transaction.type}</span>
+                    </td>
+                    <td className="p-4">
+                      <span className="text-sm text-gray-600">{new Date(transaction.date).toLocaleDateString()}</span>
+                    </td>
+                    <td className="p-4">
+                      <Badge className={`border ${getStatusColor(transaction.status)}`}>
                         {transaction.status}
-                      </span>
+                      </Badge>
+                    </td>
+                    <td className="p-4">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem>
+                            <Eye className="h-4 w-4 mr-2" />
+                            View Details
+                          </DropdownMenuItem>
+                          <DropdownMenuItem>
+                            <Download className="h-4 w-4 mr-2" />
+                            Download Receipt
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
+            {filteredTransactions.length === 0 && (
+              <div className="text-center py-8 text-gray-500">
+                No transactions found matching your search.
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
+
+      <PaymentDialog 
+        open={paymentDialogOpen}
+        onOpenChange={setPaymentDialogOpen}
+        onSave={handleRecordPayment}
+      />
     </div>
   );
 };
