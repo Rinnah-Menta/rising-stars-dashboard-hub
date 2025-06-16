@@ -15,7 +15,7 @@ import { Profile } from './pages/Profile';
 import { Calendar } from './pages/Calendar';
 import { Reports } from './pages/Reports';
 import { Students } from './pages/Students';
-import { Teachers } from './pages/Teachers';
+import { Staff } from './pages/Staff';
 import { Classes } from './pages/Classes';
 import { Finances } from './pages/Finances';
 import { Analytics } from './pages/Analytics';
@@ -59,8 +59,8 @@ export const PageRenderer = () => {
       return <Reports />;
     case 'students':
       return <Students />;
-    case 'teachers':
-      return <Teachers />;
+    case 'staff':
+      return <Staff />;
     case 'classes':
       return <Classes />;
     case 'finances':

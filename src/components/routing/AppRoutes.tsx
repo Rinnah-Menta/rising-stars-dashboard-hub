@@ -8,7 +8,7 @@ import { Profile } from '@/components/pages/Profile';
 import { Calendar } from '@/components/pages/Calendar';
 import { Reports } from '@/components/pages/Reports';
 import { Students } from '@/components/pages/Students';
-import { Teachers } from '@/components/pages/Teachers';
+import { Staff } from '@/components/pages/Staff';
 import { Classes } from '@/components/pages/Classes';
 import { Finances } from '@/components/pages/Finances';
 import { Analytics } from '@/components/pages/Analytics';
@@ -106,10 +106,10 @@ export const AppRoutes: React.FC = () => {
             </ProtectedRoute>
           } />
 
-          <Route path="/teachers" element={
+          <Route path="/staff" element={
             <ProtectedRoute>
               <Layout>
-                <Teachers />
+                <Staff />
               </Layout>
             </ProtectedRoute>
           } />
