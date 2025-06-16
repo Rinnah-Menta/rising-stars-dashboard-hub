@@ -54,87 +54,89 @@ export const PaymentDialog: React.FC<PaymentDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
+      <DialogContent className="max-w-lg max-h-[85vh] flex flex-col">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle>Record New Payment</DialogTitle>
         </DialogHeader>
         
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="studentName">Student Name</Label>
-            <Input
-              id="studentName"
-              {...register('studentName', { required: 'Student name is required' })}
-              placeholder="Enter student name"
-            />
-            {errors.studentName && <p className="text-sm text-red-600">{errors.studentName.message}</p>}
-          </div>
+        <div className="flex-1 overflow-y-auto pr-2">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="studentName">Student Name</Label>
+              <Input
+                id="studentName"
+                {...register('studentName', { required: 'Student name is required' })}
+                placeholder="Enter student name"
+              />
+              {errors.studentName && <p className="text-sm text-red-600">{errors.studentName.message}</p>}
+            </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="amount">Amount (UGX)</Label>
-            <Input
-              id="amount"
-              type="number"
-              {...register('amount', { 
-                required: 'Amount is required',
-                min: { value: 1, message: 'Amount must be greater than 0' }
-              })}
-              placeholder="450000"
-            />
-            {errors.amount && <p className="text-sm text-red-600">{errors.amount.message}</p>}
-          </div>
+            <div className="space-y-2">
+              <Label htmlFor="amount">Amount (UGX)</Label>
+              <Input
+                id="amount"
+                type="number"
+                {...register('amount', { 
+                  required: 'Amount is required',
+                  min: { value: 1, message: 'Amount must be greater than 0' }
+                })}
+                placeholder="450000"
+              />
+              {errors.amount && <p className="text-sm text-red-600">{errors.amount.message}</p>}
+            </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="paymentType">Payment Type</Label>
-            <Select onValueChange={(value) => setValue('paymentType', value)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select payment type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="School Fees">School Fees</SelectItem>
-                <SelectItem value="Lunch Fees">Lunch Fees</SelectItem>
-                <SelectItem value="Transport">Transport</SelectItem>
-                <SelectItem value="Uniform">Uniform</SelectItem>
-                <SelectItem value="Books">Books</SelectItem>
-                <SelectItem value="Other">Other</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+            <div className="space-y-2">
+              <Label htmlFor="paymentType">Payment Type</Label>
+              <Select onValueChange={(value) => setValue('paymentType', value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select payment type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="School Fees">School Fees</SelectItem>
+                  <SelectItem value="Lunch Fees">Lunch Fees</SelectItem>
+                  <SelectItem value="Transport">Transport</SelectItem>
+                  <SelectItem value="Uniform">Uniform</SelectItem>
+                  <SelectItem value="Books">Books</SelectItem>
+                  <SelectItem value="Other">Other</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="paymentMethod">Payment Method</Label>
-            <Select onValueChange={(value) => setValue('paymentMethod', value)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select payment method" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Cash">Cash</SelectItem>
-                <SelectItem value="Mobile Money">Mobile Money</SelectItem>
-                <SelectItem value="Bank Transfer">Bank Transfer</SelectItem>
-                <SelectItem value="Cheque">Cheque</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+            <div className="space-y-2">
+              <Label htmlFor="paymentMethod">Payment Method</Label>
+              <Select onValueChange={(value) => setValue('paymentMethod', value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select payment method" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Cash">Cash</SelectItem>
+                  <SelectItem value="Mobile Money">Mobile Money</SelectItem>
+                  <SelectItem value="Bank Transfer">Bank Transfer</SelectItem>
+                  <SelectItem value="Cheque">Cheque</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="notes">Notes (Optional)</Label>
-            <Textarea
-              id="notes"
-              {...register('notes')}
-              placeholder="Additional notes..."
-              rows={3}
-            />
-          </div>
+            <div className="space-y-2">
+              <Label htmlFor="notes">Notes (Optional)</Label>
+              <Textarea
+                id="notes"
+                {...register('notes')}
+                placeholder="Additional notes..."
+                rows={2}
+              />
+            </div>
 
-          <div className="flex justify-end space-x-2 pt-4">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
-            </Button>
-            <Button type="submit">
-              Record Payment
-            </Button>
-          </div>
-        </form>
+            <div className="flex justify-end space-x-2 pt-4 sticky bottom-0 bg-white">
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+                Cancel
+              </Button>
+              <Button type="submit">
+                Record Payment
+              </Button>
+            </div>
+          </form>
+        </div>
       </DialogContent>
     </Dialog>
   );

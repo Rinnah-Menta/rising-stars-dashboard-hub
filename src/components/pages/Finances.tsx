@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -19,6 +18,7 @@ import {
   MoreHorizontal
 } from 'lucide-react';
 import { PaymentDialog } from '@/components/finances/PaymentDialog';
+import { FilterDialog, FilterOptions } from '@/components/finances/FilterDialog';
 import { toast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
 import {
@@ -28,10 +28,22 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
+interface Transaction {
+  id: string;
+  student: string;
+  amount: number;
+  type: string;
+  date: string;
+  status: string;
+  method: string;
+}
+
 export const Finances = () => {
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
+  const [filterDialogOpen, setFilterDialogOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [transactions, setTransactions] = useState([
+  const [activeFilters, setActiveFilters] = useState<FilterOptions>({});
+  const [transactions, setTransactions] = useState<Transaction[]>([
     { id: 'TXN001', student: 'Sarah Nakato', amount: 450000, type: 'School Fees', date: '2024-06-10', status: 'Completed', method: 'Mobile Money' },
     { id: 'TXN002', student: 'John Mukasa', amount: 450000, type: 'School Fees', date: '2024-06-10', status: 'Completed', method: 'Cash' },
     { id: 'TXN003', student: 'Mary Namuli', amount: 150000, type: 'Lunch Fees', date: '2024-06-09', status: 'Completed', method: 'Bank Transfer' },
@@ -57,7 +69,7 @@ export const Finances = () => {
   };
 
   const handleRecordPayment = (paymentData: any) => {
-    const newTransaction = {
+    const newTransaction: Transaction = {
       id: `TXN${String(transactions.length + 1).padStart(3, '0')}`,
       student: paymentData.studentName,
       amount: paymentData.amount,
@@ -71,26 +83,75 @@ export const Finances = () => {
   };
 
   const handleExportReport = () => {
-    toast({
-      title: "Exporting Report",
-      description: "Financial report is being generated and will be downloaded shortly.",
-    });
+    const csvData = [
+      ['Transaction ID', 'Student', 'Amount', 'Type', 'Date', 'Status', 'Method'],
+      ...filteredTransactions.map(t => [t.id, t.student, t.amount.toString(), t.type, t.date, t.status, t.method])
+    ];
     
-    // Simulate export functionality
-    setTimeout(() => {
-      toast({
-        title: "Export Complete",
-        description: "Financial report has been downloaded successfully.",
-      });
-    }, 2000);
+    const csvContent = csvData.map(row => row.join(',')).join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `financial-report-${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+    
+    toast({
+      title: "Export Complete",
+      description: "Financial report has been downloaded successfully.",
+    });
   };
 
-  const filteredTransactions = transactions.filter(transaction =>
-    transaction.student.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    transaction.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    transaction.type.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const handleViewDetails = (transaction: Transaction) => {
+    toast({
+      title: "Transaction Details",
+      description: `Viewing details for ${transaction.id} - ${transaction.student}`,
+    });
+  };
 
+  const handleDownloadReceipt = (transaction: Transaction) => {
+    toast({
+      title: "Receipt Downloaded",
+      description: `Receipt for ${transaction.id} has been downloaded.`,
+    });
+  };
+
+  const applyFilters = (filters: FilterOptions) => {
+    setActiveFilters(filters);
+  };
+
+  const filteredTransactions = transactions.filter(transaction => {
+    // Search filter
+    const matchesSearch = transaction.student.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      transaction.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      transaction.type.toLowerCase().includes(searchTerm.toLowerCase());
+
+    // Status filter
+    const matchesStatus = !activeFilters.status || transaction.status === activeFilters.status;
+    
+    // Payment type filter
+    const matchesType = !activeFilters.paymentType || transaction.type === activeFilters.paymentType;
+    
+    // Payment method filter
+    const matchesMethod = !activeFilters.paymentMethod || transaction.method === activeFilters.paymentMethod;
+    
+    // Date filters
+    const transactionDate = new Date(transaction.date);
+    const matchesDateFrom = !activeFilters.dateFrom || transactionDate >= new Date(activeFilters.dateFrom);
+    const matchesDateTo = !activeFilters.dateTo || transactionDate <= new Date(activeFilters.dateTo);
+    
+    // Amount filters
+    const matchesMinAmount = !activeFilters.minAmount || transaction.amount >= activeFilters.minAmount;
+    const matchesMaxAmount = !activeFilters.maxAmount || transaction.amount <= activeFilters.maxAmount;
+
+    return matchesSearch && matchesStatus && matchesType && matchesMethod && 
+           matchesDateFrom && matchesDateTo && matchesMinAmount && matchesMaxAmount;
+  });
+
+  // ... keep existing code (stats array definition)
   const stats = [
     {
       title: "Total Revenue",
@@ -259,11 +320,38 @@ export const Finances = () => {
                   className="pl-10 w-64"
                 />
               </div>
-              <Button variant="outline" size="icon">
+              <Button 
+                variant="outline" 
+                size="icon"
+                onClick={() => setFilterDialogOpen(true)}
+              >
                 <Filter className="h-4 w-4" />
               </Button>
             </div>
           </div>
+          {Object.keys(activeFilters).length > 0 && (
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-sm text-gray-600">Active filters:</span>
+              {Object.entries(activeFilters).map(([key, value]) => 
+                value && (
+                  <Badge key={key} variant="secondary" className="text-xs">
+                    {key}: {value}
+                  </Badge>
+                )
+              )}
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => {
+                  setActiveFilters({});
+                  setSearchTerm('');
+                }}
+                className="text-xs"
+              >
+                Clear all
+              </Button>
+            </div>
+          )}
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
@@ -309,12 +397,12 @@ export const Finances = () => {
                             <MoreHorizontal className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem>
+                        <DropdownMenuContent align="end" className="bg-white z-50">
+                          <DropdownMenuItem onClick={() => handleViewDetails(transaction)}>
                             <Eye className="h-4 w-4 mr-2" />
                             View Details
                           </DropdownMenuItem>
-                          <DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleDownloadReceipt(transaction)}>
                             <Download className="h-4 w-4 mr-2" />
                             Download Receipt
                           </DropdownMenuItem>
@@ -327,7 +415,7 @@ export const Finances = () => {
             </table>
             {filteredTransactions.length === 0 && (
               <div className="text-center py-8 text-gray-500">
-                No transactions found matching your search.
+                No transactions found matching your search criteria.
               </div>
             )}
           </div>
@@ -338,6 +426,12 @@ export const Finances = () => {
         open={paymentDialogOpen}
         onOpenChange={setPaymentDialogOpen}
         onSave={handleRecordPayment}
+      />
+
+      <FilterDialog
+        open={filterDialogOpen}
+        onOpenChange={setFilterDialogOpen}
+        onApplyFilters={applyFilters}
       />
     </div>
   );
