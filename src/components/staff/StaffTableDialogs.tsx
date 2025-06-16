@@ -110,7 +110,7 @@ export const StaffTableDialogs: React.FC<StaffTableDialogsProps> = ({
         onOpenChange={(open) => setAccountActionDialog({ ...accountActionDialog, open })}
         action={accountActionDialog.action}
         personName={accountActionDialog.staffMember?.name || ''}
-        personType="staff member"
+        personType="staff"
         onConfirm={handleAccountAction}
       />
     </>
