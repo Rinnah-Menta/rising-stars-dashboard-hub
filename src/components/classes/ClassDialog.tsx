@@ -47,7 +47,8 @@ export const ClassDialog: React.FC<ClassDialogProps> = ({
     }
   });
 
-  const subjectsText = watch('subjects')?.join(', ') || '';
+  const watchedSubjects = watch('subjects') || [];
+  const subjectsText = Array.isArray(watchedSubjects) ? watchedSubjects.join(', ') : '';
 
   useEffect(() => {
     if (classData) {
@@ -71,11 +72,17 @@ export const ClassDialog: React.FC<ClassDialogProps> = ({
 
   const onSubmit = (data: ClassData) => {
     const subjects = data.subjects || [];
+    let processedSubjects: string[] = [];
+    
+    if (Array.isArray(subjects)) {
+      processedSubjects = subjects;
+    } else if (typeof subjects === 'string') {
+      processedSubjects = subjects.split(',').map(s => s.trim()).filter(s => s);
+    }
+
     const finalData = {
       ...data,
-      subjects: typeof subjects === 'string' 
-        ? subjects.split(',').map(s => s.trim()).filter(s => s)
-        : subjects,
+      subjects: processedSubjects,
       id: classData?.id || `${data.level.replace(' ', '')}${Math.random().toString(36).substr(2, 2).toUpperCase()}`
     };
 
