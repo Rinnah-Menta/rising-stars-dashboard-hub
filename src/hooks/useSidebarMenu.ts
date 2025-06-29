@@ -21,7 +21,8 @@ import {
   Building,
   Bell,
   HelpCircle,
-  Book
+  Book,
+  Mail
 } from 'lucide-react';
 
 export const useSidebarMenu = () => {
@@ -67,6 +68,36 @@ export const useSidebarMenu = () => {
     return false;
   };
 
+  const shouldShowStaff = () => {
+    if (!user) return false;
+    // Only admins can see staff management
+    return user.role === 'admin';
+  };
+
+  const shouldShowAnalytics = () => {
+    if (!user) return false;
+    // Only admins can see analytics
+    return user.role === 'admin';
+  };
+
+  const shouldShowNotifications = () => {
+    if (!user) return false;
+    // Only admins can see the notifications management page
+    return user.role === 'admin';
+  };
+
+  const shouldShowSettings = () => {
+    if (!user) return false;
+    // Only admins and non-teaching staff can see settings
+    return user.role === 'admin' || user.role === 'non-teaching';
+  };
+
+  const shouldShowFacilities = () => {
+    if (!user) return false;
+    // Only admins and non-teaching staff can see facilities
+    return user.role === 'admin' || user.role === 'non-teaching';
+  };
+
   const getUserRoleLabel = () => {
     switch (user?.role) {
       case 'pupil': return 'Student Portal';
@@ -93,14 +124,14 @@ export const useSidebarMenu = () => {
       finances: { title: 'Finances', icon: DollarSign, id: 'finances' },
       analytics: { title: 'Analytics', icon: BarChart3, id: 'analytics' },
       settings: { title: 'Settings', icon: Settings, id: 'settings' },
-      communication: { title: 'Communication', icon: MessageSquare, id: 'communication' },
+      communication: { title: 'Communication', icon: Mail, id: 'communication' },
       library: { title: 'Library', icon: Book, id: 'library' },
       attendance: { title: 'Attendance', icon: UserCheck, id: 'attendance' },
       notifications: { 
         title: 'Notifications', 
         icon: Bell, 
         id: 'notifications',
-        badge: user?.role === 'admin' ? unreadCount : undefined
+        badge: shouldShowNotifications() ? unreadCount : undefined
       },
       help: { title: 'Help & Support', icon: HelpCircle, id: 'help' },
       facilities: { title: 'Facilities', icon: Building, id: 'facilities' },
@@ -118,7 +149,6 @@ export const useSidebarMenu = () => {
         'timetable', 
         'library', 
         'communication', 
-        'notifications', 
         'help'
       ],
       teacher: [
@@ -133,7 +163,6 @@ export const useSidebarMenu = () => {
         'timetable', 
         'attendance', 
         'communication', 
-        'notifications', 
         'help'
       ],
       parent: [
@@ -143,7 +172,6 @@ export const useSidebarMenu = () => {
         'results', 
         'finances', 
         'communication', 
-        'notifications', 
         'help'
       ],
       admin: [
@@ -167,11 +195,10 @@ export const useSidebarMenu = () => {
         'profile', 
         'calendar', 
         ...(shouldShowReports() ? ['reports'] : []),
-        'facilities', 
+        ...(shouldShowFacilities() ? ['facilities'] : []),
         'communication', 
-        'notifications', 
         'help', 
-        'settings'
+        ...(shouldShowSettings() ? ['settings'] : [])
       ],
     };
 

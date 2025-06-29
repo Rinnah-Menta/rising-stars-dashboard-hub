@@ -103,11 +103,11 @@ export const StudentDialog: React.FC<StudentDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md max-h-[85vh] p-0">
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] p-0">
         <StudentDialogHeader student={student} teacherClasses={teacherClasses} />
         
-        <ScrollArea className="max-h-[60vh] px-6">
-          <form onSubmit={handleSubmit} className="space-y-4 py-4">
+        <ScrollArea className="max-h-[70vh] px-6">
+          <form onSubmit={handleSubmit} className="py-4">
             <StudentFormFields
               formData={formData}
               setFormData={setFormData}

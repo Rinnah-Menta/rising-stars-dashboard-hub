@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { TeacherFormFields } from './TeacherFormFields';
 import { useToast } from '@/hooks/use-toast';
 
@@ -81,24 +82,26 @@ export const TeacherDialog: React.FC<TeacherDialogProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="max-w-4xl max-h-[90vh] p-0">
+        <DialogHeader className="px-6 py-4 border-b">
           <DialogTitle>
             {teacher ? 'Edit Teacher' : 'Add New Teacher'}
           </DialogTitle>
         </DialogHeader>
         
-        <div className="space-y-4">
-          <TeacherFormFields formData={formData} setFormData={setFormData} />
-          
-          <div className="flex justify-end space-x-2 pt-4">
-            <Button variant="outline" onClick={onClose}>
-              Cancel
-            </Button>
-            <Button onClick={handleSave}>
-              {teacher ? 'Update Teacher' : 'Add Teacher'}
-            </Button>
+        <ScrollArea className="max-h-[70vh] px-6">
+          <div className="py-4">
+            <TeacherFormFields formData={formData} setFormData={setFormData} />
           </div>
+        </ScrollArea>
+        
+        <div className="flex justify-end space-x-2 px-6 py-4 border-t bg-gray-50">
+          <Button variant="outline" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button onClick={handleSave}>
+            {teacher ? 'Update Teacher' : 'Add Teacher'}
+          </Button>
         </div>
       </DialogContent>
     </Dialog>

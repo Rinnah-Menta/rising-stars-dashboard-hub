@@ -26,21 +26,22 @@ export const BasicInfoFields: React.FC<BasicInfoFieldsProps> = ({
 }) => {
   return (
     <>
-      <div className="space-y-2">
-        <Label htmlFor="name">Teacher Name *</Label>
+      <div className="space-y-1">
+        <Label htmlFor="name" className="text-sm font-medium">Teacher Name *</Label>
         <Input
           id="name"
           value={formData.name}
           onChange={(e) => onInputChange('name', e.target.value)}
           placeholder="Enter teacher name"
+          className="h-9"
           required
         />
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="subject">Primary Subject *</Label>
+      <div className="space-y-1">
+        <Label htmlFor="subject" className="text-sm font-medium">Primary Subject *</Label>
         <Select value={formData.subject} onValueChange={(value) => onInputChange('subject', value)}>
-          <SelectTrigger>
+          <SelectTrigger className="h-9">
             <SelectValue placeholder="Select primary subject" />
           </SelectTrigger>
           <SelectContent>
@@ -53,25 +54,27 @@ export const BasicInfoFields: React.FC<BasicInfoFieldsProps> = ({
         </Select>
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="phone">Phone Number *</Label>
+      <div className="space-y-1">
+        <Label htmlFor="phone" className="text-sm font-medium">Phone Number *</Label>
         <Input
           id="phone"
           type="tel"
           value={formData.phone}
           onChange={(e) => onInputChange('phone', e.target.value)}
           placeholder="Enter phone number"
+          className="h-9"
           required
         />
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="experience">Experience *</Label>
+      <div className="space-y-1">
+        <Label htmlFor="experience" className="text-sm font-medium">Experience *</Label>
         <Input
           id="experience"
           value={formData.experience}
           onChange={(e) => onInputChange('experience', e.target.value)}
           placeholder="e.g., 5 years"
+          className="h-9"
           required
         />
       </div>

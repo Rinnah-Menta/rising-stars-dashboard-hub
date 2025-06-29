@@ -16,8 +16,8 @@ export const Layout = ({ children }: LayoutProps) => {
         <Navbar />
         <div className="flex flex-1 pt-16">
           <AppSidebar />
-          <main className="flex-1 p-3 sm:p-4 md:p-6 lg:p-8 overflow-x-auto">
-            <div className="max-w-full mx-auto">
+          <main className="flex-1 p-2 sm:p-3 md:p-4 lg:p-6 overflow-x-auto">
+            <div className="max-w-full mx-auto h-full">
               {children}
             </div>
           </main>

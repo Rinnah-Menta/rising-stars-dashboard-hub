@@ -22,10 +22,10 @@ export const ClassSelector: React.FC<ClassSelectorProps> = ({
   onRemoveClass
 }) => {
   return (
-    <div className="space-y-2 md:col-span-2">
-      <Label htmlFor="classes">Classes Taught *</Label>
+    <div className="space-y-2">
+      <Label htmlFor="classes" className="text-sm font-medium">Classes Taught *</Label>
       <Select onValueChange={onClassToggle}>
-        <SelectTrigger>
+        <SelectTrigger className="h-9">
           <SelectValue placeholder="Select classes to teach" />
         </SelectTrigger>
         <SelectContent>
@@ -41,9 +41,9 @@ export const ClassSelector: React.FC<ClassSelectorProps> = ({
         </SelectContent>
       </Select>
       {selectedClasses.length > 0 && (
-        <div className="flex flex-wrap gap-2 mt-2">
+        <div className="flex flex-wrap gap-1 mt-2">
           {selectedClasses.map((className) => (
-            <Badge key={className} variant="secondary" className="flex items-center gap-1">
+            <Badge key={className} variant="secondary" className="flex items-center gap-1 text-xs">
               {className}
               <X 
                 className="h-3 w-3 cursor-pointer" 

@@ -28,10 +28,10 @@ export const ProfessionalInfoFields: React.FC<ProfessionalInfoFieldsProps> = ({
 }) => {
   return (
     <>
-      <div className="space-y-2">
-        <Label htmlFor="status">Status</Label>
+      <div className="space-y-1">
+        <Label htmlFor="status" className="text-sm font-medium">Status</Label>
         <Select value={formData.status} onValueChange={(value) => onInputChange('status', value)}>
-          <SelectTrigger>
+          <SelectTrigger className="h-9">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -42,10 +42,10 @@ export const ProfessionalInfoFields: React.FC<ProfessionalInfoFieldsProps> = ({
         </Select>
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="qualification">Qualification</Label>
+      <div className="space-y-1">
+        <Label htmlFor="qualification" className="text-sm font-medium">Qualification</Label>
         <Select value={formData.qualification} onValueChange={(value) => onInputChange('qualification', value)}>
-          <SelectTrigger>
+          <SelectTrigger className="h-9">
             <SelectValue placeholder="Select qualification" />
           </SelectTrigger>
           <SelectContent>
@@ -58,10 +58,10 @@ export const ProfessionalInfoFields: React.FC<ProfessionalInfoFieldsProps> = ({
         </Select>
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="department">Department</Label>
+      <div className="space-y-1">
+        <Label htmlFor="department" className="text-sm font-medium">Department</Label>
         <Select value={formData.department} onValueChange={(value) => onInputChange('department', value)}>
-          <SelectTrigger>
+          <SelectTrigger className="h-9">
             <SelectValue placeholder="Select department" />
           </SelectTrigger>
           <SelectContent>

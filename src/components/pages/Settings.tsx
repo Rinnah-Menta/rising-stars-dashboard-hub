@@ -1,13 +1,110 @@
 
-import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
-import { Settings as SettingsIcon, Bell, Shield, Database, Users, Mail } from 'lucide-react';
+import { Settings as SettingsIcon } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { SchoolInfoCard } from '../settings/SchoolInfoCard';
+import { AcademicSettingsCard } from '../settings/AcademicSettingsCard';
+import { UserInterfaceCard } from '../settings/UserInterfaceCard';
+import { UserPreferencesCard } from '../settings/UserPreferencesCard';
+import { NotificationsCard } from '../settings/NotificationsCard';
+import { SecurityCard } from '../settings/SecurityCard';
+import { DataManagementCard } from '../settings/DataManagementCard';
 
 export const Settings = () => {
+  const { toast } = useToast();
+  
+  // Local storage keys
+  const SETTINGS_KEY = 'school_settings';
+  
+  // Default settings
+  const defaultSettings = {
+    schoolName: 'Rising Star Junior School',
+    academicYear: '2024',
+    currentTerm: 'Term 2',
+    gradeSystem: 'percentage',
+    passGrade: 50,
+    enableNotifications: true,
+    enableSounds: true,
+    autoSave: true,
+    theme: 'light',
+    language: 'en',
+    sessionTimeout: 60,
+    showWelcomeMessage: true,
+    enableAutoBackup: true,
+    backupFrequency: 'daily',
+    maxStudentsPerClass: 40,
+    enableParentAccess: true,
+    // User preferences & accessibility
+    fontSize: 16,
+    fontFamily: 'system',
+    contrast: 'normal',
+    reduceMotion: false,
+    screenReaderSupport: false,
+    keyboardNavigation: true,
+    focusIndicators: true
+  };
+
+  const [settings, setSettings] = useState(defaultSettings);
+
+  // Load settings from localStorage on component mount
+  useEffect(() => {
+    const savedSettings = localStorage.getItem(SETTINGS_KEY);
+    if (savedSettings) {
+      try {
+        const parsed = JSON.parse(savedSettings);
+        setSettings({ ...defaultSettings, ...parsed });
+      } catch (error) {
+        console.error('Error loading settings:', error);
+      }
+    }
+  }, []);
+
+  // Save settings to localStorage
+  const saveSettings = () => {
+    try {
+      localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+      toast({
+        title: "Settings Saved",
+        description: "Your settings have been saved successfully.",
+      });
+    } catch (error) {
+      console.error('Error saving settings:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save settings. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Update a setting
+  const updateSetting = (key: string, value: any) => {
+    setSettings(prev => ({ ...prev, [key]: value }));
+  };
+
+  // Reset to defaults
+  const resetToDefaults = () => {
+    setSettings(defaultSettings);
+    localStorage.removeItem(SETTINGS_KEY);
+    toast({
+      title: "Settings Reset",
+      description: "All settings have been reset to default values.",
+    });
+  };
+
+  // Export settings
+  const exportSettings = () => {
+    const dataStr = JSON.stringify(settings, null, 2);
+    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'school-settings.json';
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -16,194 +113,25 @@ export const Settings = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <Shield className="h-5 w-5" />
-              <span>School Information</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="schoolName">School Name</Label>
-              <Input id="schoolName" defaultValue="Springing Stars Junior School" />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="address">Address</Label>
-              <Input id="address" defaultValue="Kampala, Uganda" />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="phone">Phone Number</Label>
-              <Input id="phone" defaultValue="+256 700 123 456" />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="email">Email Address</Label>
-              <Input id="email" defaultValue="info@springingstars.ac.ug" />
-            </div>
-            <Button>Update School Info</Button>
-          </CardContent>
-        </Card>
+        <SchoolInfoCard settings={settings} updateSetting={updateSetting} />
+        <AcademicSettingsCard settings={settings} updateSetting={updateSetting} />
+        <UserInterfaceCard settings={settings} updateSetting={updateSetting} />
+        <UserPreferencesCard settings={settings} updateSetting={updateSetting} />
+        <NotificationsCard settings={settings} updateSetting={updateSetting} />
+        <SecurityCard settings={settings} updateSetting={updateSetting} />
+        <DataManagementCard 
+          settings={settings} 
+          updateSetting={updateSetting}
+          exportSettings={exportSettings}
+          resetToDefaults={resetToDefaults}
+        />
+      </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <Bell className="h-5 w-5" />
-              <span>Notification Settings</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <Label>Email Notifications</Label>
-                <p className="text-sm text-gray-600">Receive notifications via email</p>
-              </div>
-              <Switch defaultChecked />
-            </div>
-            <div className="flex items-center justify-between">
-              <div>
-                <Label>SMS Notifications</Label>
-                <p className="text-sm text-gray-600">Send SMS to parents</p>
-              </div>
-              <Switch defaultChecked />
-            </div>
-            <div className="flex items-center justify-between">
-              <div>
-                <Label>Assignment Reminders</Label>
-                <p className="text-sm text-gray-600">Remind students of due assignments</p>
-              </div>
-              <Switch defaultChecked />
-            </div>
-            <div className="flex items-center justify-between">
-              <div>
-                <Label>Fee Payment Alerts</Label>
-                <p className="text-sm text-gray-600">Alert for overdue payments</p>
-              </div>
-              <Switch defaultChecked />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <Database className="h-5 w-5" />
-              <span>Academic Settings</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="currentTerm">Current Academic Term</Label>
-              <Input id="currentTerm" defaultValue="Term 2, 2024" />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="gradeSystem">Grading System</Label>
-              <Input id="gradeSystem" defaultValue="Percentage (0-100%)" />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="passGrade">Pass Grade</Label>
-              <Input id="passGrade" defaultValue="50%" />
-            </div>
-            <div className="flex items-center justify-between">
-              <div>
-                <Label>Auto Attendance Marking</Label>
-                <p className="text-sm text-gray-600">Mark absent students automatically</p>
-              </div>
-              <Switch />
-            </div>
-            <Button>Save Academic Settings</Button>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <Users className="h-5 w-5" />
-              <span>User Management</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <Label>Allow Parent Registration</Label>
-                <p className="text-sm text-gray-600">Parents can register themselves</p>
-              </div>
-              <Switch defaultChecked />
-            </div>
-            <div className="flex items-center justify-between">
-              <div>
-                <Label>Require Email Verification</Label>
-                <p className="text-sm text-gray-600">Users must verify email</p>
-              </div>
-              <Switch defaultChecked />
-            </div>
-            <div className="flex items-center justify-between">
-              <div>
-                <Label>Two-Factor Authentication</Label>
-                <p className="text-sm text-gray-600">Enable 2FA for admin users</p>
-              </div>
-              <Switch />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="sessionTimeout">Session Timeout (minutes)</Label>
-              <Input id="sessionTimeout" defaultValue="60" type="number" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <Mail className="h-5 w-5" />
-              <span>Communication Settings</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="smtpServer">SMTP Server</Label>
-              <Input id="smtpServer" defaultValue="smtp.gmail.com" />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="smtpPort">SMTP Port</Label>
-              <Input id="smtpPort" defaultValue="587" />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="fromEmail">From Email</Label>
-              <Input id="fromEmail" defaultValue="noreply@springingstars.ac.ug" />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="smsProvider">SMS Provider</Label>
-              <Input id="smsProvider" defaultValue="MTN Uganda" />
-            </div>
-            <Button>Test Configuration</Button>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>System Backup</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <Label>Auto Backup</Label>
-                <p className="text-sm text-gray-600">Daily automatic backups</p>
-              </div>
-              <Switch defaultChecked />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="backupTime">Backup Time</Label>
-              <Input id="backupTime" defaultValue="02:00 AM" />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="retention">Backup Retention (days)</Label>
-              <Input id="retention" defaultValue="30" type="number" />
-            </div>
-            <div className="flex space-x-2">
-              <Button>Create Backup Now</Button>
-              <Button variant="outline">Restore Backup</Button>
-            </div>
-          </CardContent>
-        </Card>
+      {/* Save Button */}
+      <div className="flex justify-end">
+        <Button onClick={saveSettings} size="lg">
+          Save All Settings
+        </Button>
       </div>
     </div>
   );

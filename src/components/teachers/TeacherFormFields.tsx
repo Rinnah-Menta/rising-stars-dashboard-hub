@@ -47,11 +47,13 @@ export const TeacherFormFields: React.FC<TeacherFormFieldsProps> = ({
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <BasicInfoFields 
-        formData={formData}
-        onInputChange={handleInputChange}
-      />
+    <div className="space-y-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <BasicInfoFields 
+          formData={formData}
+          onInputChange={handleInputChange}
+        />
+      </div>
       
       <ClassSelector
         selectedClasses={selectedClasses}
@@ -59,15 +61,19 @@ export const TeacherFormFields: React.FC<TeacherFormFieldsProps> = ({
         onRemoveClass={removeClass}
       />
       
-      <ProfessionalInfoFields
-        formData={formData}
-        onInputChange={handleInputChange}
-      />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <ProfessionalInfoFields
+          formData={formData}
+          onInputChange={handleInputChange}
+        />
+      </div>
       
-      <ContactInfoFields
-        formData={formData}
-        onInputChange={handleInputChange}
-      />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <ContactInfoFields
+          formData={formData}
+          onInputChange={handleInputChange}
+        />
+      </div>
     </div>
   );
 };
