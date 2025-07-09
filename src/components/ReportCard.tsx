@@ -38,16 +38,20 @@ export const ReportCard = ({ data }: ReportCardProps) => {
   return (
     <Card className="max-w-4xl mx-auto shadow-2xl border-0 bg-white print:shadow-none print:border">
       <CardContent className="p-0">
-        {/* Watermark */}
         <div className="relative overflow-hidden">
-          <div className="absolute inset-0 flex items-center justify-center opacity-5 pointer-events-none">
-            <div className="text-8xl font-bold text-gray-400 transform rotate-45">
-              EDUMA NAGE PRO
-            </div>
+          {/* Watermark */}
+          <div className="absolute inset-0 pointer-events-none z-0">
+            <img 
+              src="https://gloriouschools.github.io/rising-star-connect/schoologo.png" 
+              alt="School Logo Watermark"
+              className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 opacity-5 object-contain"
+              onError={(e) => {
+                (e.target as HTMLImageElement).style.display = 'none';
+              }}
+            />
           </div>
-
           {/* Header */}
-          <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white p-8 text-center relative">
+          <div className="relative z-10 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white p-8 text-center">
             <div className="absolute top-4 left-4 w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
               <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center">
                 <span className="text-blue-600 font-bold text-lg">EP</span>
@@ -62,7 +66,7 @@ export const ReportCard = ({ data }: ReportCardProps) => {
           </div>
 
           {/* Student Info */}
-          <div className="p-8 bg-gradient-to-r from-gray-50 to-blue-50">
+          <div className="relative z-10 p-8 bg-gradient-to-r from-gray-50 to-blue-50">
             <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
               STUDENT REPORT CARD - {data.term}
             </h2>
@@ -101,10 +105,10 @@ export const ReportCard = ({ data }: ReportCardProps) => {
           </div>
 
           {/* Grades Table */}
-          <div className="p-8">
+          <div className="relative z-10 p-8">
             <h3 className="text-xl font-bold text-gray-800 mb-4">Subject-wise Performance</h3>
             
-            <div className="overflow-hidden rounded-lg border border-gray-200 shadow-sm">
+            <div className="overflow-hidden rounded-lg border border-gray-200 shadow-sm bg-white">
               <table className="w-full">
                 <thead className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white">
                   <tr>
@@ -146,7 +150,7 @@ export const ReportCard = ({ data }: ReportCardProps) => {
           </div>
 
           {/* Performance Summary */}
-          <div className="p-8 bg-gradient-to-r from-green-50 to-emerald-50">
+          <div className="relative z-10 p-8 bg-gradient-to-r from-green-50 to-emerald-50">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="text-center p-6 bg-white rounded-lg shadow-sm border border-green-200">
                 <div className="text-3xl font-bold text-green-600 mb-2">{data.percentage}%</div>
@@ -170,7 +174,7 @@ export const ReportCard = ({ data }: ReportCardProps) => {
           </div>
 
           {/* Footer */}
-          <div className="p-8 bg-gray-50 border-t">
+          <div className="relative z-10 p-8 bg-gray-50 border-t">
             <div className="flex justify-between items-center">
               <div className="text-center">
                 <div className="w-48 border-b border-gray-400 mb-2"></div>
