@@ -91,9 +91,9 @@ export const ProfessionalReportCard: React.FC<ProfessionalReportCardProps> = ({ 
         
         logoImg.onload = () => {
           // Full page watermark
-          doc.setGState({ opacity: 0.1 });
+          doc.setGState(new doc.GState({ opacity: 0.1 }));
           doc.addImage(logoImg, 'PNG', 0, 0, 210, 297); // Full A4 page
-          doc.setGState({ opacity: 1 });
+          doc.setGState(new doc.GState({ opacity: 1 }));
 
           // Add header logo
           doc.addImage(logoImg, 'PNG', 15, 15, 25, 25);
