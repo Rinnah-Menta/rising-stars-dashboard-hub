@@ -68,12 +68,9 @@ export const ReportCard = ({ data }: ReportCardProps) => {
           <div className="flex-shrink-0">
             <div className="w-32 h-40 bg-gray-100 border-2 border-gray-300 rounded-lg overflow-hidden">
               <img 
-                src="https://images.unsplash.com/photo-1535268647677-300dbf3d78d1?w=150&h=150&fit=crop&crop=faces"
-                alt="Student Photo"
+                src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150' viewBox='0 0 150 150'%3E%3Cdefs%3E%3ClinearGradient id='grad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23e5e7eb;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%23d1d5db;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='150' height='150' fill='url(%23grad)'/%3E%3Ccircle cx='75' cy='60' r='25' fill='%236b7280'/%3E%3Cpath d='M45 110 Q45 90 75 90 Q105 90 105 110 L105 140 L45 140 Z' fill='%236b7280'/%3E%3Ctext x='75' y='130' text-anchor='middle' fill='%23374151' font-size='8' font-weight='bold'%3EStudent Photo%3C/text%3E%3C/svg%3E"
+                alt="Student Photo Placeholder"
                 className="w-full h-full object-cover"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23f3f4f6'/%3E%3Ctext x='50' y='55' text-anchor='middle' fill='%236b7280' font-size='12'%3EStudent%3C/text%3E%3C/svg%3E";
-                }}
               />
             </div>
           </div>
