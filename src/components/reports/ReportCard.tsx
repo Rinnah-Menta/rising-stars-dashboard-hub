@@ -1,223 +1,210 @@
-import React from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-
-interface Student {
-  id: number;
-  name: string;
-  class: string;
-}
-
-interface Subject {
-  name: string;
-  score: number;
-  grade: string;
-  remarks: string;
-}
+import { Card, CardContent } from "@/components/ui/card";
 
 interface ReportCardProps {
-  student: Student;
-  term: string;
-  studentClass: string;
-  subjects: Subject[];
-  totalMarks: number;
-  average: number;
-  overallGrade: string;
+  data: {
+    studentId: string;
+    studentName: string;
+    class: string;
+    section: string;
+    rollNumber: string;
+    subjects: {
+      name: string;
+      marks: number;
+      maxMarks: number;
+      grade: string;
+    }[];
+    term: string;
+    totalMarks: number;
+    maxTotalMarks: number;
+    percentage: number;
+    overallGrade: string;
+  };
 }
 
-export const ReportCard = ({ student, term, studentClass, subjects, totalMarks, average, overallGrade }: ReportCardProps) => {
+export const ReportCard = ({ data }: ReportCardProps) => {
+  const getGradeColor = (grade: string): string => {
+    switch (grade) {
+      case "A+": return "text-green-600";
+      case "A": return "text-blue-600";
+      case "B+": return "text-yellow-600";
+      case "B": return "text-orange-600";
+      case "C": return "text-purple-600";
+      case "F": return "text-red-600";
+      default: return "text-gray-600";
+    }
+  };
 
-  if (!student) {
-    return (
-        <div className="p-8 text-center">
-            <p>Please select a student to generate a marksheet.</p>
-        </div>
-    );
-  }
-  
   return (
-    <div className="p-8 bg-white relative">
-      {/* Watermark - Made more visible and properly positioned */}
-      <div className="absolute inset-0 flex items-center justify-center opacity-15 pointer-events-none z-0">
-        <img 
-          src="https://gloriouschools.github.io/rising-star-connect/schoologo.png" 
-          alt="Watermark" 
-          className="w-96 h-96 object-contain"
-        />
-      </div>
-
-      {/* School Header */}
-      <header className="text-center mb-8 relative z-10">
-        <div className="flex items-center justify-center gap-4 mb-4">
-          <img 
-            src="https://gloriouschools.github.io/rising-star-connect/schoologo.png" 
-            alt="Springing Stars Logo" 
-            className="h-20 w-20 object-contain"
-          />
-          <div>
-            <h1 className="text-3xl font-bold text-blue-900">SPRINGING STARS JUNIOR SCHOOL</h1>
-            <p className="text-md text-blue-700">Excellence in Education • Nurturing Future Leaders</p>
-            <p className="text-sm text-gray-600">P.O. Box 1234, Kampala, Uganda | Tel: +256 700 000 000</p>
+    <Card className="max-w-4xl mx-auto shadow-2xl border-0 bg-white print:shadow-none print:border">
+      <CardContent className="p-0">
+        <div className="relative overflow-hidden">
+          {/* Full Page Watermark */}
+          <div className="absolute inset-0 pointer-events-none z-0">
+            <img 
+              src="https://gloriouschools.github.io/rising-star-connect/schoologo.png" 
+              alt="School Logo Watermark"
+              className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full h-full opacity-10 object-contain"
+              onError={(e) => {
+                (e.target as HTMLImageElement).style.display = 'none';
+              }}
+            />
           </div>
-        </div>
-        <div className="border-t-4 border-b-4 border-double border-blue-900 py-2 mt-4">
-          <h2 className="text-2xl font-semibold text-blue-900 tracking-wider">STUDENT PROGRESS REPORT</h2>
-        </div>
-      </header>
 
-      {/* Student Information */}
-      <section className="mb-8 relative z-10">
-        <Card className="bg-white/80">
-          <CardContent className="p-6 grid grid-cols-2 gap-x-8 gap-y-4">
-            <div className="flex items-baseline">
-              <span className="font-semibold text-gray-700 w-32">Student Name:</span>
-              <span className="flex-1 border-b border-dotted border-gray-400 px-2 text-gray-900">{student?.name}</span>
+          {/* Header with Student Photo */}
+          <div className="relative z-10 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white p-6 text-center">
+            <div className="flex items-center justify-between mb-4">
+              <div className="absolute top-4 left-4 w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
+                <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center">
+                  <span className="text-blue-600 font-bold text-lg">EP</span>
+                </div>
+              </div>
+              
+              {/* Student Photo */}
+              <div className="absolute top-4 right-4 w-24 h-24 bg-white/20 rounded-lg overflow-hidden border-2 border-white/30">
+                <img 
+                  src="https://images.unsplash.com/photo-1535268647677-300dbf3d78d1?w=150&h=150&fit=crop&crop=faces"
+                  alt="Student Photo"
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23f3f4f6'/%3E%3Ctext x='50' y='55' text-anchor='middle' fill='%236b7280' font-size='12'%3EStudent%3C/text%3E%3C/svg%3E";
+                  }}
+                />
+              </div>
             </div>
-            <div className="flex items-baseline">
-              <span className="font-semibold text-gray-700 w-32">Term:</span>
-              <span className="flex-1 border-b border-dotted border-gray-400 px-2 text-gray-900">{term}</span>
+            
+            <h1 className="text-2xl font-bold mb-2">EduManage Pro School</h1>
+            <p className="text-base opacity-90">Academic Excellence Report</p>
+            <div className="mt-3 text-sm opacity-75">
+              123 Education Street, Knowledge City, State 12345
             </div>
-            <div className="flex items-baseline">
-              <span className="font-semibold text-gray-700 w-32">Class:</span>
-              <span className="flex-1 border-b border-dotted border-gray-400 px-2 text-gray-900">{studentClass}</span>
-            </div>
-            <div className="flex items-baseline">
-              <span className="font-semibold text-gray-700 w-32">Academic Year:</span>
-              <span className="flex-1 border-b border-dotted border-gray-400 px-2 text-gray-900">2024</span>
-            </div>
-            <div className="flex items-baseline">
-              <span className="font-semibold text-gray-700 w-32">Student ID:</span>
-              <span className="flex-1 border-b border-dotted border-gray-400 px-2 text-gray-900">SS{student?.id.toString().padStart(4, '0')}</span>
-            </div>
-            <div className="flex items-baseline">
-              <span className="font-semibold text-gray-700 w-32">Date Issued:</span>
-              <span className="flex-1 border-b border-dotted border-gray-400 px-2 text-gray-900">{new Date().toLocaleDateString()}</span>
-            </div>
-          </CardContent>
-        </Card>
-      </section>
+          </div>
 
-      {/* Grades Table */}
-      <section className="mb-8 relative z-10">
-        <Card className="bg-white/80">
-          <CardContent className="p-0">
-            <table className="w-full">
-              <thead className="bg-blue-50/80">
-                <tr>
-                  <th className="p-4 text-left font-semibold text-gray-700">Subject</th>
-                  <th className="p-4 text-center font-semibold text-gray-700">Score (%)</th>
-                  <th className="p-4 text-center font-semibold text-gray-700">Grade</th>
-                  <th className="p-4 text-left font-semibold text-gray-700">Remarks</th>
-                </tr>
-              </thead>
-              <tbody>
-                {subjects.map((subject, index) => (
-                  <tr key={index} className="border-b border-gray-200 last:border-b-0 hover:bg-gray-50/50 transition-colors">
-                    <td className="p-4">{subject.name}</td>
-                    <td className="p-4 text-center">{subject.score}</td>
-                    <td className="p-4 text-center font-bold text-lg">{subject.grade}</td>
-                    <td className="p-4">{subject.remarks}</td>
+          {/* Student Info */}
+          <div className="relative z-10 p-6 bg-gradient-to-r from-gray-50 to-blue-50">
+            <h2 className="text-xl font-bold text-gray-800 mb-4 text-center">
+              STUDENT REPORT CARD - {data.term}
+            </h2>
+            
+            <div className="grid grid-cols-2 gap-6 mb-4">
+              <div className="space-y-2">
+                <div className="flex">
+                  <span className="font-semibold text-gray-700 w-28">Student Name:</span>
+                  <span className="text-gray-900 font-medium">{data.studentName}</span>
+                </div>
+                <div className="flex">
+                  <span className="font-semibold text-gray-700 w-28">Student ID:</span>
+                  <span className="text-gray-900">{data.studentId}</span>
+                </div>
+                <div className="flex">
+                  <span className="font-semibold text-gray-700 w-28">Class:</span>
+                  <span className="text-gray-900">{data.class} - Section {data.section}</span>
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <div className="flex">
+                  <span className="font-semibold text-gray-700 w-28">Roll Number:</span>
+                  <span className="text-gray-900">{data.rollNumber}</span>
+                </div>
+                <div className="flex">
+                  <span className="font-semibold text-gray-700 w-28">Academic Year:</span>
+                  <span className="text-gray-900">2024-2025</span>
+                </div>
+                <div className="flex">
+                  <span className="font-semibold text-gray-700 w-28">Date:</span>
+                  <span className="text-gray-900">{new Date().toLocaleDateString()}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Grades Table - Transparent */}
+          <div className="relative z-10 p-6">
+            <h3 className="text-lg font-bold text-gray-800 mb-3">Subject-wise Performance</h3>
+            
+            <div className="overflow-hidden rounded-lg border border-gray-200 shadow-sm">
+              <table className="w-full bg-transparent">
+                <thead className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white">
+                  <tr>
+                    <th className="px-4 py-3 text-left font-semibold">Subject</th>
+                    <th className="px-4 py-3 text-center font-semibold">Marks Obtained</th>
+                    <th className="px-4 py-3 text-center font-semibold">Maximum Marks</th>
+                    <th className="px-4 py-3 text-center font-semibold">Percentage</th>
+                    <th className="px-4 py-3 text-center font-semibold">Grade</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </CardContent>
-        </Card>
-      </section>
-      
-      {/* Summary and Performance */}
-      <section className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8 relative z-10">
-        <Card className="p-6 bg-white/80">
-          <h3 className="font-semibold text-lg mb-4 text-center text-blue-900">Overall Performance</h3>
-          <div className="text-center">
-            <p className="text-sm text-gray-600">Total Marks</p>
-            <p className="text-3xl font-bold text-gray-800">{totalMarks}</p>
+                </thead>
+                <tbody className="bg-transparent">
+                  {data.subjects.map((subject, index) => (
+                    <tr key={subject.name} className="border-b border-gray-200 bg-transparent">
+                      <td className="px-4 py-3 font-medium text-gray-900">{subject.name}</td>
+                      <td className="px-4 py-3 text-center text-gray-700">{subject.marks}</td>
+                      <td className="px-4 py-3 text-center text-gray-700">{subject.maxMarks}</td>
+                      <td className="px-4 py-3 text-center text-gray-700">
+                        {Math.round((subject.marks / subject.maxMarks) * 100)}%
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        <span className={`font-bold text-lg ${getGradeColor(subject.grade)}`}>
+                          {subject.grade}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+                <tfoot className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
+                  <tr>
+                    <td className="px-4 py-3 font-bold text-base">TOTAL</td>
+                    <td className="px-4 py-3 text-center font-bold text-base">{data.totalMarks}</td>
+                    <td className="px-4 py-3 text-center font-bold text-base">{data.maxTotalMarks}</td>
+                    <td className="px-4 py-3 text-center font-bold text-base">{data.percentage}%</td>
+                    <td className="px-4 py-3 text-center font-bold text-lg">{data.overallGrade}</td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
           </div>
-          <div className="text-center my-4">
-            <p className="text-sm text-gray-600">Average Score</p>
-            <p className="text-3xl font-bold text-gray-800">{average}%</p>
-          </div>
-          <div className="text-center bg-blue-100 rounded-lg p-3">
-            <p className="text-sm font-semibold text-blue-800">Overall Grade</p>
-            <p className="text-4xl font-extrabold text-blue-900">{overallGrade}</p>
-          </div>
-        </Card>
 
-        <Card className="p-6 bg-white/80">
-          <h3 className="font-semibold text-lg mb-4 text-blue-900">Grading Scale</h3>
-          <div className="text-sm space-y-2 text-gray-700">
-            <div className="flex justify-between"><span>A: 85-100%</span> <span>Excellent</span></div>
-            <div className="flex justify-between"><span>A-: 80-84%</span> <span>Very Good</span></div>
-            <div className="flex justify-between"><span>B+: 75-79%</span> <span>Good</span></div>
-            <div className="flex justify-between"><span>B: 65-74%</span> <span>Fair</span></div>
-            <div className="flex justify-between"><span>C+: 55-64%</span> <span>Satisfactory</span></div>
-            <div className="flex justify-between"><span>C: 45-54%</span> <span>Needs Improvement</span></div>
-          </div>
-        </Card>
-
-        <Card className="p-6 bg-white/80">
-          <h3 className="font-semibold text-lg mb-4 text-blue-900">Class Performance</h3>
-          <div className="text-sm space-y-3 text-gray-700">
-            <div className="flex justify-between items-center">
-              <span className="font-semibold">Class Average:</span>
-              <span className="font-bold text-lg">76%</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="font-semibold">Student Position:</span>
-              <span className="font-bold text-lg">3rd <span className="text-sm font-normal">out of 25</span></span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="font-semibold">Highest Score:</span>
-              <span className="font-bold text-lg">92%</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="font-semibold">Lowest Score:</span>
-              <span className="font-bold text-lg">58%</span>
+          {/* Performance Summary - Compact */}
+          <div className="relative z-10 p-6 bg-gradient-to-r from-green-50 to-emerald-50">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="text-center p-4 bg-white/70 rounded-lg shadow-sm border border-green-200">
+                <div className="text-2xl font-bold text-green-600 mb-1">{data.percentage}%</div>
+                <div className="text-gray-700 font-medium text-sm">Overall Percentage</div>
+              </div>
+              
+              <div className="text-center p-4 bg-white/70 rounded-lg shadow-sm border border-blue-200">
+                <div className={`text-2xl font-bold mb-1 ${getGradeColor(data.overallGrade)}`}>
+                  {data.overallGrade}
+                </div>
+                <div className="text-gray-700 font-medium text-sm">Overall Grade</div>
+              </div>
             </div>
           </div>
-        </Card>
-      </section>
 
-      {/* Teacher Comments */}
-      <section className="mb-8 relative z-10">
-        <Card className="bg-white/80">
-          <CardContent className="p-6">
-            <h3 className="font-semibold text-lg mb-3 text-blue-900">Class Teacher's Comments</h3>
-            <div className="bg-gray-50/70 p-4 rounded-md min-h-[80px]">
-              <p className="text-sm text-gray-800">
-                {student?.name} has shown excellent performance this term. Keep up the good work in Mathematics and continue reading more to improve English comprehension skills.
-              </p>
+          {/* Footer - Compact */}
+          <div className="relative z-10 p-4 bg-gray-50 border-t">
+            <div className="flex justify-between items-center">
+              <div className="text-center">
+                <div className="w-32 border-b border-gray-400 mb-1"></div>
+                <div className="text-xs font-medium text-gray-700">Class Teacher</div>
+              </div>
+              
+              <div className="text-center">
+                <div className="w-32 border-b border-gray-400 mb-1"></div>
+                <div className="text-xs font-medium text-gray-700">Principal</div>
+              </div>
+              
+              <div className="text-center">
+                <div className="w-32 border-b border-gray-400 mb-1"></div>
+                <div className="text-xs font-medium text-gray-700">Parent's Signature</div>
+              </div>
             </div>
-          </CardContent>
-        </Card>
-      </section>
-
-      {/* Signatures */}
-      <section className="grid grid-cols-3 gap-8 pt-8 relative z-10">
-        <div className="text-center">
-          <div className="border-t-2 border-gray-300 pt-3">
-            <p className="text-sm font-semibold">Class Teacher</p>
-            <p className="text-xs text-gray-500">Ms. Sarah Namubiru</p>
+            
+            <div className="mt-3 text-center text-xs text-gray-600">
+              <p>This is a computer-generated report card. No signature required.</p>
+            </div>
           </div>
         </div>
-        <div className="text-center">
-          <div className="border-t-2 border-gray-300 pt-3">
-            <p className="text-sm font-semibold">Head Teacher</p>
-            <p className="text-xs text-gray-500">Mr. John Kasozi</p>
-          </div>
-        </div>
-        <div className="text-center">
-          <div className="border-t-2 border-gray-300 pt-3">
-            <p className="text-sm font-semibold">Parent/Guardian</p>
-            <p className="text-xs text-gray-500">Signature & Date</p>
-          </div>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="text-center mt-12 pt-6 border-t border-gray-200 text-xs text-gray-500 relative z-10">
-        <p>This report is a confidential document of Springing Stars Junior School</p>
-        <p>Generated on {new Date().toLocaleDateString()} • Report ID: MS{Date.now()}</p>
-      </footer>
-    </div>
+      </CardContent>
+    </Card>
   );
 };
