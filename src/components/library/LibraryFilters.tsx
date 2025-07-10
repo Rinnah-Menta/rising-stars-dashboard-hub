@@ -33,7 +33,7 @@ export const LibraryFilters: React.FC<LibraryFiltersProps> = ({
     ? resourceTypes.filter(type => type.id !== 'schemes-of-work')
     : resourceTypes;
 
-  const hasActiveFilters = selectedClass || selectedSubject || selectedResource;
+  const hasActiveFilters = selectedClass !== 'all' || selectedSubject !== 'all' || selectedResource !== 'all';
 
   return (
     <Card>
@@ -60,6 +60,7 @@ export const LibraryFilters: React.FC<LibraryFiltersProps> = ({
                 <SelectValue placeholder="Select class" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="all">All Classes</SelectItem>
                 {classes.map((cls) => (
                   <SelectItem key={cls} value={cls}>
                     {cls}
@@ -76,6 +77,7 @@ export const LibraryFilters: React.FC<LibraryFiltersProps> = ({
                 <SelectValue placeholder="Select subject" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="all">All Subjects</SelectItem>
                 {subjects.map((subject) => (
                   <SelectItem key={subject} value={subject}>
                     {subject}
@@ -92,6 +94,7 @@ export const LibraryFilters: React.FC<LibraryFiltersProps> = ({
                 <SelectValue placeholder="Select resource type" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="all">All Types</SelectItem>
                 {availableResourceTypes.map((type) => (
                   <SelectItem key={type.id} value={type.id}>
                     {type.label}
@@ -104,33 +107,33 @@ export const LibraryFilters: React.FC<LibraryFiltersProps> = ({
 
         {hasActiveFilters && (
           <div className="flex flex-wrap gap-2 pt-2">
-            {selectedClass && (
+            {selectedClass !== 'all' && (
               <Badge variant="secondary" className="flex items-center gap-1">
                 Class: {selectedClass}
                 <button
-                  onClick={() => setSelectedClass('')}
+                  onClick={() => setSelectedClass('all')}
                   className="ml-1 hover:bg-gray-300 rounded-full w-4 h-4 flex items-center justify-center text-xs"
                 >
                   ×
                 </button>
               </Badge>
             )}
-            {selectedSubject && (
+            {selectedSubject !== 'all' && (
               <Badge variant="secondary" className="flex items-center gap-1">
                 Subject: {selectedSubject}
                 <button
-                  onClick={() => setSelectedSubject('')}
+                  onClick={() => setSelectedSubject('all')}
                   className="ml-1 hover:bg-gray-300 rounded-full w-4 h-4 flex items-center justify-center text-xs"
                 >
                   ×
                 </button>
               </Badge>
             )}
-            {selectedResource && (
+            {selectedResource !== 'all' && (
               <Badge variant="secondary" className="flex items-center gap-1">
                 Type: {resourceTypes.find(t => t.id === selectedResource)?.label}
                 <button
-                  onClick={() => setSelectedResource('')}
+                  onClick={() => setSelectedResource('all')}
                   className="ml-1 hover:bg-gray-300 rounded-full w-4 h-4 flex items-center justify-center text-xs"
                 >
                   ×

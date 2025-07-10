@@ -1,213 +1,213 @@
 
 import React, { useState, useMemo } from 'react';
+import { Search, Download, Eye, BookOpen, FileText, GraduationCap, Package, Clock } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { LibraryFilters } from '@/components/library/LibraryFilters';
-import { LibrarySearch } from '@/components/library/LibrarySearch';
-import { LibraryDocumentCard } from '@/components/library/LibraryDocumentCard';
-import { LibraryPagination } from '@/components/library/LibraryPagination';
-import { DocumentViewDialog } from '@/components/library/DocumentViewDialog';
-import { libraryData, LibraryDocument } from '@/data/libraryData';
-import { useAuth } from '@/contexts/AuthContext';
-import { Book, FileText, GraduationCap } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { LibraryDocument, libraryData, classes, subjects, resourceTypes } from '@/data/libraryData';
 
-const ITEMS_PER_PAGE = 9;
+// Import unique book cover images with distinct designs for each class
+import babyClassImg from '@/assets/books/baby-class-new.jpg';
+import middleClassImg from '@/assets/books/middle-class-new.jpg';
+import topClassImg from '@/assets/books/top-class-new.jpg';
+import primaryOneImg from '@/assets/books/primary-one-new.jpg';
+import primaryTwoImg from '@/assets/books/primary-two-new.jpg';
+import primaryThreeImg from '@/assets/books/primary-three-new.jpg';
+import primaryFourImg from '@/assets/books/primary-four-new.jpg';
+import primaryFiveImg from '@/assets/books/primary-five-new.jpg';
+import primarySixImg from '@/assets/books/primary-six-new.jpg';
+import primarySevenImg from '@/assets/books/primary-seven-new.jpg';
+
+const classImages = {
+  'Baby Class': babyClassImg,
+  'Middle Class': middleClassImg,
+  'Top Class': topClassImg,
+  'Primary One': primaryOneImg,
+  'Primary Two': primaryTwoImg,
+  'Primary Three': primaryThreeImg,
+  'Primary Four': primaryFourImg,
+  'Primary Five': primaryFiveImg,
+  'Primary Six': primarySixImg,
+  'Primary Seven': primarySevenImg,
+};
+
+const getResourceTypeIcon = (type: string) => {
+  switch (type) {
+    case 'lesson-notes': return <FileText className="h-4 w-4" />;
+    case 'past-papers': return <GraduationCap className="h-4 w-4" />;
+    case 'schemes-of-work': return <BookOpen className="h-4 w-4" />;
+    case 'textbooks': return <BookOpen className="h-4 w-4" />;
+    case 'holiday-packages': return <Package className="h-4 w-4" />;
+    default: return <FileText className="h-4 w-4" />;
+  }
+};
 
 export const Library: React.FC = () => {
-  const { user } = useAuth();
-  const [selectedClass, setSelectedClass] = useState('');
-  const [selectedSubject, setSelectedSubject] = useState('');
-  const [selectedResource, setSelectedResource] = useState('');
+  const [selectedClass, setSelectedClass] = useState<string>('all');
+  const [selectedSubject, setSelectedSubject] = useState<string>('all');
+  const [selectedResourceType, setSelectedResourceType] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
   const [viewingDocument, setViewingDocument] = useState<LibraryDocument | null>(null);
 
-  // Filter documents based on user role and selections
-  const filteredDocuments = useMemo(() => {
-    let filtered = libraryData;
+  const filteredResources = useMemo(() => {
+    return libraryData.filter(resource => {
+      const matchesClass = selectedClass === 'all' || resource.class === selectedClass;
+      const matchesSubject = selectedSubject === 'all' || resource.subject === selectedSubject;
+      const matchesType = selectedResourceType === 'all' || resource.type === selectedResourceType;
+      const matchesSearch = !searchTerm || 
+        resource.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        resource.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        resource.class.toLowerCase().includes(searchTerm.toLowerCase());
+      
+      return matchesClass && matchesSubject && matchesType && matchesSearch;
+    });
+  }, [selectedClass, selectedSubject, selectedResourceType, searchTerm]);
 
-    // Hide schemes of work from students
-    if (user?.role === 'pupil') {
-      filtered = filtered.filter(doc => doc.type !== 'schemes-of-work');
-    }
-
-    // Apply filters
-    if (selectedClass) {
-      filtered = filtered.filter(doc => doc.class === selectedClass);
-    }
-    if (selectedSubject) {
-      filtered = filtered.filter(doc => doc.subject === selectedSubject);
-    }
-    if (selectedResource) {
-      filtered = filtered.filter(doc => doc.type === selectedResource);
-    }
-
-    // Apply search
-    if (searchTerm) {
-      const searchLower = searchTerm.toLowerCase();
-      filtered = filtered.filter(doc =>
-        doc.title.toLowerCase().includes(searchLower) ||
-        doc.class.toLowerCase().includes(searchLower) ||
-        doc.subject.toLowerCase().includes(searchLower)
-      );
-    }
-
-    return filtered;
-  }, [selectedClass, selectedSubject, selectedResource, searchTerm, user?.role]);
-
-  // Pagination
-  const totalPages = Math.ceil(filteredDocuments.length / ITEMS_PER_PAGE);
-  const paginatedDocuments = filteredDocuments.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
-  );
-
-  // Reset pagination when filters change
-  React.useEffect(() => {
-    setCurrentPage(1);
-  }, [selectedClass, selectedSubject, selectedResource, searchTerm]);
-
-  const handleClearFilters = () => {
-    setSelectedClass('');
-    setSelectedSubject('');
-    setSelectedResource('');
-    setSearchTerm('');
-    setCurrentPage(1);
+  const handleClassSelect = (classKey: string) => {
+    setSelectedClass(classKey);
+    setSelectedSubject('all');
+    setSelectedResourceType('all');
   };
 
-  const handleViewDocument = (document: LibraryDocument) => {
-    setViewingDocument(document);
+  const handlePreview = (resource: LibraryDocument) => {
+    setViewingDocument(resource);
   };
 
-  const getWelcomeMessage = () => {
-    switch (user?.role) {
-      case 'pupil':
-        return 'Access your learning resources, past papers, and study materials';
-      case 'teacher':
-        return 'Access teaching resources, lesson plans, and educational materials';
-      default:
-        return 'Browse and access educational resources and documents';
-    }
+  const handleDownload = (resource: LibraryDocument) => {
+    window.open(resource.url, '_blank');
   };
+
+  const classSubjects = useMemo(() => {
+    if (selectedClass === 'all') return [];
+    return [...new Set(libraryData
+      .filter(resource => resource.class === selectedClass)
+      .map(resource => resource.subject)
+    )];
+  }, [selectedClass]);
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold flex items-center gap-2">
-            <Book className="h-8 w-8 text-blue-600" />
-            Library
-          </h1>
-          <p className="text-gray-600 mt-1">{getWelcomeMessage()}</p>
+    <div className="min-h-screen bg-background">
+      {/* Custom CSS for bookshelf */}
+      <style>{`
+        .bookshelf .thumb {
+          display: inline-block;
+          cursor: pointer;
+          margin: 0px 0.5%;
+          width: 15% !important;
+          box-shadow: 0px 1px 3px rgba(0, 0, 0, .3);
+          max-width: 120px;
+        }
+
+        .bookshelf .thumb img {
+          width: 100%;
+          display: block;
+          vertical-align: top;
+        }
+
+        .bookshelf .shelf-img {
+          z-index: 0;
+          height: auto;
+          max-width: 100%;
+          vertical-align: top;
+          margin-top: -12px;
+        }
+
+        .bookshelf .covers {
+          width: 100%;
+          height: auto;
+          z-index: 99;
+          text-align: center;
+        }
+
+        .bookshelf {
+          text-align: center;
+          padding: 0px;
+        }
+
+        /* Mobile responsive styles */
+        @media (max-width: 768px) {
+          .bookshelf .thumb {
+            width: 30% !important;
+            max-width: 140px;
+            margin: 0px 1.5%;
+          }
+          
+          .bookshelf .shelf-img {
+            margin-top: -8px;
+          }
+          
+          .mobile-shelf {
+            margin-bottom: 2rem;
+          }
+        }
+      `}</style>
+
+      {/* Content Area - Only Bookshelf */}
+      <div className="container mx-auto px-4 py-6">
+        <div className="container">
+          <div className="page-wrapper">
+            {/* First Shelf - Nursery Classes */}
+            <div className="bookshelf">
+              <div className="covers">
+                {['Baby Class', 'Middle Class', 'Top Class'].map((classKey) => (
+                  <div key={classKey} className="thumb book-1">
+                    <button onClick={() => handleClassSelect(classKey)}>
+                      <img src={classImages[classKey as keyof typeof classImages]} alt={classKey} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <img className="shelf-img" src="https://fresh-teacher.github.io/images/shelf_wood.png" alt="Wooden shelf" />
+            </div>
+            <br />
+
+            {/* Second Shelf - Lower Primary */}
+            <div className="bookshelf">
+              <div className="covers">
+                {['Primary One', 'Primary Two', 'Primary Three'].map((classKey) => (
+                  <div key={classKey} className="thumb book-1">
+                    <button onClick={() => handleClassSelect(classKey)}>
+                      <img src={classImages[classKey as keyof typeof classImages]} alt={classKey} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <img className="shelf-img" src="https://fresh-teacher.github.io/images/shelf_wood.png" alt="Wooden shelf" />
+            </div>
+            <br />
+
+            {/* Third Shelf - Upper Primary Part 1 */}
+            <div className="bookshelf">
+              <div className="covers">
+                {['Primary Four', 'Primary Five', 'Primary Six'].map((classKey) => (
+                  <div key={classKey} className="thumb book-1">
+                    <button onClick={() => handleClassSelect(classKey)}>
+                      <img src={classImages[classKey as keyof typeof classImages]} alt={classKey} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <img className="shelf-img" src="https://fresh-teacher.github.io/images/shelf_wood.png" alt="Wooden shelf" />
+            </div>
+            <br />
+
+            {/* Fourth Shelf - Upper Primary Part 2 */}
+            <div className="bookshelf">
+              <div className="covers">
+                <div className="thumb book-1">
+                  <button onClick={() => handleClassSelect('Primary Seven')}>
+                    <img src={classImages['Primary Seven']} alt="Primary Seven" />
+                  </button>
+                </div>
+              </div>
+              <img className="shelf-img" src="https://fresh-teacher.github.io/images/shelf_wood.png" alt="Wooden shelf" />
+            </div>
+          </div>
         </div>
       </div>
-
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Documents</CardTitle>
-            <FileText className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{filteredDocuments.length}</div>
-            <p className="text-xs text-muted-foreground">Available resources</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Classes</CardTitle>
-            <GraduationCap className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {[...new Set(filteredDocuments.map(doc => doc.class))].length}
-            </div>
-            <p className="text-xs text-muted-foreground">Available classes</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Subjects</CardTitle>
-            <Book className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {[...new Set(filteredDocuments.map(doc => doc.subject))].length}
-            </div>
-            <p className="text-xs text-muted-foreground">Available subjects</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Filters */}
-      <LibraryFilters
-        selectedClass={selectedClass}
-        setSelectedClass={setSelectedClass}
-        selectedSubject={selectedSubject}
-        setSelectedSubject={setSelectedSubject}
-        selectedResource={selectedResource}
-        setSelectedResource={setSelectedResource}
-        onClearFilters={handleClearFilters}
-      />
-
-      {/* Search */}
-      <LibrarySearch
-        searchTerm={searchTerm}
-        setSearchTerm={setSearchTerm}
-        resultCount={filteredDocuments.length}
-      />
-
-      {/* Documents Grid */}
-      {paginatedDocuments.length > 0 ? (
-        <>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {paginatedDocuments.map((document) => (
-              <LibraryDocumentCard
-                key={document.id}
-                document={document}
-                onView={handleViewDocument}
-              />
-            ))}
-          </div>
-
-          {/* Pagination */}
-          <LibraryPagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={setCurrentPage}
-          />
-        </>
-      ) : (
-        <Card>
-          <CardContent className="text-center py-12">
-            <FileText className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No documents found</h3>
-            <p className="text-gray-500 mb-4">
-              {searchTerm || selectedClass || selectedSubject || selectedResource
-                ? 'Try adjusting your filters or search terms'
-                : 'No documents are currently available in the library'}
-            </p>
-            {(searchTerm || selectedClass || selectedSubject || selectedResource) && (
-              <button
-                onClick={handleClearFilters}
-                className="text-blue-600 hover:text-blue-800 font-medium"
-              >
-                Clear all filters
-              </button>
-            )}
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Document View Dialog */}
-      <DocumentViewDialog
-        document={viewingDocument}
-        isOpen={!!viewingDocument}
-        onClose={() => setViewingDocument(null)}
-      />
     </div>
   );
 };
