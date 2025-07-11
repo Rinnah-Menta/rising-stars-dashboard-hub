@@ -1,389 +1,964 @@
-export interface StudentData {
-  id: string;
-  email: string;
-  password: string;
-  role: 'pupil';
-  firstName: string;
-  middleName: string;
-  lastName: string;
-  fullName: string;
-  gender: 'Male' | 'Female';
-  class: string;
-  birthDate: string;
-  address: string;
-  phone: string;
-  parentName: string;
-  parentPhone: string;
-  parentEmail: string;
-  emergencyContact: string;
-  emergencyPhone: string;
-  avatar: string;
-  joinDate: string;
-  studentId: string;
-  nationality: string;
-  religion: string;
-  bloodGroup: string;
-  allergies: string;
-  medicalConditions: string;
-  previousSchool: string;
-  admissionDate: string;
-  dormitory: string;
-  house: string;
-  bio: string;
-  accountStatus: 'active' | 'suspended' | 'archived' | 'deleted';
-  statusReason?: string;
-  statusDate?: string;
-  suspensionEndDate?: string;
-  statusUpdatedBy?: string;
-  nextSteps?: string;
-}
-
-// Generate student ID helper
-const generateStudentId = (index: number): string => {
-  return `SS${new Date().getFullYear()}${String(index + 1).padStart(3, '0')}`;
-};
-
-// Generate email from name
-const generateEmail = (firstName: string, lastName: string): string => {
-  return `${firstName.toLowerCase()}.${lastName.toLowerCase()}@pupil.springingstars.ac.ug`;
-};
-
-// Generate avatar URL
-const generateAvatarUrl = (fullName: string): string => {
-  return `https://fresh-teacher-uganda.github.io/talk-of-the-day/src/assets/photos/${encodeURIComponent(fullName)}.JPG`;
-};
-
-// Parse full name into components
-const parseName = (fullName: string) => {
-  const nameParts = fullName.trim().split(' ');
-  const firstName = nameParts[0] || '';
-  const lastName = nameParts[nameParts.length - 1] || '';
-  const middleName = nameParts.slice(1, -1).join(' ') || '';
-  
-  return { firstName, middleName, lastName };
-};
-
-// Student names list
-const studentNames = [
-  "ADRIANA LIAM MIRIMU",
-  "AHIMBISIBWE EMMANUEL",
-  "ALBA PROMISE KOBUSINGYE",
-  "ALBARA-U YAHAYA MUSOKE",
-  "AMANYABYONA JOSEPH COLLINS",
-  "ANKUNDA LIAM",
-  "ATUNGIRE ELIJAH",
-  "AVA MALAIKA DHAMUZUNGU",
-  "BAGABE ABEL",
-  "BIRUNGI HIDAYA",
-  "BWOGI DEIGHTON",
-  "BYAMUKAMA MATTHEW CHARLES",
-  "DHEDONGA REHEMA MARINA",
-  "EGLAH ABI GARA",
-  "ELI TIMAO EDUBE",
-  "FAVOUR GIDEON MAYIGA",
-  "ITUNGO LIONEL RUTA",
-  "JAKE WILLIAM KATENDE",
-  "JEAN BRIGHT  JOOGA",
-  "JEAN PETER DDAMULIRA",
-  "JEDIDIAH KAHUMA KAZOOBA",
-  "KALULE VICTOR LEANDER",
-  "KATENDE JOSIAH CHARLES",
-  "KATONGOLE GERTRUDE",
-  "KATONGOLE MONA",
-  "KATUMBA DALTON SURPRISE",
-  "KAWEESI JAYDEN HOPE",
-  "KIJJAMBU MARK MORGAN",
-  "KIRABO BRYSON KYLE",
-  "KOBUFURA ASHLEY KRYSTEN",
-  "KRYSTABELL ARIANA WAVAMUNNO",
-  "KUKUNDA KIRSTEN",
-  "LEVI GATAALI MUZIMA",
-  "LUBEGA KERON",
-  "MATSIKO DAN",
-  "MUGENYI CALVIN",
-  "MUKISA JESSE",
-  "MUKULA ODYSSEUS BRIDGEOUS",
-  "MULUNGI ADONAI",
-  "MULWANA BERNICE",
-  "MUTEBI HAFIZU KIGONGO",
-  "MUTYABA KERON",
-  "MUWANGUZI ISRAEL",
-  "MWIZA ATALIA ABRIELLE",
-  "MWIZA MARTHA KIMBERLY",
-  "NABUKENYA SAMANTHA",
-  "NABUULE ELIANA MALAIKA KAYE",
-  "NABUYONDO NAIRAH",
-  "NAKADDU ELLYVICK",
-  "NAKAMATTE NORAH CHRISTINE",
-  "NAKANWAGI JEAN ALBA",
-  "NAKAYIWA ESTHER",
-  "NAKITTO RASHIMAH",
-  "NALUBOWA ALLISON JULIET",
-  "NALUTAAYA PETRONILLAH",
-  "NAMAKULA SOPHIA",
-  "NAMBAJJWE VALERIA",
-  "NANSUBUGA THEO ELSIE",
-  "NATUMI SHAHID PAPA",
-  "NAZEBA LEO",
-  "NOWAMANI SHARAPOVA",
-  "NTAMBAZI JEISON JOSEPH",
-  "NYABUN BITH",
-  "NYESIGA OTHNIEL",
-  "ODEKE MIRACLE DANIEL",
-  "OJAMBO DEVLIN PAUL",
-  "OWORI CALVIN FRANKLIN",
-  "PRIA ANGEL",
-  "RUKUNDO ELIZABETH",
-  "RUKUNDO FAITH CANTY",
-  "SSEMPA MALCOM MATHEW",
-  "SSEMPEBWA JONATHAN GIDEON",
-  "SSENGENDO VICTORIA MIRACLE",
-  "SSENGOOBA TENDO ENOCK",
-  "SSENYIMBA DON ELIJAH",
-  "SSENYONGA ELIJAH ADRIAN",
-  "SUKU HOLLY LAELLE",
-  "TAMARA AVA MULUNGI NDUGWA",
-  "TWEBAZE ESTHER",
-  "WASAJJA CHARLES DICKENS"
-];
-
-// Classes available
-const classes = [
-  "Baby Class", "Middle Class", "Top Class",
-  "Primary One", "Primary Two", "Primary Three", "Primary Four",
-  "Primary Five", "Primary Six", "Primary Seven",
-  "Senior One", "Senior Two", "Senior Three", "Senior Four", "Senior Five", "Senior Six"
-];
-
-// Houses available
-const houses = ["Red House", "Blue House", "Green House", "Yellow House"];
-
-// Dormitories available
-const dormitories = ["Sunrise Dormitory", "Sunset Dormitory", "Rainbow Dormitory", "Star Dormitory"];
-
-// Generate dummy data for missing fields
-const generateDummyData = (index: number) => {
-  const genders = ['Male', 'Female'];
-  const religions = ['Christianity', 'Islam', 'Other'];
-  const bloodGroups = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
-  const nationalities = ['Ugandan', 'Kenyan', 'Tanzanian', 'Rwandan'];
-  
-  return {
-    gender: genders[index % 2] as 'Male' | 'Female',
-    class: classes[index % classes.length],
-    birthDate: `${2010 + (index % 8)}-${String((index % 12) + 1).padStart(2, '0')}-${String((index % 28) + 1).padStart(2, '0')}`,
-    address: `Plot ${100 + index}, ${['Kampala', 'Entebbe', 'Jinja', 'Mbale'][index % 4]}, Uganda`,
-    phone: `+256${700000000 + index}`,
-    nationality: nationalities[index % nationalities.length],
-    religion: religions[index % religions.length],
-    bloodGroup: bloodGroups[index % bloodGroups.length],
-    allergies: index % 5 === 0 ? 'Peanuts' : 'None',
-    medicalConditions: index % 7 === 0 ? 'Asthma' : 'None',
-    previousSchool: index % 3 === 0 ? 'Rainbow Primary School' : 'None',
-    admissionDate: `${2020 + (index % 5)}-01-15`,
-    joinDate: `${2020 + (index % 5)}-01-15`,
-    dormitory: dormitories[index % dormitories.length],
-    house: houses[index % houses.length],
-    bio: `I am a dedicated student at Springing Stars Academy. I enjoy learning and participating in school activities.`,
-    accountStatus: 'active' as const
-  };
-};
-
-// Generate student data
-const generateStudentsArray = (): StudentData[] => studentNames.map((fullName, index) => {
-  const { firstName, middleName, lastName } = parseName(fullName);
-  const dummyData = generateDummyData(index);
-  
-  return {
-    id: `student_${index + 1}`,
-    email: generateEmail(firstName, lastName),
-    password: 'pupil123',
-    role: 'pupil',
-    firstName,
-    middleName,
-    lastName,
-    fullName,
-    parentName: `Mr. & Mrs. ${lastName}`,
-    parentPhone: `+256${750000000 + index}`,
-    parentEmail: `parent.${firstName.toLowerCase()}.${lastName.toLowerCase()}@gmail.com`,
-    emergencyContact: `Mr. & Mrs. ${lastName}`,
-    emergencyPhone: `+256${750000000 + index}`,
-    avatar: generateAvatarUrl(fullName),
-    studentId: generateStudentId(index),
-    ...dummyData
-  };
-});
-
-// Export in the requested format
 export const localStudentDatabase = {
-  users: generateStudentsArray()
-};
-
-// CRUD Operations
-export class StudentDataManager {
-  private static data: StudentData[] = [...localStudentDatabase.users];
-
-  // Create - Add new student
-  static createStudent(studentData: Omit<StudentData, 'id'>): StudentData {
-    const newStudent: StudentData = {
-      ...studentData,
-      id: `student_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-    };
-    this.data.push(newStudent);
-    return newStudent;
-  }
-
-  // Read - Get all students
-  static getAllStudents(): StudentData[] {
-    return [...this.data];
-  }
-
-  // Read - Get student by ID
-  static getStudentById(id: string): StudentData | null {
-    return this.data.find(student => student.id === id) || null;
-  }
-
-  // Read - Get student by email
-  static getStudentByEmail(email: string): StudentData | null {
-    return this.data.find(student => student.email === email) || null;
-  }
-
-  // Read - Get students by class
-  static getStudentsByClass(className: string): StudentData[] {
-    return this.data.filter(student => student.class === className);
-  }
-
-  // Read - Search students
-  static searchStudents(query: string): StudentData[] {
-    const lowercaseQuery = query.toLowerCase();
-    return this.data.filter(student => 
-      student.fullName.toLowerCase().includes(lowercaseQuery) ||
-      student.email.toLowerCase().includes(lowercaseQuery) ||
-      student.studentId.toLowerCase().includes(lowercaseQuery) ||
-      student.class.toLowerCase().includes(lowercaseQuery)
-    );
-  }
-
-  // Update - Update student data
-  static updateStudent(id: string, updates: Partial<Omit<StudentData, 'id'>>): StudentData | null {
-    const index = this.data.findIndex(student => student.id === id);
-    if (index === -1) return null;
-
-    this.data[index] = { ...this.data[index], ...updates };
-    return this.data[index];
-  }
-
-  // Update - Update student profile
-  static updateStudentProfile(id: string, profileData: {
-    firstName?: string;
-    middleName?: string;
-    lastName?: string;
-    gender?: 'Male' | 'Female';
-    birthDate?: string;
-    address?: string;
-    phone?: string;
-    bio?: string;
-    emergencyContact?: string;
-    emergencyPhone?: string;
-  }): StudentData | null {
-    const updates: Partial<StudentData> = { ...profileData };
-    
-    // Update full name if name parts changed
-    if (profileData.firstName || profileData.lastName) {
-      const student = this.getStudentById(id);
-      if (student) {
-        const firstName = profileData.firstName || student.firstName;
-        const middleName = profileData.middleName || student.middleName;
-        const lastName = profileData.lastName || student.lastName;
-        updates.fullName = `${firstName} ${middleName} ${lastName}`.replace(/\s+/g, ' ').trim();
-        updates.email = generateEmail(firstName, lastName);
-      }
+  users: [
+    {
+      id: '1',
+      email: 'adriana.mirimu@pupil.springingstars.ac.ug',
+      password: 'pupil123',
+      name: 'ADRIANA LIAM MIRIMU',
+      firstName: 'ADRIANA',
+      middleName: 'LIAM',
+      lastName: 'MIRIMU',
+      gender: 'Female',
+      class: 'Baby Class',
+      avatar: 'https://fresh-teacher-uganda.github.io/talk-of-the-day/src/assets/photos/ADRIANA%20LIAM%20MIRIMU.JPG'
+    },
+    {
+      id: '2',
+      email: 'ahimbisibwe.emmanuel@pupil.springingstars.ac.ug',
+      password: 'pupil123',
+      name: 'AHIMBISIBWE EMMANUEL',
+      firstName: 'AHIMBISIBWE',
+      middleName: '',
+      lastName: 'EMMANUEL',
+      gender: 'Male',
+      class: 'Middle Class',
+      avatar: 'https://fresh-teacher-uganda.github.io/talk-of-the-day/src/assets/photos/AHIMBISIBWE%20EMMANUEL.JPG'
+    },
+    {
+      id: '3',
+      email: 'alba.kobusingye@pupil.springingstars.ac.ug',
+      password: 'pupil123',
+      name: 'ALBA PROMISE KOBUSINGYE',
+      firstName: 'ALBA',
+      middleName: 'PROMISE',
+      lastName: 'KOBUSINGYE',
+      gender: 'Female',
+      class: 'Top Class',
+      avatar: 'https://fresh-teacher-uganda.github.io/talk-of-the-day/src/assets/photos/ALBA%20PROMISE%20KOBUSINGYE.JPG'
+    },
+    {
+      id: '4',
+      email: 'albara-u.musoke@pupil.springingstars.ac.ug',
+      password: 'pupil123',
+      name: 'ALBARA-U YAHAYA MUSOKE',
+      firstName: 'ALBARA-U',
+      middleName: 'YAHAYA',
+      lastName: 'MUSOKE',
+      gender: 'Male',
+      class: 'Primary One',
+      avatar: 'https://fresh-teacher-uganda.github.io/talk-of-the-day/src/assets/photos/ALBARA-U%20YAHAYA%20MUSOKE.JPG'
+    },
+    {
+      id: '5',
+      email: 'amanyabyona.collins@pupil.springingstars.ac.ug',
+      password: 'pupil123',
+      name: 'AMANYABYONA JOSEPH COLLINS',
+      firstName: 'AMANYABYONA',
+      middleName: 'JOSEPH',
+      lastName: 'COLLINS',
+      gender: 'Male',
+      class: 'Primary Two',
+      avatar: 'https://fresh-teacher-uganda.github.io/talk-of-the-day/src/assets/photos/AMANYABYONA%20JOSEPH%20COLLINS.JPG'
+    },
+    {
+      id: '6',
+      email: 'ankunda.liam@pupil.springingstars.ac.ug',
+      password: 'pupil123',
+      name: 'ANKUNDA LIAM',
+      firstName: 'ANKUNDA',
+      middleName: '',
+      lastName: 'LIAM',
+      gender: 'Male',
+      class: 'Primary Three',
+      avatar: 'https://fresh-teacher-uganda.github.io/talk-of-the-day/src/assets/photos/ANKUNDA%20LIAM.JPG'
+    },
+    {
+      id: '7',
+      email: 'atungire.elijah@pupil.springingstars.ac.ug',
+      password: 'pupil123',
+      name: 'ATUNGIRE ELIJAH',
+      firstName: 'ATUNGIRE',
+      middleName: '',
+      lastName: 'ELIJAH',
+      gender: 'Male',
+      class: 'Primary Four',
+      avatar: 'https://fresh-teacher-uganda.github.io/talk-of-the-day/src/assets/photos/ATUNGIRE%20ELIJAH.JPG'
+    },
+    {
+      id: '8',
+      email: 'ava.dhamuzungu@pupil.springingstars.ac.ug',
+      password: 'pupil123',
+      name: 'AVA MALAIKA DHAMUZUNGU',
+      firstName: 'AVA',
+      middleName: 'MALAIKA',
+      lastName: 'DHAMUZUNGU',
+      gender: 'Female',
+      class: 'Primary Five',
+      avatar: 'https://fresh-teacher-uganda.github.io/talk-of-the-day/src/assets/photos/AVA%20MALAIKA%20DHAMUZUNGU.JPG'
+    },
+    {
+      id: '9',
+      email: 'bagabe.abel@pupil.springingstars.ac.ug',
+      password: 'pupil123',
+      name: 'BAGABE ABEL',
+      firstName: 'BAGABE',
+      middleName: '',
+      lastName: 'ABEL',
+      gender: 'Male',
+      class: 'Primary Six',
+      avatar: 'https://fresh-teacher-uganda.github.io/talk-of-the-day/src/assets/photos/BAGABE%20ABEL.JPG'
+    },
+    {
+      id: '10',
+      email: 'birungi.hidaya@pupil.springingstars.ac.ug',
+      password: 'pupil123',
+      name: 'BIRUNGI HIDAYA',
+      firstName: 'BIRUNGI',
+      middleName: '',
+      lastName: 'HIDAYA',
+      gender: 'Female',
+      class: 'Primary Seven',
+      avatar: 'https://fresh-teacher-uganda.github.io/talk-of-the-day/src/assets/photos/BIRUNGI%20HIDAYA.JPG'
+    },
+    {
+      id: '11',
+      email: 'bwogi.deighton@pupil.springingstars.ac.ug',
+      password: 'pupil123',
+      name: 'BWOGI DEIGHTON',
+      firstName: 'BWOGI',
+      middleName: '',
+      lastName: 'DEIGHTON',
+      gender: 'Male',
+      class: 'Senior One',
+      avatar: 'https://fresh-teacher-uganda.github.io/talk-of-the-day/src/assets/photos/BWOGI%20DEIGHTON.JPG'
+    },
+    {
+      id: '12',
+      email: 'byamukama.charles@pupil.springingstars.ac.ug',
+      password: 'pupil123',
+      name: 'BYAMUKAMA MATTHEW CHARLES',
+      firstName: 'BYAMUKAMA',
+      middleName: 'MATTHEW',
+      lastName: 'CHARLES',
+      gender: 'Male',
+      class: 'Senior Two',
+      avatar: 'https://fresh-teacher-uganda.github.io/talk-of-the-day/src/assets/photos/BYAMUKAMA%20MATTHEW%20CHARLES.JPG'
+    },
+    {
+      id: '13',
+      email: 'dhedonga.marina@pupil.springingstars.ac.ug',
+      password: 'pupil123',
+      name: 'DHEDONGA REHEMA MARINA',
+      firstName: 'DHEDONGA',
+      middleName: 'REHEMA',
+      lastName: 'MARINA',
+      gender: 'Female',
+      class: 'Senior Three',
+      avatar: 'https://fresh-teacher-uganda.github.io/talk-of-the-day/src/assets/photos/DHEDONGA%20REHEMA%20MARINA.JPG'
+    },
+    {
+      id: '14',
+      email: 'eglah.gara@pupil.springingstars.ac.ug',
+      password: 'pupil123',
+      name: 'EGLAH ABI GARA',
+      firstName: 'EGLAH',
+      middleName: 'ABI',
+      lastName: 'GARA',
+      gender: 'Female',
+      class: 'Senior Four',
+      avatar: 'https://fresh-teacher-uganda.github.io/talk-of-the-day/src/assets/photos/EGLAH%20ABI%20GARA.JPG'
+    },
+    {
+      id: '15',
+      email: 'eli.edube@pupil.springingstars.ac.ug',
+      password: 'pupil123',
+      name: 'ELI TIMAO EDUBE',
+      firstName: 'ELI',
+      middleName: 'TIMAO',
+      lastName: 'EDUBE',
+      gender: 'Male',
+      class: 'Senior Five',
+      avatar: 'https://fresh-teacher-uganda.github.io/talk-of-the-day/src/assets/photos/ELI%20TIMAO%20EDUBE.JPG'
+    },
+    {
+      id: '16',
+      email: 'favour.mayiga@pupil.springingstars.ac.ug',
+      password: 'pupil123',
+      name: 'FAVOUR GIDEON MAYIGA',
+      firstName: 'FAVOUR',
+      middleName: 'GIDEON',
+      lastName: 'MAYIGA',
+      gender: 'Male',
+      class: 'Senior Six',
+      avatar: 'https://fresh-teacher-uganda.github.io/talk-of-the-day/src/assets/photos/FAVOUR%20GIDEON%20MAYIGA.JPG'
+    },
+    {
+      id: '17',
+      email: 'itungo.ruta@pupil.springingstars.ac.ug',
+      password: 'pupil123',
+      name: 'ITUNGO LIONEL RUTA',
+      firstName: 'ITUNGO',
+      middleName: 'LIONEL',
+      lastName: 'RUTA',
+      gender: 'Male',
+      class: 'Baby Class',
+      avatar: 'https://fresh-teacher-uganda.github.io/talk-of-the-day/src/assets/photos/ITUNGO%20LIONEL%20RUTA.JPG'
+    },
+    {
+      id: '18',
+      email: 'jake.katende@pupil.springingstars.ac.ug',
+      password: 'pupil123',
+      name: 'JAKE WILLIAM KATENDE',
+      firstName: 'JAKE',
+      middleName: 'WILLIAM',
+      lastName: 'KATENDE',
+      gender: 'Male',
+      class: 'Middle Class',
+      avatar: 'https://fresh-teacher-uganda.github.io/talk-of-the-day/src/assets/photos/JAKE%20WILLIAM%20KATENDE.JPG'
+    },
+    {
+      id: '19',
+      email: 'jean.jooga@pupil.springingstars.ac.ug',
+      password: 'pupil123',
+      name: 'JEAN BRIGHT  JOOGA',
+      firstName: 'JEAN',
+      middleName: 'BRIGHT',
+      lastName: 'JOOGA',
+      gender: 'Male',
+      class: 'Top Class',
+      avatar: 'https://fresh-teacher-uganda.github.io/talk-of-the-day/src/assets/photos/JEAN%20BRIGHT%20%20JOOGA.JPG'
+    },
+    {
+      id: '20',
+      email: 'jean.ddamulira@pupil.springingstars.ac.ug',
+      password: 'pupil123',
+      name: 'JEAN PETER DDAMULIRA',
+      firstName: 'JEAN',
+      middleName: 'PETER',
+      lastName: 'DDAMULIRA',
+      gender: 'Male',
+      class: 'Primary One',
+      avatar: 'https://fresh-teacher-uganda.github.io/talk-of-the-day/src/assets/photos/JEAN%20PETER%20DDAMULIRA.JPG'
+    },
+    {
+      id: '21',
+      email: 'jedidiah.kazooba@pupil.springingstars.ac.ug',
+      password: 'pupil123',
+      name: 'JEDIDIAH KAHUMA KAZOOBA',
+      firstName: 'JEDIDIAH',
+      middleName: 'KAHUMA',
+      lastName: 'KAZOOBA',
+      gender: 'Male',
+      class: 'Primary Two',
+      avatar: 'https://fresh-teacher-uganda.github.io/talk-of-the-day/src/assets/photos/JEDIDIAH%20KAHUMA%20KAZOOBA.JPG'
+    },
+    {
+      id: '22',
+      email: 'kalule.leander@pupil.springingstars.ac.ug',
+      password: 'pupil123',
+      name: 'KALULE VICTOR LEANDER',
+      firstName: 'KALULE',
+      middleName: 'VICTOR',
+      lastName: 'LEANDER',
+      gender: 'Male',
+      class: 'Primary Three',
+      avatar: 'https://fresh-teacher-uganda.github.io/talk-of-the-day/src/assets/photos/KALULE%20VICTOR%20LEANDER.JPG'
+    },
+    {
+      id: '23',
+      email: 'katende.charles@pupil.springingstars.ac.ug',
+      password: 'pupil123',
+      name: 'KATENDE JOSIAH CHARLES',
+      firstName: 'KATENDE',
+      middleName: 'JOSIAH',
+      lastName: 'CHARLES',
+      gender: 'Male',
+      class: 'Primary Four',
+      avatar: 'https://fresh-teacher-uganda.github.io/talk-of-the-day/src/assets/photos/KATENDE%20JOSIAH%20CHARLES.JPG'
+    },
+    {
+      id: '24',
+      email: 'katongole.gertrude@pupil.springingstars.ac.ug',
+      password: 'pupil123',
+      name: 'KATONGOLE GERTRUDE',
+      firstName: 'KATONGOLE',
+      middleName: '',
+      lastName: 'GERTRUDE',
+      gender: 'Female',
+      class: 'Primary Five',
+      avatar: 'https://fresh-teacher-uganda.github.io/talk-of-the-day/src/assets/photos/KATONGOLE%20GERTRUDE.JPG'
+    },
+    {
+      id: '25',
+      email: 'katongole.mona@pupil.springingstars.ac.ug',
+      password: 'pupil123',
+      name: 'KATONGOLE MONA',
+      firstName: 'KATONGOLE',
+      middleName: '',
+      lastName: 'MONA',
+      gender: 'Female',
+      class: 'Primary Six',
+      avatar: 'https://fresh-teacher-uganda.github.io/talk-of-the-day/src/assets/photos/KATONGOLE%20MONA.JPG'
+    },
+    {
+      id: '26',
+      email: 'katumba.surprise@pupil.springingstars.ac.ug',
+      password: 'pupil123',
+      name: 'KATUMBA DALTON SURPRISE',
+      firstName: 'KATUMBA',
+      middleName: 'DALTON',
+      lastName: 'SURPRISE',
+      gender: 'Male',
+      class: 'Primary Seven',
+      avatar: 'https://fresh-teacher-uganda.github.io/talk-of-the-day/src/assets/photos/KATUMBA%20DALTON%20SURPRISE.JPG'
+    },
+    {
+      id: '27',
+      email: 'kaweesi.hope@pupil.springingstars.ac.ug',
+      password: 'pupil123',
+      name: 'KAWEESI JAYDEN HOPE',
+      firstName: 'KAWEESI',
+      middleName: 'JAYDEN',
+      lastName: 'HOPE',
+      gender: 'Male',
+      class: 'Senior One',
+      avatar: 'https://fresh-teacher-uganda.github.io/talk-of-the-day/src/assets/photos/KAWEESI%20JAYDEN%20HOPE.JPG'
+    },
+    {
+      id: '28',
+      email: 'kijjambu.morgan@pupil.springingstars.ac.ug',
+      password: 'pupil123',
+      name: 'KIJJAMBU MARK MORGAN',
+      firstName: 'KIJJAMBU',
+      middleName: 'MARK',
+      lastName: 'MORGAN',
+      gender: 'Male',
+      class: 'Senior Two',
+      avatar: 'https://fresh-teacher-uganda.github.io/talk-of-the-day/src/assets/photos/KIJJAMBU%20MARK%20MORGAN.JPG'
+    },
+    {
+      id: '29',
+      email: 'kirabo.kyle@pupil.springingstars.ac.ug',
+      password: 'pupil123',
+      name: 'KIRABO BRYSON KYLE',
+      firstName: 'KIRABO',
+      middleName: 'BRYSON',
+      lastName: 'KYLE',
+      gender: 'Male',
+      class: 'Senior Three',
+      avatar: 'https://fresh-teacher-uganda.github.io/talk-of-the-day/src/assets/photos/KIRABO%20BRYSON%20KYLE.JPG'
+    },
+    {
+      id: '30',
+      email: 'kobufura.krysten@pupil.springingstars.ac.ug',
+      password: 'pupil123',
+      name: 'KOBUFURA ASHLEY KRYSTEN',
+      firstName: 'KOBUFURA',
+      middleName: 'ASHLEY',
+      lastName: 'KRYSTEN',
+      gender: 'Female',
+      class: 'Senior Four',
+      avatar: 'https://fresh-teacher-uganda.github.io/talk-of-the-day/src/assets/photos/KOBUFURA%20ASHLEY%20KRYSTEN.JPG'
+    },
+    {
+      id: '31',
+      email: 'krystabell.wavamunno@pupil.springingstars.ac.ug',
+      password: 'pupil123',
+      name: 'KRYSTABELL ARIANA WAVAMUNNO',
+      firstName: 'KRYSTABELL',
+      middleName: 'ARIANA',
+      lastName: 'WAVAMUNNO',
+      gender: 'Female',
+      class: 'Senior Five',
+      avatar: 'https://fresh-teacher-uganda.github.io/talk-of-the-day/src/assets/photos/KRYSTABELL%20ARIANA%20WAVAMUNNO.JPG'
+    },
+    {
+      id: '32',
+      email: 'kukunda.kirsten@pupil.springingstars.ac.ug',
+      password: 'pupil123',
+      name: 'KUKUNDA KIRSTEN',
+      firstName: 'KUKUNDA',
+      middleName: '',
+      lastName: 'KIRSTEN',
+      gender: 'Female',
+      class: 'Senior Six',
+      avatar: 'https://fresh-teacher-uganda.github.io/talk-of-the-day/src/assets/photos/KUKUNDA%20KIRSTEN.JPG'
+    },
+    {
+      id: '33',
+      email: 'levi.muzima@pupil.springingstars.ac.ug',
+      password: 'pupil123',
+      name: 'LEVI GATAALI MUZIMA',
+      firstName: 'LEVI',
+      middleName: 'GATAALI',
+      lastName: 'MUZIMA',
+      gender: 'Male',
+      class: 'Baby Class',
+      avatar: 'https://fresh-teacher-uganda.github.io/talk-of-the-day/src/assets/photos/LEVI%20GATAALI%20MUZIMA.JPG'
+    },
+    {
+      id: '34',
+      email: 'lubega.keron@pupil.springingstars.ac.ug',
+      password: 'pupil123',
+      name: 'LUBEGA KERON',
+      firstName: 'LUBEGA',
+      middleName: '',
+      lastName: 'KERON',
+      gender: 'Male',
+      class: 'Middle Class',
+      avatar: 'https://fresh-teacher-uganda.github.io/talk-of-the-day/src/assets/photos/LUBEGA%20KERON.JPG'
+    },
+    {
+      id: '35',
+      email: 'matsiko.dan@pupil.springingstars.ac.ug',
+      password: 'pupil123',
+      name: 'MATSIKO DAN',
+      firstName: 'MATSIKO',
+      middleName: '',
+      lastName: 'DAN',
+      gender: 'Male',
+      class: 'Top Class',
+      avatar: 'https://fresh-teacher-uganda.github.io/talk-of-the-day/src/assets/photos/MATSIKO%20DAN.JPG'
+    },
+    {
+      id: '36',
+      email: 'mugenyi.calvin@pupil.springingstars.ac.ug',
+      password: 'pupil123',
+      name: 'MUGENYI CALVIN',
+      firstName: 'MUGENYI',
+      middleName: '',
+      lastName: 'CALVIN',
+      gender: 'Male',
+      class: 'Primary One',
+      avatar: 'https://fresh-teacher-uganda.github.io/talk-of-the-day/src/assets/photos/MUGENYI%20CALVIN.JPG'
+    },
+    {
+      id: '37',
+      email: 'mukisa.jesse@pupil.springingstars.ac.ug',
+      password: 'pupil123',
+      name: 'MUKISA JESSE',
+      firstName: 'MUKISA',
+      middleName: '',
+      lastName: 'JESSE',
+      gender: 'Male',
+      class: 'Primary Two',
+      avatar: 'https://fresh-teacher-uganda.github.io/talk-of-the-day/src/assets/photos/MUKISA%20JESSE.JPG'
+    },
+    {
+      id: '38',
+      email: 'mukula.bridgeous@pupil.springingstars.ac.ug',
+      password: 'pupil123',
+      name: 'MUKULA ODYSSEUS BRIDGEOUS',
+      firstName: 'MUKULA',
+      middleName: 'ODYSSEUS',
+      lastName: 'BRIDGEOUS',
+      gender: 'Male',
+      class: 'Primary Three',
+      avatar: 'https://fresh-teacher-uganda.github.io/talk-of-the-day/src/assets/photos/MUKULA%20ODYSSEUS%20BRIDGEOUS.JPG'
+    },
+    {
+      id: '39',
+      email: 'mulungi.adonai@pupil.springingstars.ac.ug',
+      password: 'pupil123',
+      name: 'MULUNGI ADONAI',
+      firstName: 'MULUNGI',
+      middleName: '',
+      lastName: 'ADONAI',
+      gender: 'Male',
+      class: 'Primary Four',
+      avatar: 'https://fresh-teacher-uganda.github.io/talk-of-the-day/src/assets/photos/MULUNGI%20ADONAI.JPG'
+    },
+    {
+      id: '40',
+      email: 'mulwana.bernice@pupil.springingstars.ac.ug',
+      password: 'pupil123',
+      name: 'MULWANA BERNICE',
+      firstName: 'MULWANA',
+      middleName: '',
+      lastName: 'BERNICE',
+      gender: 'Female',
+      class: 'Primary Five',
+      avatar: 'https://fresh-teacher-uganda.github.io/talk-of-the-day/src/assets/photos/MULWANA%20BERNICE.JPG'
+    },
+    {
+      id: '41',
+      email: 'mutebi.kigongo@pupil.springingstars.ac.ug',
+      password: 'pupil123',
+      name: 'MUTEBI HAFIZU KIGONGO',
+      firstName: 'MUTEBI',
+      middleName: 'HAFIZU',
+      lastName: 'KIGONGO',
+      gender: 'Male',
+      class: 'Primary Six',
+      avatar: 'https://fresh-teacher-uganda.github.io/talk-of-the-day/src/assets/photos/MUTEBI%20HAFIZU%20KIGONGO.JPG'
+    },
+    {
+      id: '42',
+      email: 'mutyaba.keron@pupil.springingstars.ac.ug',
+      password: 'pupil123',
+      name: 'MUTYABA KERON',
+      firstName: 'MUTYABA',
+      middleName: '',
+      lastName: 'KERON',
+      gender: 'Male',
+      class: 'Primary Seven',
+      avatar: 'https://fresh-teacher-uganda.github.io/talk-of-the-day/src/assets/photos/MUTYABA%20KERON.JPG'
+    },
+    {
+      id: '43',
+      email: 'muwanguzi.israel@pupil.springingstars.ac.ug',
+      password: 'pupil123',
+      name: 'MUWANGUZI ISRAEL',
+      firstName: 'MUWANGUZI',
+      middleName: '',
+      lastName: 'ISRAEL',
+      gender: 'Male',
+      class: 'Senior One',
+      avatar: 'https://fresh-teacher-uganda.github.io/talk-of-the-day/src/assets/photos/MUWANGUZI%20ISRAEL.JPG'
+    },
+    {
+      id: '44',
+      email: 'mwiza.abrielle@pupil.springingstars.ac.ug',
+      password: 'pupil123',
+      name: 'MWIZA ATALIA ABRIELLE',
+      firstName: 'MWIZA',
+      middleName: 'ATALIA',
+      lastName: 'ABRIELLE',
+      gender: 'Female',
+      class: 'Senior Two',
+      avatar: 'https://fresh-teacher-uganda.github.io/talk-of-the-day/src/assets/photos/MWIZA%20ATALIA%20ABRIELLE.JPG'
+    },
+    {
+      id: '45',
+      email: 'mwiza.kimberly@pupil.springingstars.ac.ug',
+      password: 'pupil123',
+      name: 'MWIZA MARTHA KIMBERLY',
+      firstName: 'MWIZA',
+      middleName: 'MARTHA',
+      lastName: 'KIMBERLY',
+      gender: 'Female',
+      class: 'Senior Three',
+      avatar: 'https://fresh-teacher-uganda.github.io/talk-of-the-day/src/assets/photos/MWIZA%20MARTHA%20KIMBERLY.JPG'
+    },
+    {
+      id: '46',
+      email: 'nabukenya.samantha@pupil.springingstars.ac.ug',
+      password: 'pupil123',
+      name: 'NABUKENYA SAMANTHA',
+      firstName: 'NABUKENYA',
+      middleName: '',
+      lastName: 'SAMANTHA',
+      gender: 'Female',
+      class: 'Senior Four',
+      avatar: 'https://fresh-teacher-uganda.github.io/talk-of-the-day/src/assets/photos/NABUKENYA%20SAMANTHA.JPG'
+    },
+    {
+      id: '47',
+      email: 'nabuule.kaye@pupil.springingstars.ac.ug',
+      password: 'pupil123',
+      name: 'NABUULE ELIANA MALAIKA KAYE',
+      firstName: 'NABUULE',
+      middleName: 'ELIANA MALAIKA',
+      lastName: 'KAYE',
+      gender: 'Female',
+      class: 'Senior Five',
+      avatar: 'https://fresh-teacher-uganda.github.io/talk-of-the-day/src/assets/photos/NABUULE%20ELIANA%20MALAIKA%20KAYE.JPG'
+    },
+    {
+      id: '48',
+      email: 'nabuyondo.nairah@pupil.springingstars.ac.ug',
+      password: 'pupil123',
+      name: 'NABUYONDO NAIRAH',
+      firstName: 'NABUYONDO',
+      middleName: '',
+      lastName: 'NAIRAH',
+      gender: 'Female',
+      class: 'Senior Six',
+      avatar: 'https://fresh-teacher-uganda.github.io/talk-of-the-day/src/assets/photos/NABUYONDO%20NAIRAH.JPG'
+    },
+    {
+      id: '49',
+      email: 'nakaddu.ellyvick@pupil.springingstars.ac.ug',
+      password: 'pupil123',
+      name: 'NAKADDU ELLYVICK',
+      firstName: 'NAKADDU',
+      middleName: '',
+      lastName: 'ELLYVICK',
+      gender: 'Female',
+      class: 'Baby Class',
+      avatar: 'https://fresh-teacher-uganda.github.io/talk-of-the-day/src/assets/photos/NAKADDU%20ELLYVICK.JPG'
+    },
+    {
+      id: '50',
+      email: 'nakamatte.christine@pupil.springingstars.ac.ug',
+      password: 'pupil123',
+      name: 'NAKAMATTE NORAH CHRISTINE',
+      firstName: 'NAKAMATTE',
+      middleName: 'NORAH',
+      lastName: 'CHRISTINE',
+      gender: 'Female',
+      class: 'Middle Class',
+      avatar: 'https://fresh-teacher-uganda.github.io/talk-of-the-day/src/assets/photos/NAKAMATTE%20NORAH%20CHRISTINE.JPG'
+    },
+    {
+      id: '51',
+      email: 'nakanwagi.alba@pupil.springingstars.ac.ug',
+      password: 'pupil123',
+      name: 'NAKANWAGI JEAN ALBA',
+      firstName: 'NAKANWAGI',
+      middleName: 'JEAN',
+      lastName: 'ALBA',
+      gender: 'Female',
+      class: 'Top Class',
+      avatar: 'https://fresh-teacher-uganda.github.io/talk-of-the-day/src/assets/photos/NAKANWAGI%20JEAN%20ALBA.JPG'
+    },
+    {
+      id: '52',
+      email: 'nakayiwa.esther@pupil.springingstars.ac.ug',
+      password: 'pupil123',
+      name: 'NAKAYIWA ESTHER',
+      firstName: 'NAKAYIWA',
+      middleName: '',
+      lastName: 'ESTHER',
+      gender: 'Female',
+      class: 'Primary One',
+      avatar: 'https://fresh-teacher-uganda.github.io/talk-of-the-day/src/assets/photos/NAKAYIWA%20ESTHER.JPG'
+    },
+    {
+      id: '53',
+      email: 'nakitto.rashimah@pupil.springingstars.ac.ug',
+      password: 'pupil123',
+      name: 'NAKITTO RASHIMAH',
+      firstName: 'NAKITTO',
+      middleName: '',
+      lastName: 'RASHIMAH',
+      gender: 'Female',
+      class: 'Primary Two',
+      avatar: 'https://fresh-teacher-uganda.github.io/talk-of-the-day/src/assets/photos/NAKITTO%20RASHIMAH.JPG'
+    },
+    {
+      id: '54',
+      email: 'nalubowa.juliet@pupil.springingstars.ac.ug',
+      password: 'pupil123',
+      name: 'NALUBOWA ALLISON JULIET',
+      firstName: 'NALUBOWA',
+      middleName: 'ALLISON',
+      lastName: 'JULIET',
+      gender: 'Female',
+      class: 'Primary Three',
+      avatar: 'https://fresh-teacher-uganda.github.io/talk-of-the-day/src/assets/photos/NALUBOWA%20ALLISON%20JULIET.JPG'
+    },
+    {
+      id: '55',
+      email: 'nalutaaya.petronillah@pupil.springingstars.ac.ug',
+      password: 'pupil123',
+      name: 'NALUTAAYA PETRONILLAH',
+      firstName: 'NALUTAAYA',
+      middleName: '',
+      lastName: 'PETRONILLAH',
+      gender: 'Female',
+      class: 'Primary Four',
+      avatar: 'https://fresh-teacher-uganda.github.io/talk-of-the-day/src/assets/photos/NALUTAAYA%20PETRONILLAH.JPG'
+    },
+    {
+      id: '56',
+      email: 'namakula.sophia@pupil.springingstars.ac.ug',
+      password: 'pupil123',
+      name: 'NAMAKULA SOPHIA',
+      firstName: 'NAMAKULA',
+      middleName: '',
+      lastName: 'SOPHIA',
+      gender: 'Female',
+      class: 'Primary Five',
+      avatar: 'https://fresh-teacher-uganda.github.io/talk-of-the-day/src/assets/photos/NAMAKULA%20SOPHIA.JPG'
+    },
+    {
+      id: '57',
+      email: 'nambajjwe.valeria@pupil.springingstars.ac.ug',
+      password: 'pupil123',
+      name: 'NAMBAJJWE VALERIA',
+      firstName: 'NAMBAJJWE',
+      middleName: '',
+      lastName: 'VALERIA',
+      gender: 'Female',
+      class: 'Primary Six',
+      avatar: 'https://fresh-teacher-uganda.github.io/talk-of-the-day/src/assets/photos/NAMBAJJWE%20VALERIA.JPG'
+    },
+    {
+      id: '58',
+      email: 'nansubuga.elsie@pupil.springingstars.ac.ug',
+      password: 'pupil123',
+      name: 'NANSUBUGA THEO ELSIE',
+      firstName: 'NANSUBUGA',
+      middleName: 'THEO',
+      lastName: 'ELSIE',
+      gender: 'Female',
+      class: 'Primary Seven',
+      avatar: 'https://fresh-teacher-uganda.github.io/talk-of-the-day/src/assets/photos/NANSUBUGA%20THEO%20ELSIE.JPG'
+    },
+    {
+      id: '59',
+      email: 'natumi.papa@pupil.springingstars.ac.ug',
+      password: 'pupil123',
+      name: 'NATUMI SHAHID PAPA',
+      firstName: 'NATUMI',
+      middleName: 'SHAHID',
+      lastName: 'PAPA',
+      gender: 'Male',
+      class: 'Senior One',
+      avatar: 'https://fresh-teacher-uganda.github.io/talk-of-the-day/src/assets/photos/NATUMI%20SHAHID%20PAPA.JPG'
+    },
+    {
+      id: '60',
+      email: 'nazeba.leo@pupil.springingstars.ac.ug',
+      password: 'pupil123',
+      name: 'NAZEBA LEO',
+      firstName: 'NAZEBA',
+      middleName: '',
+      lastName: 'LEO',
+      gender: 'Male',
+      class: 'Senior Two',
+      avatar: 'https://fresh-teacher-uganda.github.io/talk-of-the-day/src/assets/photos/NAZEBA%20LEO.JPG'
+    },
+    {
+      id: '61',
+      email: 'nowamani.sharapova@pupil.springingstars.ac.ug',
+      password: 'pupil123',
+      name: 'NOWAMANI SHARAPOVA',
+      firstName: 'NOWAMANI',
+      middleName: '',
+      lastName: 'SHARAPOVA',
+      gender: 'Female',
+      class: 'Senior Three',
+      avatar: 'https://fresh-teacher-uganda.github.io/talk-of-the-day/src/assets/photos/NOWAMANI%20SHARAPOVA.JPG'
+    },
+    {
+      id: '62',
+      email: 'ntambazi.joseph@pupil.springingstars.ac.ug',
+      password: 'pupil123',
+      name: 'NTAMBAZI JEISON JOSEPH',
+      firstName: 'NTAMBAZI',
+      middleName: 'JEISON',
+      lastName: 'JOSEPH',
+      gender: 'Male',
+      class: 'Senior Four',
+      avatar: 'https://fresh-teacher-uganda.github.io/talk-of-the-day/src/assets/photos/NTAMBAZI%20JEISON%20JOSEPH.JPG'
+    },
+    {
+      id: '63',
+      email: 'nyabun.bith@pupil.springingstars.ac.ug',
+      password: 'pupil123',
+      name: 'NYABUN BITH',
+      firstName: 'NYABUN',
+      middleName: '',
+      lastName: 'BITH',
+      gender: 'Female',
+      class: 'Senior Five',
+      avatar: 'https://fresh-teacher-uganda.github.io/talk-of-the-day/src/assets/photos/NYABUN%20BITH.JPG'
+    },
+    {
+      id: '64',
+      email: 'nyesiga.othniel@pupil.springingstars.ac.ug',
+      password: 'pupil123',
+      name: 'NYESIGA OTHNIEL',
+      firstName: 'NYESIGA',
+      middleName: '',
+      lastName: 'OTHNIEL',
+      gender: 'Male',
+      class: 'Senior Six',
+      avatar: 'https://fresh-teacher-uganda.github.io/talk-of-the-day/src/assets/photos/NYESIGA%20OTHNIEL.JPG'
+    },
+    {
+      id: '65',
+      email: 'odeke.daniel@pupil.springingstars.ac.ug',
+      password: 'pupil123',
+      name: 'ODEKE MIRACLE DANIEL',
+      firstName: 'ODEKE',
+      middleName: 'MIRACLE',
+      lastName: 'DANIEL',
+      gender: 'Male',
+      class: 'Baby Class',
+      avatar: 'https://fresh-teacher-uganda.github.io/talk-of-the-day/src/assets/photos/ODEKE%20MIRACLE%20DANIEL.JPG'
+    },
+    {
+      id: '66',
+      email: 'ojambo.paul@pupil.springingstars.ac.ug',
+      password: 'pupil123',
+      name: 'OJAMBO DEVLIN PAUL',
+      firstName: 'OJAMBO',
+      middleName: 'DEVLIN',
+      lastName: 'PAUL',
+      gender: 'Male',
+      class: 'Middle Class',
+      avatar: 'https://fresh-teacher-uganda.github.io/talk-of-the-day/src/assets/photos/OJAMBO%20DEVLIN%20PAUL.JPG'
+    },
+    {
+      id: '67',
+      email: 'owori.franklin@pupil.springingstars.ac.ug',
+      password: 'pupil123',
+      name: 'OWORI CALVIN FRANKLIN',
+      firstName: 'OWORI',
+      middleName: 'CALVIN',
+      lastName: 'FRANKLIN',
+      gender: 'Male',
+      class: 'Top Class',
+      avatar: 'https://fresh-teacher-uganda.github.io/talk-of-the-day/src/assets/photos/OWORI%20CALVIN%20FRANKLIN.JPG'
+    },
+    {
+      id: '68',
+      email: 'pria.angel@pupil.springingstars.ac.ug',
+      password: 'pupil123',
+      name: 'PRIA ANGEL',
+      firstName: 'PRIA',
+      middleName: '',
+      lastName: 'ANGEL',
+      gender: 'Female',
+      class: 'Primary One',
+      avatar: 'https://fresh-teacher-uganda.github.io/talk-of-the-day/src/assets/photos/PRIA%20ANGEL.JPG'
+    },
+    {
+      id: '69',
+      email: 'rukundo.elizabeth@pupil.springingstars.ac.ug',
+      password: 'pupil123',
+      name: 'RUKUNDO ELIZABETH',
+      firstName: 'RUKUNDO',
+      middleName: '',
+      lastName: 'ELIZABETH',
+      gender: 'Female',
+      class: 'Primary Two',
+      avatar: 'https://fresh-teacher-uganda.github.io/talk-of-the-day/src/assets/photos/RUKUNDO%20ELIZABETH.JPG'
+    },
+    {
+      id: '70',
+      email: 'rukundo.canty@pupil.springingstars.ac.ug',
+      password: 'pupil123',
+      name: 'RUKUNDO FAITH CANTY',
+      firstName: 'RUKUNDO',
+      middleName: 'FAITH',
+      lastName: 'CANTY',
+      gender: 'Female',
+      class: 'Primary Three',
+      avatar: 'https://fresh-teacher-uganda.github.io/talk-of-the-day/src/assets/photos/RUKUNDO%20FAITH%20CANTY.JPG'
+    },
+    {
+      id: '71',
+      email: 'ssempa.mathew@pupil.springingstars.ac.ug',
+      password: 'pupil123',
+      name: 'SSEMPA MALCOM MATHEW',
+      firstName: 'SSEMPA',
+      middleName: 'MALCOM',
+      lastName: 'MATHEW',
+      gender: 'Male',
+      class: 'Primary Four',
+      avatar: 'https://fresh-teacher-uganda.github.io/talk-of-the-day/src/assets/photos/SSEMPA%20MALCOM%20MATHEW.JPG'
+    },
+    {
+      id: '72',
+      email: 'ssempebwa.gideon@pupil.springingstars.ac.ug',
+      password: 'pupil123',
+      name: 'SSEMPEBWA JONATHAN GIDEON',
+      firstName: 'SSEMPEBWA',
+      middleName: 'JONATHAN',
+      lastName: 'GIDEON',
+      gender: 'Male',
+      class: 'Primary Five',
+      avatar: 'https://fresh-teacher-uganda.github.io/talk-of-the-day/src/assets/photos/SSEMPEBWA%20JONATHAN%20GIDEON.JPG'
+    },
+    {
+      id: '73',
+      email: 'ssengendo.miracle@pupil.springingstars.ac.ug',
+      password: 'pupil123',
+      name: 'SSENGENDO VICTORIA MIRACLE',
+      firstName: 'SSENGENDO',
+      middleName: 'VICTORIA',
+      lastName: 'MIRACLE',
+      gender: 'Female',
+      class: 'Primary Six',
+      avatar: 'https://fresh-teacher-uganda.github.io/talk-of-the-day/src/assets/photos/SSENGENDO%20VICTORIA%20MIRACLE.JPG'
+    },
+    {
+      id: '74',
+      email: 'ssengooba.enock@pupil.springingstars.ac.ug',
+      password: 'pupil123',
+      name: 'SSENGOOBA TENDO ENOCK',
+      firstName: 'SSENGOOBA',
+      middleName: 'TENDO',
+      lastName: 'ENOCK',
+      gender: 'Male',
+      class: 'Primary Seven',
+      avatar: 'https://fresh-teacher-uganda.github.io/talk-of-the-day/src/assets/photos/SSENGOOBA%20TENDO%20ENOCK.JPG'
+    },
+    {
+      id: '75',
+      email: 'ssenyimba.elijah@pupil.springingstars.ac.ug',
+      password: 'pupil123',
+      name: 'SSENYIMBA DON ELIJAH',
+      firstName: 'SSENYIMBA',
+      middleName: 'DON',
+      lastName: 'ELIJAH',
+      gender: 'Male',
+      class: 'Senior One',
+      avatar: 'https://fresh-teacher-uganda.github.io/talk-of-the-day/src/assets/photos/SSENYIMBA%20DON%20ELIJAH.JPG'
+    },
+    {
+      id: '76',
+      email: 'ssenyonga.adrian@pupil.springingstars.ac.ug',
+      password: 'pupil123',
+      name: 'SSENYONGA ELIJAH ADRIAN',
+      firstName: 'SSENYONGA',
+      middleName: 'ELIJAH',
+      lastName: 'ADRIAN',
+      gender: 'Male',
+      class: 'Senior Two',
+      avatar: 'https://fresh-teacher-uganda.github.io/talk-of-the-day/src/assets/photos/SSENYONGA%20ELIJAH%20ADRIAN.JPG'
+    },
+    {
+      id: '77',
+      email: 'suku.laelle@pupil.springingstars.ac.ug',
+      password: 'pupil123',
+      name: 'SUKU HOLLY LAELLE',
+      firstName: 'SUKU',
+      middleName: 'HOLLY',
+      lastName: 'LAELLE',
+      gender: 'Female',
+      class: 'Senior Three',
+      avatar: 'https://fresh-teacher-uganda.github.io/talk-of-the-day/src/assets/photos/SUKU%20HOLLY%20LAELLE.JPG'
+    },
+    {
+      id: '78',
+      email: 'tamara.ndugwa@pupil.springingstars.ac.ug',
+      password: 'pupil123',
+      name: 'TAMARA AVA MULUNGI NDUGWA',
+      firstName: 'TAMARA',
+      middleName: 'AVA MULUNGI',
+      lastName: 'NDUGWA',
+      gender: 'Female',
+      class: 'Senior Four',
+      avatar: 'https://fresh-teacher-uganda.github.io/talk-of-the-day/src/assets/photos/TAMARA%20AVA%20MULUNGI%20NDUGWA.JPG'
+    },
+    {
+      id: '79',
+      email: 'twebaze.esther@pupil.springingstars.ac.ug',
+      password: 'pupil123',
+      name: 'TWEBAZE ESTHER',
+      firstName: 'TWEBAZE',
+      middleName: '',
+      lastName: 'ESTHER',
+      gender: 'Female',
+      class: 'Senior Five',
+      avatar: 'https://fresh-teacher-uganda.github.io/talk-of-the-day/src/assets/photos/TWEBAZE%20ESTHER.JPG'
+    },
+    {
+      id: '80',
+      email: 'wasajja.dickens@pupil.springingstars.ac.ug',
+      password: 'pupil123',
+      name: 'WASAJJA CHARLES DICKENS',
+      firstName: 'WASAJJA',
+      middleName: 'CHARLES',
+      lastName: 'DICKENS',
+      gender: 'Male',
+      class: 'Senior Six',
+      avatar: 'https://fresh-teacher-uganda.github.io/talk-of-the-day/src/assets/photos/WASAJJA%20CHARLES%20DICKENS.JPG'
     }
-
-    return this.updateStudent(id, updates);
-  }
-
-  // Update - Change student class
-  static changeStudentClass(id: string, newClass: string): StudentData | null {
-    return this.updateStudent(id, { class: newClass });
-  }
-
-  // Update - Update account status
-  static updateAccountStatus(
-    id: string, 
-    status: 'active' | 'suspended' | 'archived' | 'deleted',
-    reason?: string,
-    updatedBy?: string,
-    suspensionEndDate?: string,
-    nextSteps?: string
-  ): StudentData | null {
-    return this.updateStudent(id, {
-      accountStatus: status,
-      statusReason: reason,
-      statusDate: new Date().toISOString(),
-      statusUpdatedBy: updatedBy,
-      suspensionEndDate,
-      nextSteps
-    });
-  }
-
-  // Delete - Remove student (soft delete)
-  static deleteStudent(id: string, reason?: string, deletedBy?: string): boolean {
-    const student = this.updateAccountStatus(id, 'deleted', reason, deletedBy);
-    return student !== null;
-  }
-
-  // Delete - Permanently remove student
-  static permanentlyDeleteStudent(id: string): boolean {
-    const index = this.data.findIndex(student => student.id === id);
-    if (index === -1) return false;
-
-    this.data.splice(index, 1);
-    return true;
-  }
-
-  // Utility - Get statistics
-  static getStatistics() {
-    const total = this.data.length;
-    const active = this.data.filter(s => s.accountStatus === 'active').length;
-    const suspended = this.data.filter(s => s.accountStatus === 'suspended').length;
-    const archived = this.data.filter(s => s.accountStatus === 'archived').length;
-    
-    const classCounts = this.data.reduce((acc, student) => {
-      acc[student.class] = (acc[student.class] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
-
-    const genderCounts = this.data.reduce((acc, student) => {
-      acc[student.gender] = (acc[student.gender] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
-
-    return {
-      total,
-      active,
-      suspended,
-      archived,
-      classCounts,
-      genderCounts
-    };
-  }
-
-  // Utility - Export data
-  static exportData(): StudentData[] {
-    return this.getAllStudents();
-  }
-
-  // Utility - Import data
-  static importData(students: StudentData[]): void {
-    this.data = [...students];
-  }
-
-  // Utility - Reset to default data
-  static resetToDefault(): void {
-    this.data = [...localStudentDatabase.users];
-  }
-}
-
-// Export default data for easy access
-export default localStudentDatabase;
+  ]
+};
