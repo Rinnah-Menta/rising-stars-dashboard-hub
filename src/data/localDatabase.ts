@@ -1,6 +1,150 @@
 import { User } from '@/types/auth';
 import { ProfileData } from '@/types/profile';
 
+// Utility function to generate email from name
+const generatePupilEmail = (name: string): string => {
+  const nameParts = name.trim().split(' ');
+  const firstName = nameParts[0];
+  const lastName = nameParts[nameParts.length - 1];
+  return `${firstName.toLowerCase()}.${lastName.toLowerCase()}@pupil.springingstars.ac.ug`;
+};
+
+// Utility function to generate photo URL from name
+const generatePhotoUrl = (name: string): string => {
+  const encodedName = encodeURIComponent(name);
+  return `https://fresh-teacher-uganda.github.io/talk-of-the-day/src/assets/photos/${encodedName}.JPG`;
+};
+
+// Utility function to parse name into first, middle, last
+const parseName = (fullName: string) => {
+  const parts = fullName.trim().split(' ');
+  const firstName = parts[0] || '';
+  const lastName = parts[parts.length - 1] || '';
+  const middleName = parts.length > 2 ? parts.slice(1, -1).join(' ') : '';
+  
+  return { firstName, middleName, lastName };
+};
+
+// List of all pupil names
+const pupilNames = [
+  "ADRIANA LIAM MIRIMU",
+  "AHIMBISIBWE EMMANUEL",
+  "ALBA PROMISE KOBUSINGYE",
+  "ALBARA-U YAHAYA MUSOKE",
+  "AMANYABYONA JOSEPH COLLINS",
+  "ANKUNDA LIAM",
+  "ATUNGIRE ELIJAH",
+  "AVA MALAIKA DHAMUZUNGU",
+  "BAGABE ABEL",
+  "BIRUNGI HIDAYA",
+  "BWOGI DEIGHTON",
+  "BYAMUKAMA MATTHEW CHARLES",
+  "DHEDONGA REHEMA MARINA",
+  "EGLAH ABI GARA",
+  "ELI TIMAO EDUBE",
+  "FAVOUR GIDEON MAYIGA",
+  "ITUNGO LIONEL RUTA",
+  "JAKE WILLIAM KATENDE",
+  "JEAN BRIGHT  JOOGA",
+  "JEAN PETER DDAMULIRA",
+  "JEDIDIAH KAHUMA KAZOOBA",
+  "KALULE VICTOR LEANDER",
+  "KATENDE JOSIAH CHARLES",
+  "KATONGOLE GERTRUDE",
+  "KATONGOLE MONA",
+  "KATUMBA DALTON SURPRISE",
+  "KAWEESI JAYDEN HOPE",
+  "KIJJAMBU MARK MORGAN",
+  "KIRABO BRYSON KYLE",
+  "KOBUFURA ASHLEY KRYSTEN",
+  "KRYSTABELL ARIANA WAVAMUNNO",
+  "KUKUNDA KIRSTEN",
+  "LEVI GATAALI MUZIMA",
+  "LUBEGA KERON",
+  "MATSIKO DAN",
+  "MUGENYI CALVIN",
+  "MUKISA JESSE",
+  "MUKULA ODYSSEUS BRIDGEOUS",
+  "MULUNGI ADONAI",
+  "MULWANA BERNICE",
+  "MUTEBI HAFIZU KIGONGO",
+  "MUTYABA KERON",
+  "MUWANGUZI ISRAEL",
+  "MWIZA ATALIA ABRIELLE",
+  "MWIZA MARTHA KIMBERLY",
+  "NABUKENYA SAMANTHA",
+  "NABUULE ELIANA MALAIKA KAYE",
+  "NABUYONDO NAIRAH",
+  "NAKADDU ELLYVICK",
+  "NAKAMATTE NORAH CHRISTINE",
+  "NAKANWAGI JEAN ALBA",
+  "NAKAYIWA ESTHER",
+  "NAKITTO RASHIMAH",
+  "NALUBOWA ALLISON JULIET",
+  "NALUTAAYA PETRONILLAH",
+  "NAMAKULA SOPHIA",
+  "NAMBAJJWE VALERIA",
+  "NANSUBUGA THEO ELSIE",
+  "NATUMI SHAHID PAPA",
+  "NAZEBA LEO",
+  "NOWAMANI SHARAPOVA",
+  "NTAMBAZI JEISON JOSEPH",
+  "NYABUN BITH",
+  "NYESIGA OTHNIEL",
+  "ODEKE MIRACLE DANIEL",
+  "OJAMBO DEVLIN PAUL",
+  "OWORI CALVIN FRANKLIN",
+  "PRIA ANGEL",
+  "RUKUNDO ELIZABETH",
+  "RUKUNDO FAITH CANTY",
+  "SSEMPA MALCOM MATHEW",
+  "SSEMPEBWA JONATHAN GIDEON",
+  "SSENGENDO VICTORIA MIRACLE",
+  "SSENGOOBA TENDO ENOCK",
+  "SSENYIMBA DON ELIJAH",
+  "SSENYONGA ELIJAH ADRIAN",
+  "SUKU HOLLY LAELLE",
+  "TAMARA AVA MULUNGI NDUGWA",
+  "TWEBAZE ESTHER",
+  "WASAJJA CHARLES DICKENS"
+];
+
+// Generate pupil users
+const generatePupilUsers = (): User[] => {
+  return pupilNames.map((name, index) => {
+    const { firstName, middleName, lastName } = parseName(name);
+    const email = generatePupilEmail(name);
+    const photoUrl = generatePhotoUrl(name);
+    const id = (6 + index).toString(); // Start from ID 6 since we have 5 existing users
+    
+    return {
+      id,
+      email,
+      password: 'pupil123', // Default password for all pupils
+      role: 'pupil' as const,
+      name,
+      firstName,
+      middleName,
+      lastName,
+      phone: `+256 77${Math.floor(1000000 + Math.random() * 9000000)}`, // Random phone
+      address: 'Kampala, Uganda',
+      title: '',
+      gender: 'unknown',
+      subject: 'All Subjects',
+      department: 'Primary',
+      qualification: 'PLE Candidate',
+      experience: 'N/A',
+      joinDate: '2024-01-01',
+      bio: `A dedicated student at Springing Stars Junior School.`,
+      emergencyContact: 'Parent/Guardian',
+      emergencyPhone: `+256 77${Math.floor(1000000 + Math.random() * 9000000)}`,
+      class: 'Primary 6', // Default class, can be customized later
+      avatar: photoUrl,
+      accountStatus: 'active' as const
+    };
+  });
+};
+
 export const localDatabase = {
   users: [
     {
@@ -25,7 +169,8 @@ export const localDatabase = {
       emergencyContact: 'Grace Nalongo',
       emergencyPhone: '+256 772 444 444',
       class: 'Primary 6',
-      avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=face'
+      avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=face',
+      accountStatus: 'active' as const
     },
     {
       id: '2',
@@ -49,7 +194,8 @@ export const localDatabase = {
       emergencyContact: 'Michael Nambi',
       emergencyPhone: '+256 772 222 223',
       class: 'Primary 5 & 6',
-      avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop&crop=face'
+      avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop&crop=face',
+      accountStatus: 'active' as const
     },
     {
       id: '3',
@@ -72,7 +218,8 @@ export const localDatabase = {
       bio: 'An efficient and organized administrator ensuring the smooth running of the school.',
       emergencyContact: 'Mary Kato',
       emergencyPhone: '+256 772 333 334',
-      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face'
+      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face',
+      accountStatus: 'active' as const
     },
     {
       id: '4',
@@ -96,7 +243,8 @@ export const localDatabase = {
       emergencyContact: 'David Mukasa',
       emergencyPhone: '+256 772 111 112',
       children: ['John Mukasa', 'Mary Nakato'],
-      avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop&crop=face'
+      avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop&crop=face',
+      accountStatus: 'active' as const
     },
     {
       id: '5',
@@ -119,8 +267,11 @@ export const localDatabase = {
       bio: 'A visionary leader focused on providing a world-class educational experience.',
       emergencyContact: 'Esther Ssebunya',
       emergencyPhone: '+256 772 555 556',
-      avatar: 'https://images.unsplash.com/photo-1556157382-97eda2d62296?w=400&h=400&fit=crop&crop=face'
-    }
+      avatar: 'https://images.unsplash.com/photo-1556157382-97eda2d62296?w=400&h=400&fit=crop&crop=face',
+      accountStatus: 'active' as const
+    },
+    // Add all the generated pupil users
+    ...generatePupilUsers()
   ] as User[],
   dummyProfiles: {
     '1': { // John Mukasa - Pupil
