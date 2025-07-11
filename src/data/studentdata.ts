@@ -190,7 +190,7 @@ const generateDummyData = (index: number) => {
 };
 
 // Generate student data
-export const studentsDatabase: StudentData[] = studentNames.map((fullName, index) => {
+const generateStudentsArray = (): StudentData[] => studentNames.map((fullName, index) => {
   const { firstName, middleName, lastName } = parseName(fullName);
   const dummyData = generateDummyData(index);
   
@@ -214,9 +214,14 @@ export const studentsDatabase: StudentData[] = studentNames.map((fullName, index
   };
 });
 
+// Export in the requested format
+export const localStudentDatabase = {
+  users: generateStudentsArray()
+};
+
 // CRUD Operations
 export class StudentDataManager {
-  private static data: StudentData[] = [...studentsDatabase];
+  private static data: StudentData[] = [...localStudentDatabase.users];
 
   // Create - Add new student
   static createStudent(studentData: Omit<StudentData, 'id'>): StudentData {
@@ -376,9 +381,9 @@ export class StudentDataManager {
 
   // Utility - Reset to default data
   static resetToDefault(): void {
-    this.data = [...studentsDatabase];
+    this.data = [...localStudentDatabase.users];
   }
 }
 
 // Export default data for easy access
-export default studentsDatabase;
+export default localStudentDatabase;
