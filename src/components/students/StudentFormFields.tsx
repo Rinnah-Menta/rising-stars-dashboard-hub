@@ -12,9 +12,10 @@ interface StudentFormFieldsProps {
     age: string;
     parent: string;
     phone: string;
-    fees: 'Paid' | 'Pending' | 'Overdue';
     email: string;
     address: string;
+    dateOfBirth: string;
+    schoolPayCode: string;
   };
   setFormData: (data: any) => void;
   teacherClasses?: string[];
@@ -113,19 +114,29 @@ export const StudentFormFields: React.FC<StudentFormFieldsProps> = ({
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         <div className="space-y-1">
-          <Label htmlFor="fees" className="text-sm font-medium">Fees Status</Label>
-          <Select value={formData.fees} onValueChange={(value) => handleInputChange('fees', value)}>
-            <SelectTrigger className="h-9">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="Paid">Paid</SelectItem>
-              <SelectItem value="Pending">Pending</SelectItem>
-              <SelectItem value="Overdue">Overdue</SelectItem>
-            </SelectContent>
-          </Select>
+          <Label htmlFor="dateOfBirth" className="text-sm font-medium">Date of Birth</Label>
+          <Input
+            id="dateOfBirth"
+            type="date"
+            value={formData.dateOfBirth}
+            onChange={(e) => handleInputChange('dateOfBirth', e.target.value)}
+            className="h-9"
+          />
         </div>
 
+        <div className="space-y-1">
+          <Label htmlFor="schoolPayCode" className="text-sm font-medium">School Pay Code</Label>
+          <Input
+            id="schoolPayCode"
+            value={formData.schoolPayCode}
+            onChange={(e) => handleInputChange('schoolPayCode', e.target.value)}
+            placeholder="Enter school pay code"
+            className="h-9"
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         <div className="space-y-1">
           <Label htmlFor="email" className="text-sm font-medium">Email (Optional)</Label>
           <Input

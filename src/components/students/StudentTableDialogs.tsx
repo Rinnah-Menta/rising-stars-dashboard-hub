@@ -11,7 +11,6 @@ interface Student {
   age: number;
   parent: string;
   phone: string;
-  fees: string;
   status: 'active' | 'inactive' | 'suspended' | 'archived' | 'expelled';
 }
 

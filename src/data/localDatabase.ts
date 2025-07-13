@@ -1,135 +1,16 @@
 import { User } from '@/types/auth';
 import { ProfileData } from '@/types/profile';
+import { localStudentDatabase } from './studentdata';
 
-// Utility function to generate email from name
-const generatePupilEmail = (name: string): string => {
-  const nameParts = name.trim().split(' ');
-  const firstName = nameParts[0];
-  const lastName = nameParts[nameParts.length - 1];
-  return `${firstName.toLowerCase()}.${lastName.toLowerCase()}@pupil.springingstars.ac.ug`;
-};
-
-// Utility function to generate photo URL from name
-const generatePhotoUrl = (name: string): string => {
-  const encodedName = encodeURIComponent(name);
-  return `https://fresh-teacher-uganda.github.io/talk-of-the-day/src/assets/photos/${encodedName}.JPG`;
-};
-
-// Utility function to parse name into first, middle, last
-const parseName = (fullName: string) => {
-  const parts = fullName.trim().split(' ');
-  const firstName = parts[0] || '';
-  const lastName = parts[parts.length - 1] || '';
-  const middleName = parts.length > 2 ? parts.slice(1, -1).join(' ') : '';
-  
-  return { firstName, middleName, lastName };
-};
-
-// List of all pupil names
-const pupilNames = [
-  "ADRIANA LIAM MIRIMU",
-  "AHIMBISIBWE EMMANUEL",
-  "ALBA PROMISE KOBUSINGYE",
-  "ALBARA-U YAHAYA MUSOKE",
-  "AMANYABYONA JOSEPH COLLINS",
-  "ANKUNDA LIAM",
-  "ATUNGIRE ELIJAH",
-  "AVA MALAIKA DHAMUZUNGU",
-  "BAGABE ABEL",
-  "BIRUNGI HIDAYA",
-  "BWOGI DEIGHTON",
-  "BYAMUKAMA MATTHEW CHARLES",
-  "DHEDONGA REHEMA MARINA",
-  "EGLAH ABI GARA",
-  "ELI TIMAO EDUBE",
-  "FAVOUR GIDEON MAYIGA",
-  "ITUNGO LIONEL RUTA",
-  "JAKE WILLIAM KATENDE",
-  "JEAN BRIGHT  JOOGA",
-  "JEAN PETER DDAMULIRA",
-  "JEDIDIAH KAHUMA KAZOOBA",
-  "KALULE VICTOR LEANDER",
-  "KATENDE JOSIAH CHARLES",
-  "KATONGOLE GERTRUDE",
-  "KATONGOLE MONA",
-  "KATUMBA DALTON SURPRISE",
-  "KAWEESI JAYDEN HOPE",
-  "KIJJAMBU MARK MORGAN",
-  "KIRABO BRYSON KYLE",
-  "KOBUFURA ASHLEY KRYSTEN",
-  "KRYSTABELL ARIANA WAVAMUNNO",
-  "KUKUNDA KIRSTEN",
-  "LEVI GATAALI MUZIMA",
-  "LUBEGA KERON",
-  "MATSIKO DAN",
-  "MUGENYI CALVIN",
-  "MUKISA JESSE",
-  "MUKULA ODYSSEUS BRIDGEOUS",
-  "MULUNGI ADONAI",
-  "MULWANA BERNICE",
-  "MUTEBI HAFIZU KIGONGO",
-  "MUTYABA KERON",
-  "MUWANGUZI ISRAEL",
-  "MWIZA ATALIA ABRIELLE",
-  "MWIZA MARTHA KIMBERLY",
-  "NABUKENYA SAMANTHA",
-  "NABUULE ELIANA MALAIKA KAYE",
-  "NABUYONDO NAIRAH",
-  "NAKADDU ELLYVICK",
-  "NAKAMATTE NORAH CHRISTINE",
-  "NAKANWAGI JEAN ALBA",
-  "NAKAYIWA ESTHER",
-  "NAKITTO RASHIMAH",
-  "NALUBOWA ALLISON JULIET",
-  "NALUTAAYA PETRONILLAH",
-  "NAMAKULA SOPHIA",
-  "NAMBAJJWE VALERIA",
-  "NANSUBUGA THEO ELSIE",
-  "NATUMI SHAHID PAPA",
-  "NAZEBA LEO",
-  "NOWAMANI SHARAPOVA",
-  "NTAMBAZI JEISON JOSEPH",
-  "NYABUN BITH",
-  "NYESIGA OTHNIEL",
-  "ODEKE MIRACLE DANIEL",
-  "OJAMBO DEVLIN PAUL",
-  "OWORI CALVIN FRANKLIN",
-  "PRIA ANGEL",
-  "RUKUNDO ELIZABETH",
-  "RUKUNDO FAITH CANTY",
-  "SSEMPA MALCOM MATHEW",
-  "SSEMPEBWA JONATHAN GIDEON",
-  "SSENGENDO VICTORIA MIRACLE",
-  "SSENGOOBA TENDO ENOCK",
-  "SSENYIMBA DON ELIJAH",
-  "SSENYONGA ELIJAH ADRIAN",
-  "SUKU HOLLY LAELLE",
-  "TAMARA AVA MULUNGI NDUGWA",
-  "TWEBAZE ESTHER",
-  "WASAJJA CHARLES DICKENS"
-];
-
-// Generate pupil users
-const generatePupilUsers = (): User[] => {
-  return pupilNames.map((name, index) => {
-    const { firstName, middleName, lastName } = parseName(name);
-    const email = generatePupilEmail(name);
-    const photoUrl = generatePhotoUrl(name);
-    const id = (6 + index).toString(); // Start from ID 6 since we have 5 existing users
-    
-    return {
-      id,
-      email,
-      password: 'pupil123', // Default password for all pupils
+export const localDatabase = {
+  users: [
+    // Add all students from studentdata.ts first
+    ...localStudentDatabase.users.map(student => ({
+      ...student,
       role: 'pupil' as const,
-      name,
-      firstName,
-      middleName,
-      lastName,
-      phone: `+256 77${Math.floor(1000000 + Math.random() * 9000000)}`, // Random phone
+      phone: `+256 77${Math.floor(1000000 + Math.random() * 9000000)}`,
       address: 'Kampala, Uganda',
       title: '',
-      gender: 'unknown',
       subject: 'All Subjects',
       department: 'Primary',
       qualification: 'PLE Candidate',
@@ -138,42 +19,11 @@ const generatePupilUsers = (): User[] => {
       bio: `A dedicated student at Springing Stars Junior School.`,
       emergencyContact: 'Parent/Guardian',
       emergencyPhone: `+256 77${Math.floor(1000000 + Math.random() * 9000000)}`,
-      class: 'Primary 6', // Default class, can be customized later
-      avatar: photoUrl,
       accountStatus: 'active' as const
-    };
-  });
-};
-
-export const localDatabase = {
-  users: [
+    })),
+    // Other non-student users
     {
-      id: '1',
-      email: 'john.mukasa@pupil.springingstars.ac.ug',
-      password: 'pupil123',
-      role: 'pupil' as const,
-      name: 'John Mukasa',
-      firstName: 'John',
-      middleName: '',
-      lastName: 'Mukasa',
-      phone: '+256 772 111 111',
-      address: '123 Makerere Hill, Kampala',
-      title: '',
-      gender: 'male',
-      subject: 'All Subjects',
-      department: 'Primary',
-      qualification: 'PLE Candidate',
-      experience: 'N/A',
-      joinDate: '2020-02-01',
-      bio: 'A curious and enthusiastic learner, always eager to participate in class activities.',
-      emergencyContact: 'Grace Nalongo',
-      emergencyPhone: '+256 772 444 444',
-      class: 'Primary 6',
-      avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=face',
-      accountStatus: 'active' as const
-    },
-    {
-      id: '2',
+      id: '1000',
       email: 'sarah.nambi@teacher.springingstars.ac.ug',
       password: 'teacher123',
       role: 'teacher' as const,
@@ -198,7 +48,7 @@ export const localDatabase = {
       accountStatus: 'active' as const
     },
     {
-      id: '3',
+      id: '1001',
       email: 'david.kato@staff.springingstars.ac.ug',
       password: 'staff123',
       role: 'non-teaching' as const,
@@ -222,7 +72,7 @@ export const localDatabase = {
       accountStatus: 'active' as const
     },
     {
-      id: '4',
+      id: '1002',
       email: 'grace.nalongo@parent.springingstars.ac.ug',
       password: 'parent123',
       role: 'parent' as const,
@@ -247,7 +97,7 @@ export const localDatabase = {
       accountStatus: 'active' as const
     },
     {
-      id: '5',
+      id: '1003',
       email: 'admin@springingstars.ac.ug',
       password: 'admin123',
       role: 'admin' as const,
@@ -269,31 +119,36 @@ export const localDatabase = {
       emergencyPhone: '+256 772 555 556',
       avatar: 'https://images.unsplash.com/photo-1556157382-97eda2d62296?w=400&h=400&fit=crop&crop=face',
       accountStatus: 'active' as const
-    },
-    // Add all the generated pupil users
-    ...generatePupilUsers()
+    }
   ] as User[],
   dummyProfiles: {
-    '1': { // John Mukasa - Pupil
-      firstName: 'John',
-      middleName: '',
-      lastName: 'Mukasa',
-      email: 'john.mukasa@pupil.springingstars.ac.ug',
-      phone: '+256 772 111 111',
-      address: '123 Makerere Hill, Kampala',
-      title: '',
-      gender: 'male',
-      subject: 'All Subjects',
-      department: 'Primary',
-      qualification: 'PLE Candidate',
-      experience: 'N/A',
-      joinDate: '2020-02-01',
-      bio: 'A curious and enthusiastic learner, always eager to participate in class activities.',
-      emergencyContact: 'Grace Nalongo',
-      emergencyPhone: '+256 772 444 444',
-      avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=face',
-    },
-    '2': { // Sarah Nambi - Teacher
+    // Generate profiles for all students from studentdata.ts
+    ...Object.fromEntries(
+      localStudentDatabase.users.map(student => [
+        student.id,
+        {
+          firstName: student.firstName,
+          middleName: student.middleName,
+          lastName: student.lastName,
+          email: student.email,
+          phone: `+256 77${Math.floor(1000000 + Math.random() * 9000000)}`,
+          address: 'Kampala, Uganda',
+          title: '',
+          gender: student.gender?.toLowerCase() || 'unknown',
+          subject: 'All Subjects',
+          department: 'Primary',
+          qualification: 'PLE Candidate',
+          experience: 'N/A',
+          joinDate: '2024-01-01',
+          bio: `A dedicated student at Springing Stars Junior School.`,
+          emergencyContact: 'Parent/Guardian',
+          emergencyPhone: `+256 77${Math.floor(1000000 + Math.random() * 9000000)}`,
+          avatar: student.avatar,
+          class: student.class
+        }
+      ])
+    ),
+    '1000': { // Sarah Nambi - Teacher
       firstName: 'Sarah',
       middleName: '',
       lastName: 'Nambi',
@@ -312,7 +167,7 @@ export const localDatabase = {
       emergencyPhone: '+256 772 222 223',
       avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop&crop=face',
     },
-    '3': { // David Kato - Staff
+    '1001': { // David Kato - Staff
       firstName: 'David',
       middleName: '',
       lastName: 'Kato',
@@ -331,7 +186,7 @@ export const localDatabase = {
       emergencyPhone: '+256 772 333 334',
       avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face',
     },
-    '4': { // Grace Nalongo - Parent
+    '1002': { // Grace Nalongo - Parent
       firstName: 'Grace',
       middleName: '',
       lastName: 'Nalongo',
@@ -350,7 +205,7 @@ export const localDatabase = {
       emergencyPhone: '+256 772 111 112',
       avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop&crop=face',
     },
-    '5': { // Moses Ssebunya - Admin
+    '1003': { // Moses Ssebunya - Admin
       firstName: 'Moses',
       middleName: '',
       lastName: 'Ssebunya',

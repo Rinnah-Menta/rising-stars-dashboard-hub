@@ -3,8 +3,12 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Users, School, TrendingUp, DollarSign } from 'lucide-react';
 import AnimatedInView from '../AnimatedInView';
+import { localStudentDatabase } from '@/data/studentdata';
 
 export const AdminStatsCards = () => {
+  const totalStudents = localStudentDatabase.users.length;
+  const totalClasses = Object.keys(localStudentDatabase.studentsByClass).length;
+  
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       <AnimatedInView>
@@ -16,8 +20,8 @@ export const AdminStatsCards = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">342</div>
-            <p className="text-blue-100 text-sm">+12 this month</p>
+            <div className="text-2xl font-bold">{totalStudents}</div>
+            <p className="text-blue-100 text-sm">Enrolled students</p>
           </CardContent>
         </Card>
       </AnimatedInView>

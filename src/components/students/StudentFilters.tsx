@@ -7,19 +7,21 @@ import { Search, Filter } from 'lucide-react';
 interface StudentFiltersProps {
   searchTerm: string;
   setSearchTerm: (term: string) => void;
-  filterStatus: string;
-  setFilterStatus: (status: string) => void;
+  filterClass: string;
+  setFilterClass: (classFilter: string) => void;
+  availableClasses: string[];
   resultsCount: number;
 }
 
 export const StudentFilters: React.FC<StudentFiltersProps> = ({
   searchTerm,
   setSearchTerm,
-  filterStatus,
-  setFilterStatus,
+  filterClass,
+  setFilterClass,
+  availableClasses,
   resultsCount
 }) => {
-  const resultsText = searchTerm 
+  const resultsText = searchTerm || filterClass !== 'all'
     ? `${resultsCount} result${resultsCount !== 1 ? 's' : ''} found`
     : `${resultsCount} student${resultsCount !== 1 ? 's' : ''}`;
 
@@ -35,16 +37,18 @@ export const StudentFilters: React.FC<StudentFiltersProps> = ({
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-        <Select value={filterStatus} onValueChange={setFilterStatus}>
+        <Select value={filterClass} onValueChange={setFilterClass}>
           <SelectTrigger className="w-full sm:w-40">
             <Filter className="h-4 w-4 mr-2" />
-            <SelectValue placeholder="Filter by fees" />
+            <SelectValue placeholder="Filter by class" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Students</SelectItem>
-            <SelectItem value="Paid">Paid</SelectItem>
-            <SelectItem value="Pending">Pending</SelectItem>
-            <SelectItem value="Overdue">Overdue</SelectItem>
+            <SelectItem value="all">All Classes</SelectItem>
+            {availableClasses.map((className) => (
+              <SelectItem key={className} value={className}>
+                {className}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>

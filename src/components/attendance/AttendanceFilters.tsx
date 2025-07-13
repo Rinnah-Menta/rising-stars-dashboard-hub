@@ -17,6 +17,7 @@ interface AttendanceFiltersProps {
   setSelectedClass: (className: string) => void;
   searchTerm: string;
   setSearchTerm: (term: string) => void;
+  availableClasses?: string[];
 }
 
 export const AttendanceFilters: React.FC<AttendanceFiltersProps> = ({
@@ -25,7 +26,8 @@ export const AttendanceFilters: React.FC<AttendanceFiltersProps> = ({
   selectedClass,
   setSelectedClass,
   searchTerm,
-  setSearchTerm
+  setSearchTerm,
+  availableClasses = []
 }) => {
   return (
     <Card>
@@ -59,12 +61,11 @@ export const AttendanceFilters: React.FC<AttendanceFiltersProps> = ({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Classes</SelectItem>
-                <SelectItem value="P.7A">P.7A</SelectItem>
-                <SelectItem value="P.7B">P.7B</SelectItem>
-                <SelectItem value="P.6A">P.6A</SelectItem>
-                <SelectItem value="P.6B">P.6B</SelectItem>
-                <SelectItem value="P.5A">P.5A</SelectItem>
-                <SelectItem value="P.5B">P.5B</SelectItem>
+                {availableClasses.map((className) => (
+                  <SelectItem key={className} value={className}>
+                    {className}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>

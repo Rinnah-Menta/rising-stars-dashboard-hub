@@ -1,9 +1,10 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Plus, Clock, Users, BookOpen } from 'lucide-react';
+import { useStudents } from '@/hooks/useStudents';
 
 interface Class {
   id: string;
@@ -17,48 +18,35 @@ interface Class {
 }
 
 export const ClassManagement = () => {
-  const [classes] = useState<Class[]>([
-    {
-      id: 'CLS001',
-      name: 'Advanced Mathematics',
-      subject: 'Mathematics',
-      teacher: 'Dr. Sarah Mitchell',
-      students: 28,
-      schedule: 'Mon, Wed, Fri 9:00 AM',
-      room: 'Room 101',
-      status: 'Active'
-    },
-    {
-      id: 'CLS002',
-      name: 'Physics Laboratory',
-      subject: 'Physics',
-      teacher: 'Prof. John Anderson',
-      students: 24,
-      schedule: 'Tue, Thu 2:00 PM',
-      room: 'Lab 201',
-      status: 'Active'
-    },
-    {
-      id: 'CLS003',
-      name: 'English Literature',
-      subject: 'English',
-      teacher: 'Ms. Emily Brown',
-      students: 32,
-      schedule: 'Mon, Wed, Fri 11:00 AM',
-      room: 'Room 205',
-      status: 'Active'
-    },
-    {
-      id: 'CLS004',
-      name: 'World History',
-      subject: 'History',
-      teacher: 'Mr. Michael Davis',
-      students: 26,
-      schedule: 'Tue, Thu 10:00 AM',
-      room: 'Room 303',
-      status: 'Cancelled'
-    }
-  ]);
+  const { allStudents } = useStudents();
+  const [classes, setClasses] = useState<Class[]>([]);
+
+  // Generate classes based on real student data
+  useEffect(() => {
+    const classData = new Map<string, { students: number; className: string }>();
+    
+    allStudents.forEach(student => {
+      const className = student.class;
+      if (classData.has(className)) {
+        classData.get(className)!.students++;
+      } else {
+        classData.set(className, { students: 1, className });
+      }
+    });
+
+    const generatedClasses: Class[] = Array.from(classData.entries()).map(([className, data], index) => ({
+      id: `CLS${String(index + 1).padStart(3, '0')}`,
+      name: className.replace('_', ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase()),
+      subject: 'General Studies',
+      teacher: ['Ms. Sarah Johnson', 'Mr. David Wilson', 'Mrs. Grace Nakato', 'Mr. Joseph Ssekindi'][index % 4],
+      students: data.students,
+      schedule: ['Mon, Wed, Fri 9:00 AM', 'Tue, Thu 2:00 PM', 'Mon, Wed, Fri 11:00 AM', 'Tue, Thu 10:00 AM'][index % 4],
+      room: `Room ${100 + index + 1}`,
+      status: 'Active' as const
+    }));
+
+    setClasses(generatedClasses);
+  }, [allStudents]);
 
   const getStatusColor = (status: string) => {
     switch (status) {

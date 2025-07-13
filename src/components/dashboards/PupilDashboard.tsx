@@ -33,7 +33,10 @@ const AnimatedProgress = ({ value }: { value: number }) => {
 const PupilDashboard = () => {
   const { user } = useAuth();
   const { profileData } = useProfile();
-  const getLastName = () => profileData?.lastName || '';
+  const getLastName = () => {
+    const lastName = profileData?.lastName || '';
+    return lastName.charAt(0).toUpperCase() + lastName.slice(1).toLowerCase();
+  };
 
   return (
     <div className="space-y-4 sm:space-y-6">

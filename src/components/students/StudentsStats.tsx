@@ -1,15 +1,15 @@
 
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Users, CheckCircle, Clock, AlertTriangle } from 'lucide-react';
+import { Users, BookOpen, CheckCircle, XCircle } from 'lucide-react';
 import AnimatedInView from '@/components/AnimatedInView';
 
 interface StudentsStatsProps {
   stats: {
     total: number;
-    paid: number;
-    pending: number;
-    overdue: number;
+    activeClasses: number;
+    activeStudents: number;
+    inactiveStudents: number;
   };
 }
 
@@ -23,23 +23,23 @@ export const StudentsStats: React.FC<StudentsStatsProps> = ({ stats }) => {
       bgColor: 'bg-blue-50'
     },
     {
-      title: 'Fees Paid',
-      value: stats.paid,
+      title: 'Active Classes',
+      value: stats.activeClasses,
+      icon: BookOpen,
+      color: 'text-purple-600',
+      bgColor: 'bg-purple-50'
+    },
+    {
+      title: 'Active Students',
+      value: stats.activeStudents,
       icon: CheckCircle,
       color: 'text-green-600',
       bgColor: 'bg-green-50'
     },
     {
-      title: 'Fees Pending',
-      value: stats.pending,
-      icon: Clock,
-      color: 'text-yellow-600',
-      bgColor: 'bg-yellow-50'
-    },
-    {
-      title: 'Fees Overdue',
-      value: stats.overdue,
-      icon: AlertTriangle,
+      title: 'Inactive Students',
+      value: stats.inactiveStudents,
+      icon: XCircle,
       color: 'text-red-600',
       bgColor: 'bg-red-50'
     }

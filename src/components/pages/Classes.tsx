@@ -20,6 +20,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 import { ClassDialog } from '@/components/classes/ClassDialog';
 import { ClassDetailsDialog } from '@/components/classes/ClassDetailsDialog';
+import { localStudentDatabase } from '@/data/studentdata';
 
 interface ClassData {
   id: string;
@@ -43,80 +44,61 @@ export const Classes = () => {
   const [editingClass, setEditingClass] = useState<ClassData | null>(null);
   const [viewingClass, setViewingClass] = useState<ClassData | null>(null);
 
-  const [classes, setClasses] = useState<ClassData[]>([
-    { 
-      id: 'P4A', 
-      name: 'Primary 4A', 
-      teacher: 'Grace Namuli', 
-      students: 32, 
-      room: 'Room 4A', 
-      schedule: 'Mon-Fri 8:00 AM - 3:30 PM',
-      subjects: ['Mathematics', 'English', 'Science', 'Social Studies'],
-      level: 'Primary 4',
-      capacity: 35,
-      academicYear: '2024'
-    },
-    { 
-      id: 'P4B', 
-      name: 'Primary 4B', 
-      teacher: 'Mary Achieng', 
-      students: 28, 
-      room: 'Room 4B', 
-      schedule: 'Mon-Fri 8:00 AM - 3:30 PM',
-      subjects: ['Mathematics', 'English', 'Science', 'Social Studies'],
-      level: 'Primary 4',
-      capacity: 35,
-      academicYear: '2024'
-    },
-    { 
-      id: 'P5A', 
-      name: 'Primary 5A', 
-      teacher: 'Sarah Nakiwala', 
-      students: 35, 
-      room: 'Room 5A', 
-      schedule: 'Mon-Fri 8:00 AM - 4:00 PM',
-      subjects: ['Mathematics', 'English', 'Science', 'Social Studies', 'Art'],
-      level: 'Primary 5',
-      capacity: 35,
-      academicYear: '2024'
-    },
-    { 
-      id: 'P5B', 
-      name: 'Primary 5B', 
-      teacher: 'John Mugisha', 
-      students: 30, 
-      room: 'Room 5B', 
-      schedule: 'Mon-Fri 8:00 AM - 4:00 PM',
-      subjects: ['Mathematics', 'English', 'Science', 'Social Studies', 'Art'],
-      level: 'Primary 5',
-      capacity: 35,
-      academicYear: '2024'
-    },
-    { 
-      id: 'P6A', 
-      name: 'Primary 6A', 
-      teacher: 'David Ssekandi', 
-      students: 33, 
-      room: 'Room 6A', 
-      schedule: 'Mon-Fri 7:30 AM - 4:30 PM',
-      subjects: ['Mathematics', 'English', 'Science', 'Social Studies', 'Art', 'Computer'],
-      level: 'Primary 6',
-      capacity: 35,
-      academicYear: '2024'
-    },
-    { 
-      id: 'P7A', 
-      name: 'Primary 7A', 
-      teacher: 'Robert Okello', 
-      students: 29, 
-      room: 'Room 7A', 
-      schedule: 'Mon-Fri 7:30 AM - 5:00 PM',
-      subjects: ['Mathematics', 'English', 'Science', 'Social Studies', 'Art', 'Computer', 'PLE Prep'],
-      level: 'Primary 7',
-      capacity: 30,
-      academicYear: '2024'
-    }
-  ]);
+  // Generate classes from real student database
+  const generateClassesFromStudentData = (): ClassData[] => {
+    const classesData: ClassData[] = [];
+    
+    Object.entries(localStudentDatabase.studentsByClass).forEach(([className, students]) => {
+      const formattedClassName = className.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase());
+      const studentCount = students.length;
+      
+      // Determine class level and subjects based on class name
+      let level = '';
+      let subjects: string[] = [];
+      let capacity = 35;
+      
+      if (className.includes('JUNIOR')) {
+        level = formattedClassName;
+        subjects = ['Mathematics', 'English', 'Science', 'Social Studies'];
+        if (className.includes('THREE') || className.includes('FOUR')) {
+          subjects.push('Art', 'Computer');
+        }
+      } else if (className.includes('PRE_PRIMARY')) {
+        level = 'Pre-Primary';
+        subjects = ['Reading Readiness', 'Number Work', 'Art & Craft', 'Physical Education'];
+        capacity = 25;
+      } else if (className.includes('HEADSTART')) {
+        level = 'Headstart';
+        subjects = ['Pre-Reading', 'Pre-Math', 'Creative Play', 'Physical Development'];
+        capacity = 20;
+      } else if (className.includes('BEGINNER')) {
+        level = 'Beginner';
+        subjects = ['Letter Recognition', 'Number Recognition', 'Art', 'Music & Movement'];
+        capacity = 20;
+      } else if (className.includes('RECEPTION')) {
+        level = 'Reception';
+        subjects = ['Phonics', 'Basic Math', 'Art', 'Physical Education'];
+        capacity = 25;
+      }
+      
+      classesData.push({
+        id: className,
+        name: formattedClassName,
+        teacher: 'Class Teacher',
+        students: studentCount,
+        room: `Room ${className.split('_').slice(-1)[0] || 'A'}`,
+        schedule: 'Mon-Fri 8:00 AM - 3:30 PM',
+        subjects,
+        level,
+        capacity,
+        academicYear: '2024'
+      });
+    });
+    
+    return classesData.sort((a, b) => a.name.localeCompare(b.name));
+  };
+
+  const [classes, setClasses] = useState<ClassData[]>(generateClassesFromStudentData());
 
   const filteredClasses = classes.filter(classItem => {
     const matchesSearch = classItem.name.toLowerCase().includes(searchTerm.toLowerCase()) ||

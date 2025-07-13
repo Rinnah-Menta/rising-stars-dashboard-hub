@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { SidebarTrigger } from '@/components/ui/sidebar';
@@ -27,7 +28,8 @@ export const Navbar = () => {
 
   const getTitle = () => {
     if (!profileData?.title) return '';
-    switch (profileData.title.toLowerCase()) {
+    const title = profileData.title.toLowerCase();
+    switch (title) {
       case 'teacher':
         return 'Tr.';
       case 'mr':
@@ -50,6 +52,16 @@ export const Navbar = () => {
   };
 
   const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+
+  const getFormattedGender = () => {
+    if (!profileData?.gender) return '';
+    return capitalize(profileData.gender);
+  };
+
+  const getRoleDisplayName = () => {
+    if (!user?.role) return '';
+    return capitalize(user.role);
+  };
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background border-b border-border px-2 sm:px-4 py-2 sm:py-3 shadow-sm">
@@ -74,13 +86,13 @@ export const Navbar = () => {
 
         {user && (
           <div className="flex items-center space-x-1 sm:space-x-3">
-            <Button variant="ghost" size="sm" onClick={toggleTheme} className="hidden sm:flex">
+            <Button variant="ghost" size="sm" onClick={toggleTheme}>
               {theme === 'light' ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
             </Button>
             
             <div className="flex items-center space-x-2 hidden md:flex">
               <span className="text-sm font-medium">
-                {getTitle()} {getLastName()} ({capitalize(user.role)})
+                {getTitle()} {getLastName()} ({getRoleDisplayName()})
               </span>
             </div>
 
@@ -92,7 +104,7 @@ export const Navbar = () => {
                     alt={getFirstName() || user.name} 
                     className="h-full w-full rounded-full object-cover"
                   />
-            </Button>
+                </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuLabel>My Account</DropdownMenuLabel>

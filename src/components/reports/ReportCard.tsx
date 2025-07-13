@@ -5,6 +5,8 @@ interface Student {
   id: number;
   name: string;
   class: string;
+  dateOfBirth?: string;
+  schoolPayCode?: string;
 }
 
 interface Subject {
@@ -88,6 +90,18 @@ export const ReportCard = ({ student, term, studentClass, subjects, totalMarks, 
               <span className="font-semibold text-gray-700 w-32">Student ID:</span>
               <span className="flex-1 border-b border-dotted border-gray-400 px-2 text-gray-900">SS{student?.id.toString().padStart(4, '0')}</span>
             </div>
+            {student?.dateOfBirth && (
+              <div className="flex items-baseline">
+                <span className="font-semibold text-gray-700 w-32">Date of Birth:</span>
+                <span className="flex-1 border-b border-dotted border-gray-400 px-2 text-gray-900">{student.dateOfBirth}</span>
+              </div>
+            )}
+            {student?.schoolPayCode && (
+              <div className="flex items-baseline">
+                <span className="font-semibold text-gray-700 w-32">School Pay Code:</span>
+                <span className="flex-1 border-b border-dotted border-gray-400 px-2 text-gray-900">{student.schoolPayCode}</span>
+              </div>
+            )}
             <div className="flex items-baseline">
               <span className="font-semibold text-gray-700 w-32">Date Issued:</span>
               <span className="flex-1 border-b border-dotted border-gray-400 px-2 text-gray-900">{new Date().toLocaleDateString()}</span>

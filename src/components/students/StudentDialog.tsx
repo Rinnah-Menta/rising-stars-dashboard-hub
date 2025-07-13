@@ -30,9 +30,10 @@ export const StudentDialog: React.FC<StudentDialogProps> = ({
     age: '',
     parent: '',
     phone: '',
-    fees: 'Pending' as 'Paid' | 'Pending' | 'Overdue',
     email: '',
-    address: ''
+    address: '',
+    dateOfBirth: '',
+    schoolPayCode: ''
   });
 
   useEffect(() => {
@@ -43,9 +44,10 @@ export const StudentDialog: React.FC<StudentDialogProps> = ({
         age: student.age.toString(),
         parent: student.parent,
         phone: student.phone,
-        fees: student.fees,
         email: student.email || '',
-        address: student.address || ''
+        address: student.address || '',
+        dateOfBirth: student.dateOfBirth || '',
+        schoolPayCode: student.schoolPayCode || ''
       });
     } else {
       setFormData({
@@ -54,9 +56,10 @@ export const StudentDialog: React.FC<StudentDialogProps> = ({
         age: '',
         parent: '',
         phone: '',
-        fees: 'Pending',
         email: '',
-        address: ''
+        address: '',
+        dateOfBirth: '',
+        schoolPayCode: ''
       });
     }
   }, [student, open]);

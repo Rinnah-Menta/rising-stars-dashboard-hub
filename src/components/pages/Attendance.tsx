@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Download } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useStudents } from '@/hooks/useStudents';
 import { useToast } from '@/hooks/use-toast';
 import AnimatedInView from '@/components/AnimatedInView';
 import { exportAttendanceToCSV } from '@/utils/attendanceExport';
@@ -16,6 +17,7 @@ export const Attendance = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const { attendanceRecords, updateAttendanceStatus } = useAttendanceData();
+  const { availableClasses } = useStudents();
   
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [selectedClass, setSelectedClass] = useState<string>('all');
@@ -94,6 +96,7 @@ export const Attendance = () => {
           setSelectedClass={setSelectedClass}
           searchTerm={searchTerm}
           setSearchTerm={setSearchTerm}
+          availableClasses={availableClasses}
         />
       </AnimatedInView>
 

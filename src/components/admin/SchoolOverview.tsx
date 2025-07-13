@@ -2,8 +2,11 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import AnimatedInView from '../AnimatedInView';
+import { localStudentDatabase } from '@/data/studentdata';
 
 export const SchoolOverview = () => {
+  const totalClasses = Object.keys(localStudentDatabase.studentsByClass).length;
+  
   return (
     <AnimatedInView>
       <Card className="h-full">
@@ -14,7 +17,7 @@ export const SchoolOverview = () => {
           <div className="grid grid-cols-2 gap-3">
             <div className="p-3 bg-blue-50 rounded-lg">
               <h4 className="font-semibold text-blue-900 text-sm">Classes</h4>
-              <div className="text-2xl font-bold text-blue-600">18</div>
+              <div className="text-2xl font-bold text-blue-600">{totalClasses}</div>
               <p className="text-xs text-blue-600">Active classes</p>
             </div>
             <div className="p-3 bg-orange-50 rounded-lg">

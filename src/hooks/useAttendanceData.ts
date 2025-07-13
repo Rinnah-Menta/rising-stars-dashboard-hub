@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { format } from 'date-fns';
+import { localStudentDatabase } from '@/data/studentdata';
 
 interface AttendanceRecord {
   id: string;
@@ -16,47 +17,30 @@ interface AttendanceRecord {
 
 const STORAGE_KEY = 'attendance_records';
 
-const defaultRecords: AttendanceRecord[] = [
-  {
-    id: '1',
-    studentId: 'SS001',
-    studentName: 'Sarah Nakato',
-    class: 'P.7A',
-    date: format(new Date(), 'yyyy-MM-dd'),
-    status: 'present',
-    timeIn: '8:00 AM',
-    timeOut: '3:30 PM'
-  },
-  {
-    id: '2',
-    studentId: 'SS002',
-    studentName: 'John Mukasa',
-    class: 'P.6B',
-    date: format(new Date(), 'yyyy-MM-dd'),
-    status: 'late',
-    timeIn: '8:45 AM',
-    remarks: 'Transport delay'
-  },
-  {
-    id: '3',
-    studentId: 'SS003',
-    studentName: 'Mary Namuli',
-    class: 'P.5A',
-    date: format(new Date(), 'yyyy-MM-dd'),
-    status: 'absent',
-    remarks: 'Sick leave'
-  },
-  {
-    id: '4',
-    studentId: 'SS004',
-    studentName: 'David Ssali',
-    class: 'P.7B',
-    date: format(new Date(), 'yyyy-MM-dd'),
-    status: 'present',
-    timeIn: '7:55 AM',
-    timeOut: '3:30 PM'
-  }
-];
+// Generate attendance records from real student data
+const generateDefaultRecords = (): AttendanceRecord[] => {
+  const students = localStudentDatabase.users; // All students
+  const today = format(new Date(), 'yyyy-MM-dd');
+  const statuses: AttendanceRecord['status'][] = ['present', 'present', 'present', 'late', 'absent'];
+  
+  return students.map((student, index) => {
+    const status = statuses[index % statuses.length];
+    const record: AttendanceRecord = {
+      id: (index + 1).toString(),
+      studentId: student.id,
+      studentName: student.name,
+      class: student.class, // Use the original class name without transformation
+      date: today,
+      status,
+      timeIn: status === 'present' || status === 'late' ? '8:00 AM' : undefined,
+      timeOut: status === 'present' ? '3:30 PM' : undefined,
+      remarks: status === 'late' ? 'Transport delay' : status === 'absent' ? 'Sick leave' : undefined
+    };
+    return record;
+  });
+};
+
+const defaultRecords: AttendanceRecord[] = generateDefaultRecords();
 
 export const useAttendanceData = () => {
   const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>([]);
