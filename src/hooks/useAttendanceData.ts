@@ -20,21 +20,23 @@ const STORAGE_KEY = 'attendance_records';
 // Generate attendance records from real student data
 const generateDefaultRecords = (): AttendanceRecord[] => {
   const students = localStudentDatabase.users.filter(user => user.role === 'pupil');
+  console.log('Total students from database:', localStudentDatabase.users.length);
+  console.log('Students with pupil role:', students.length);
+  console.log('First 3 students:', students.slice(0, 3));
+  
   const today = format(new Date(), 'yyyy-MM-dd');
-  const statuses: AttendanceRecord['status'][] = ['present', 'present', 'absent'];
   
   return students.map((student, index) => {
-    const status = statuses[index % statuses.length];
     const record: AttendanceRecord = {
       id: student.id,
       studentId: student.id,
       studentName: student.name,
       class: student.class,
       date: today,
-      status,
-      timeIn: status === 'present' ? '8:00 AM' : undefined,
-      timeOut: status === 'present' ? '3:30 PM' : undefined,
-      remarks: status === 'absent' ? 'Sick leave' : undefined
+      status: 'present', // Set all to present by default
+      timeIn: '8:00 AM',
+      timeOut: '3:30 PM',
+      remarks: undefined
     };
     return record;
   });

@@ -94,6 +94,12 @@ export const Attendance = () => {
     return matchesSearch && matchesClass;
   });
 
+  console.log('Available classes:', availableClasses);
+  console.log('Selected class:', selectedClass);
+  console.log('Total attendance records:', attendanceRecords.length);
+  console.log('Filtered records:', filteredRecords.length);
+  console.log('Sample record classes:', attendanceRecords.slice(0, 5).map(r => r.class));
+
   const canManageAttendance = user?.role === 'admin' || user?.role === 'teacher';
 
   return (
