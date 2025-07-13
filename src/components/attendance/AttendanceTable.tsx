@@ -1,24 +1,17 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from '@/components/ui/table';
-import { 
-  CheckCircle,
-  XCircle,
-  AlertCircle,
-  Clock,
+  CheckCircle, 
+  XCircle, 
+  Users,
+  UserCheck,
   UserX
 } from 'lucide-react';
-import { format } from 'date-fns';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 interface AttendanceRecord {
   id: string;
@@ -26,7 +19,7 @@ interface AttendanceRecord {
   studentName: string;
   class: string;
   date: string;
-  status: 'present' | 'absent' | 'late' | 'excused';
+  status: 'present' | 'absent';
   timeIn?: string;
   timeOut?: string;
   remarks?: string;
@@ -37,108 +30,181 @@ interface AttendanceTableProps {
   selectedDate: Date;
   canManageAttendance: boolean;
   onStatusChange: (studentId: string, status: AttendanceRecord['status']) => void;
+  selectedStudents?: string[];
+  onStudentSelect?: (studentId: string) => void;
+  onSelectAll?: () => void;
+  onBulkAttendance?: (status: 'present' | 'absent') => void;
 }
 
-export const AttendanceTable: React.FC<AttendanceTableProps> = ({
-  records,
-  selectedDate,
-  canManageAttendance,
-  onStatusChange
+const getStatusBadge = (status: AttendanceRecord['status']) => {
+  switch (status) {
+    case 'present':
+      return (
+        <Badge variant="secondary" className="bg-green-100 text-green-800 hover:bg-green-100">
+          <CheckCircle className="h-3 w-3 mr-1" />
+          Present
+        </Badge>
+      );
+    case 'absent':
+      return (
+        <Badge variant="secondary" className="bg-red-100 text-red-800 hover:bg-red-100">
+          <XCircle className="h-3 w-3 mr-1" />
+          Absent
+        </Badge>
+      );
+    default:
+      return null;
+  }
+};
+
+export const AttendanceTable: React.FC<AttendanceTableProps> = ({ 
+  records, 
+  canManageAttendance, 
+  onStatusChange,
+  selectedStudents = [],
+  onStudentSelect,
+  onSelectAll,
+  onBulkAttendance
 }) => {
-  const getStatusBadge = (status: AttendanceRecord['status']) => {
-    const variants = {
-      present: { variant: 'default' as const, icon: CheckCircle, color: 'text-green-600' },
-      absent: { variant: 'destructive' as const, icon: XCircle, color: 'text-red-600' },
-      late: { variant: 'secondary' as const, icon: AlertCircle, color: 'text-orange-600' },
-      excused: { variant: 'outline' as const, icon: Clock, color: 'text-blue-600' }
-    };
-
-    const config = variants[status];
-    const Icon = config.icon;
-
-    return (
-      <Badge variant={config.variant} className="flex items-center gap-1">
-        <Icon className="h-3 w-3" />
-        {status.charAt(0).toUpperCase() + status.slice(1)}
-      </Badge>
-    );
-  };
+  const allSelected = selectedStudents.length === records.length && records.length > 0;
+  const someSelected = selectedStudents.length > 0 && selectedStudents.length < records.length;
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>
-          Quick Attendance - {format(selectedDate, 'MMMM dd, yyyy')}
-        </CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2">
+            <Users className="h-5 w-5" />
+            Students Attendance ({records.length})
+          </CardTitle>
+          
+          {canManageAttendance && selectedStudents.length > 0 && onBulkAttendance && (
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">
+                {selectedStudents.length} selected
+              </span>
+              <Button 
+                size="sm" 
+                variant="outline" 
+                className="text-green-600 border-green-600 hover:bg-green-50"
+                onClick={() => onBulkAttendance('present')}
+              >
+                <UserCheck className="h-4 w-4 mr-1" />
+                Mark Present
+              </Button>
+              <Button 
+                size="sm" 
+                variant="outline" 
+                className="text-red-600 border-red-600 hover:bg-red-50"
+                onClick={() => onBulkAttendance('absent')}
+              >
+                <UserX className="h-4 w-4 mr-1" />
+                Mark Absent
+              </Button>
+            </div>
+          )}
+        </div>
       </CardHeader>
       <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Student ID</TableHead>
-              <TableHead>Name</TableHead>
-              <TableHead>Class</TableHead>
-              <TableHead>Current Status</TableHead>
-              {canManageAttendance && <TableHead>Quick Actions</TableHead>}
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {records.map((record) => (
-              <TableRow key={record.id}>
-                <TableCell className="font-medium">{record.studentId}</TableCell>
-                <TableCell>{record.studentName}</TableCell>
-                <TableCell>{record.class}</TableCell>
-                <TableCell>{getStatusBadge(record.status)}</TableCell>
-                {canManageAttendance && (
-                  <TableCell>
-                    <div className="flex gap-1">
-                      <Button
-                        size="sm"
-                        variant={record.status === 'present' ? 'default' : 'outline'}
-                        onClick={() => onStatusChange(record.studentId, 'present')}
-                        className="text-xs px-2 py-1"
-                      >
-                        Present
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant={record.status === 'absent' ? 'destructive' : 'outline'}
-                        onClick={() => onStatusChange(record.studentId, 'absent')}
-                        className="text-xs px-2 py-1"
-                      >
-                        Absent
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant={record.status === 'late' ? 'secondary' : 'outline'}
-                        onClick={() => onStatusChange(record.studentId, 'late')}
-                        className="text-xs px-2 py-1"
-                      >
-                        Late
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant={record.status === 'excused' ? 'outline' : 'outline'}
-                        onClick={() => onStatusChange(record.studentId, 'excused')}
-                        className="text-xs px-2 py-1"
-                      >
-                        Excused
-                      </Button>
-                    </div>
-                  </TableCell>
+        <div className="rounded-md border">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                {canManageAttendance && onStudentSelect && (
+                  <TableHead className="w-12">
+                    <Checkbox
+                      checked={allSelected}
+                      onCheckedChange={onSelectAll}
+                      aria-label="Select all students"
+                      className={someSelected ? "data-[state=checked]:bg-primary" : ""}
+                    />
+                  </TableHead>
                 )}
+                <TableHead>Student</TableHead>
+                <TableHead>Class</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Time In</TableHead>
+                {canManageAttendance && <TableHead>Quick Actions</TableHead>}
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-
-        {records.length === 0 && (
-          <div className="text-center py-8">
-            <UserX className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-600">No students found</p>
-            <p className="text-sm text-gray-500">Try adjusting your search or filter criteria</p>
-          </div>
-        )}
+            </TableHeader>
+            <TableBody>
+              {records.length === 0 ? (
+                <TableRow>
+                  <TableCell 
+                    colSpan={canManageAttendance ? 6 : 5} 
+                    className="text-center py-8 text-muted-foreground"
+                  >
+                    No students found for the selected filters.
+                  </TableCell>
+                </TableRow>
+              ) : (
+                records.map((record) => (
+                  <TableRow key={record.studentId}>
+                    {canManageAttendance && onStudentSelect && (
+                      <TableCell>
+                        <Checkbox
+                          checked={selectedStudents.includes(record.studentId)}
+                          onCheckedChange={() => onStudentSelect(record.studentId)}
+                          aria-label={`Select ${record.studentName}`}
+                        />
+                      </TableCell>
+                    )}
+                    <TableCell>
+                      <div className="flex items-center gap-3">
+                        <Avatar className="h-8 w-8">
+                          <AvatarImage 
+                            src={`https://fresh-teacher-uganda.github.io/talk-of-the-day/src/assets/photos/${encodeURIComponent(record.studentName)}.JPG`} 
+                            alt={record.studentName}
+                          />
+                          <AvatarFallback>
+                            {record.studentName.split(' ').map(n => n[0]).join('')}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <div className="font-medium">{record.studentName}</div>
+                          <div className="text-sm text-muted-foreground">ID: {record.studentId}</div>
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline">{record.class}</Badge>
+                    </TableCell>
+                    <TableCell>{getStatusBadge(record.status)}</TableCell>
+                    <TableCell>
+                      <span className="text-sm">
+                        {record.timeIn || '-'}
+                      </span>
+                    </TableCell>
+                    {canManageAttendance && (
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            size="sm"
+                            variant={record.status === 'present' ? 'default' : 'outline'}
+                            className="text-green-600 border-green-600 hover:bg-green-50 hover:text-green-700"
+                            onClick={() => onStatusChange(record.studentId, 'present')}
+                          >
+                            <CheckCircle className="h-3 w-3 mr-1" />
+                            Present
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant={record.status === 'absent' ? 'default' : 'outline'}
+                            className="text-red-600 border-red-600 hover:bg-red-50 hover:text-red-700"
+                            onClick={() => onStatusChange(record.studentId, 'absent')}
+                          >
+                            <XCircle className="h-3 w-3 mr-1" />
+                            Absent
+                          </Button>
+                        </div>
+                      </TableCell>
+                    )}
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </div>
       </CardContent>
     </Card>
   );
