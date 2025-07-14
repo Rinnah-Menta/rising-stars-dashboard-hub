@@ -1,3 +1,123 @@
+import defaultAvatar from '@/assets/default-avatar.png';
+
+// Utility function to convert image name to proper avatar URL with fallback
+const formatAvatarUrl = (imageName: string): string => {
+  if (!imageName) return defaultAvatar;
+  
+  // Clean the name and replace spaces with %20 for URL encoding
+  const cleanName = imageName.replace('src/assets/photos/', '').replace('.JPG', '.JPG');
+  const encodedName = encodeURIComponent(cleanName);
+  
+  // Return GitHub URL with fallback
+  return `https://gloriouschools.github.io/rising-star-connect/src/assets/photos/${encodedName}`;
+};
+
+// Fallback function for missing photos
+const getAvatarWithFallback = (photoName?: string): string => {
+  if (!photoName) return defaultAvatar;
+  return formatAvatarUrl(photoName);
+};
+
+// Map student names to photo filenames (based on available photos)
+const photoMap: Record<string, string> = {
+  "Adriana Liam Mirimu": "ADRIANA LIAM MIRIMU.JPG",
+  "Ahimbisibwe Emmanuel": "AHIMBISIBWE EMMANUEL.JPG",
+  "Alba Promise Kobusingye": "ALBA PROMISE KOBUSINGYE.JPG",
+  "Albara-U Yahaya Musoke": "ALBARA-U YAHAYA MUSOKE.JPG",
+  "Amanyabyona Joseph Collins": "AMANYABYONA JOSEPH COLLINS.JPG",
+  "Ankunda Liam": "ANKUNDA LIAM.JPG",
+  "Atungire Elijah": "ATUNGIRE ELIJAH.JPG",
+  "Ava Malaika Dhamuzungu": "AVA MALAIKA DHAMUZUNGU.JPG",
+  "Bagabe Abel": "BAGABE ABEL.JPG",
+  "Birungi Hidaya": "BIRUNGI HIDAYA.JPG",
+  "Bwogi Deighton": "BWOGI DEIGHTON.JPG",
+  "Byamukama Matthew Charles": "BYAMUKAMA MATTHEW CHARLES.JPG",
+  "Dhedonga Rehema Marina": "DHEDONGA REHEMA MARINA.JPG",
+  "Eglah Abi Gara": "EGLAH ABI GARA.JPG",
+  "Eli Timao Edube": "ELI TIMAO EDUBE.JPG",
+  "Favour Gideon Mayiga": "FAVOUR GIDEON MAYIGA.JPG",
+  "Itungo Lionel Ruta": "ITUNGO LIONEL RUTA.JPG",
+  "Jake William Katende": "JAKE WILLIAM KATENDE.JPG",
+  "Jean Bright Jooga": "JEAN BRIGHT  JOOGA.JPG",
+  "Jean Peter Ddamulira": "JEAN PETER DDAMULIRA.JPG",
+  "Jedidiah Kahuma Kazooba": "JEDIDIAH KAHUMA KAZOOBA.JPG",
+  "Kalule Victor Leander": "KALULE VICTOR LEANDER.JPG",
+  "Katende Josiah Charles": "KATENDE JOSIAH CHARLES.JPG",
+  "Katongole Gertrude": "KATONGOLE GERTRUDE.JPG",
+  "Katongole Mona": "KATONGOLE MONA.JPG",
+  "Katumba Dalton Surprise": "KATUMBA DALTON SURPRISE.JPG",
+  "Kaweesi Jayden Hope": "KAWEESI JAYDEN HOPE.JPG",
+  "Kijjambu Mark Morgan": "KIJJAMBU MARK MORGAN.JPG",
+  "Kirabo Bryson Kyle": "KIRABO BRYSON KYLE.JPG",
+  "Kobufura Ashley Krysten": "KOBUFURA ASHLEY KRYSTEN.JPG",
+  "Krystabell Ariana Wavamunno": "KRYSTABELL ARIANA WAVAMUNNO.JPG",
+  "Kukunda Kirsten": "KUKUNDA KIRSTEN.JPG",
+  "Levi Gataali Muzima": "LEVI GATAALI MUZIMA.JPG",
+  "Lubega Keron": "LUBEGA KERON.JPG",
+  "Matsiko Dan": "MATSIKO DAN.JPG",
+  "Mugenyi Calvin": "MUGENYI CALVIN.JPG",
+  "Mukisa Jesse": "MUKISA JESSE.JPG",
+  "Mukula Odysseus Bridgeous": "MUKULA ODYSSEUS BRIDGEOUS.JPG",
+  "Mulungi Adonai": "MULUNGI ADONAI.JPG",
+  "Mulwana Bernice": "MULWANA BERNICE.JPG",
+  "Mutebi Hafizu Kigongo": "MUTEBI HAFIZU KIGONGO.JPG",
+  "Mutyaba Keron": "MUTYABA KERON.JPG",
+  "Muwanguzi Israel": "MUWANGUZI ISRAEL.JPG",
+  "Mwiza Atalia Abrielle": "MWIZA ATALIA ABRIELLE.JPG",
+  "Mwiza Martha Kimberly": "MWIZA MARTHA KIMBERLY.JPG",
+  "Nabukenya Samantha": "NABUKENYA SAMANTHA.JPG",
+  "Nabuule Eliana Malaika Kaye": "NABUULE ELIANA MALAIKA KAYE.JPG",
+  "Nabuyondo Nairah": "NABUYONDO NAIRAH.JPG",
+  "Nakaddu Ellyvick": "NAKADDU ELLYVICK.JPG",
+  "Nakamatte Norah Christine": "NAKAMATTE NORAH CHRISTINE.JPG",
+  "Nakanwagi Jean Alba": "NAKANWAGI JEAN ALBA.JPG",
+  "Nakayiwa Esther": "NAKAYIWA ESTHER.JPG",
+  "Nakitto Rashimah": "NAKITTO RASHIMAH.JPG",
+  "Nalubowa Allison Juliet": "NALUBOWA ALLISON JULIET.JPG",
+  "Nalutaaya Petronillah": "NALUTAAYA PETRONILLAH.JPG",
+  "Namakula Sophia": "NAMAKULA SOPHIA.JPG",
+  "Nambajjwe Valeria": "NAMBAJJWE VALERIA.JPG",
+  "Nansubuga Theo Elsie": "NANSUBUGA THEO ELSIE.JPG",
+  "Natumi Shahid Papa": "NATUMI SHAHID PAPA.JPG",
+  "Nazeba Leo": "NAZEBA LEO.JPG",
+  "Nowamani Sharapova": "NOWAMANI SHARAPOVA.JPG",
+  "Ntambazi Jeison Joseph": "NTAMBAZI JEISON JOSEPH.JPG",
+  "Nyabun Bith": "NYABUN BITH.JPG",
+  "Nyesiga Othniel": "NYESIGA OTHNIEL.JPG",
+  "Odeke Miracle Daniel": "ODEKE MIRACLE DANIEL.JPG",
+  "Ojambo Devlin Paul": "OJAMBO DEVLIN PAUL.JPG",
+  "Owori Calvin Franklin": "OWORI CALVIN FRANKLIN.JPG",
+  "Pria Angel": "PRIA ANGEL.JPG",
+  "Rukundo Elizabeth": "RUKUNDO ELIZABETH.JPG",
+  "Rukundo Faith Canty": "RUKUNDO FAITH CANTY.JPG",
+  "Ssempa Malcom Mathew": "SSEMPA MALCOM MATHEW.JPG",
+  "Ssempebwa Jonathan Gideon": "SSEMPEBWA JONATHAN GIDEON.JPG",
+  "Ssengendo Victoria Miracle": "SSENGENDO VICTORIA MIRACLE.JPG",
+  "Ssengooba Tendo Enock": "SSENGOOBA TENDO ENOCK.JPG",
+  "Ssenyimba Don Elijah": "SSENYIMBA DON ELIJAH.JPG",
+  "Ssenyonga Elijah Adrian": "SSENYONGA ELIJAH ADRIAN.JPG",
+  "Suku Holly Laelle": "SUKU HOLLY LAELLE.JPG",
+  "Tamara Ava Mulungi Ndugwa": "TAMARA AVA MULUNGI NDUGWA.JPG",
+  "Twebaze Esther": "TWEBAZE ESTHER.JPG",
+  "Wasajja Charles Dickens": "WASAJJA CHARLES DICKENS.JPG"
+};
+
+// Function to get photo filename for a student name
+const getPhotoFilename = (name: string): string | undefined => {
+  // Direct match
+  if (photoMap[name]) return photoMap[name];
+  
+  // Try partial matches for similar names
+  const keys = Object.keys(photoMap);
+  const similarKey = keys.find(key => {
+    const keyParts = key.toLowerCase().split(' ');
+    const nameParts = name.toLowerCase().split(' ');
+    return keyParts.some(part => nameParts.some(namePart => part.includes(namePart) || namePart.includes(part)));
+  });
+  
+  return similarKey ? photoMap[similarKey] : undefined;
+};
+
 // Student data organized by class with required fields only
 const studentsByClass = {
   "JUNIOR_ONE": [
@@ -157,287 +277,98 @@ const studentsByClass = {
     { "name": "Mugenyi Calvin", "dob": "", "school_pay_code": "" },
     { "name": "Mulwana Bernice", "dob": "", "school_pay_code": "" }
   ],
-  "PRE_PRIMARY_CLASS_HERONS": [
-    { "name": "Byamukama Peter Micheal", "dob": "", "school_pay_code": "" },
-    { "name": "Dhedonga Jenovic", "dob": "", "school_pay_code": "" },
-    { "name": "Karungi Myrah", "dob": "", "school_pay_code": "" },
-    { "name": "Matovu Jayden Dirham", "dob": "", "school_pay_code": "" },
-    { "name": "Kalungi Treasure Divine", "dob": "", "school_pay_code": "" },
-    { "name": "Wokyalya Hannah", "dob": "", "school_pay_code": "" },
-    { "name": "Namirembe Ariella Masembe", "dob": "", "school_pay_code": "" },
-    { "name": "Kaganzi Tyler", "dob": "", "school_pay_code": "" },
-    { "name": "Ssenyimba Dollars Raphaella", "dob": "", "school_pay_code": "" },
-    { "name": "Kayemba Wynn", "dob": "", "school_pay_code": "" },
-    { "name": "Nalukwago Rania", "dob": "", "school_pay_code": "" },
-    { "name": "Najjingo Hannan", "dob": "", "school_pay_code": "" },
-    { "name": "Tebusweke Jamirah", "dob": "", "school_pay_code": "" },
-    { "name": "Mawanda Jude Quincy", "dob": "", "school_pay_code": "" },
-    { "name": "Hobe Adriel Abana", "dob": "", "school_pay_code": "" },
-    { "name": "Sserunkuma Hashim", "dob": "", "school_pay_code": "" },
-    { "name": "Kaycee King Kibuuka", "dob": "", "school_pay_code": "" },
-    { "name": "Kigongo Nathaniel Seth", "dob": "", "school_pay_code": "" },
-    { "name": "Mulwana Esther Briana", "dob": "", "school_pay_code": "" },
-    { "name": "Kakembo Ramaal", "dob": "", "school_pay_code": "" },
-    { "name": "Mbabazi Ariana Kenganzi", "dob": "", "school_pay_code": "" },
-    { "name": "Kamara Corban Johnson", "dob": "", "school_pay_code": "" },
-    { "name": "Atwine Darren", "dob": "", "school_pay_code": "" },
-    { "name": "Ariella Bateta", "dob": "", "school_pay_code": "" },
-    { "name": "Sitenda Mildred", "dob": "", "school_pay_code": "" },
-    { "name": "Mirembe Kayla", "dob": "", "school_pay_code": "" },
-    { "name": "Dhamuzungu Wisdom Destiny", "dob": "", "school_pay_code": "" },
-    { "name": "Hope Namale", "dob": "", "school_pay_code": "" },
-    { "name": "Kasagga Jaleed Icra", "dob": "", "school_pay_code": "" },
-    { "name": "Jesse Mugaiga", "dob": "", "school_pay_code": "" }
+  "JUNIOR_FIVE": [
+    { "name": "Kakule Abraham Raphael", "dob": "27.02.2018", "school_pay_code": "1003357781" },
+    { "name": "Matovu Ramsey Musa", "dob": "18.07.2019", "school_pay_code": "1006882895" },
+    { "name": "Manzi Israel Mwanza", "dob": "19.07.2018", "school_pay_code": "1004190981" },
+    { "name": "Rahiah Namwanje Mirembe", "dob": "2.05.2019", "school_pay_code": "1004615339" },
+    { "name": "Kayanja Jeremiah", "dob": "25.01.2019", "school_pay_code": "1003357729" },
+    { "name": "Lubwama Jamal", "dob": "7.10.2018", "school_pay_code": "1003357748" },
+    { "name": "Mulungi Meaghan", "dob": "7.02.2019", "school_pay_code": "1003357739" },
+    { "name": "Hannah Isabel Nantale", "dob": "24.09.2018", "school_pay_code": "1003357764" },
+    { "name": "Nahabwe Israel Karenzyo", "dob": "4.09.2018", "school_pay_code": "1008866266" },
+    { "name": "Mayanja Zane", "dob": "16.02.2019", "school_pay_code": "1008774187" },
+    { "name": "Namiyah Tazlin Hudah", "dob": "3.08.2017", "school_pay_code": "1003357770" },
+    { "name": "Nammanda Mangadalene Ariella", "dob": "18.03.2019", "school_pay_code": "1003357780" },
+    { "name": "Namuganyi Evelyn Hope", "dob": "19.07.2019", "school_pay_code": "1007993015" },
+    { "name": "Ssegawa Keith Muwanguzi", "dob": "17.10.2018", "school_pay_code": "1003357744" },
+    { "name": "Shemaiah Musiige", "dob": "12.3.2019", "school_pay_code": "1006577098" },
+    { "name": "Bianca Sabrina Kaaje", "dob": "28.12.2019", "school_pay_code": "1004293468" }
   ],
-  "HEADSTART_CLASS_DAFFODILS": [
-    { "name": "Masiga Zoey Atarah", "dob": "", "school_pay_code": "" },
-    { "name": "Nina Kikuwa Ariella Mirembe", "dob": "", "school_pay_code": "" },
-    { "name": "Nakawunde Cynthia Elsie Kaye", "dob": "", "school_pay_code": "" },
-    { "name": "Mirembe Hazel Kamusiime", "dob": "", "school_pay_code": "" },
-    { "name": "Muruya Yvonne Blessing", "dob": "", "school_pay_code": "" },
-    { "name": "Nziza Daniel", "dob": "", "school_pay_code": "" },
-    { "name": "Mutyaba Noella Kerisha", "dob": "", "school_pay_code": "" },
-    { "name": "Ariella Kwikiriza", "dob": "", "school_pay_code": "" },
-    { "name": "Ssekidde Brian Ian", "dob": "", "school_pay_code": "" },
-    { "name": "Upendo Eliana Edube", "dob": "", "school_pay_code": "" },
-    { "name": "Tamale Israel", "dob": "", "school_pay_code": "" },
-    { "name": "Nalugga Amaris Keza", "dob": "", "school_pay_code": "" },
-    { "name": "Arinda Ezekiel", "dob": "", "school_pay_code": "" },
-    { "name": "Namulema Clara Michelle", "dob": "", "school_pay_code": "" },
-    { "name": "Muyomba Gabriella Manuella", "dob": "", "school_pay_code": "" },
-    { "name": "Tebusweke Abdul Rahman", "dob": "", "school_pay_code": "" },
-    { "name": "Ngobi Raymond", "dob": "", "school_pay_code": "" },
-    { "name": "Nalubwama Ann Racheal", "dob": "", "school_pay_code": "" },
-    { "name": "Ilhan Mousah", "dob": "", "school_pay_code": "" },
-    { "name": "Mpanya Ethan", "dob": "", "school_pay_code": "" },
-    { "name": "Muhindo Malcom Christian", "dob": "", "school_pay_code": "" },
-    { "name": "Balinda Jerome Mugaiga", "dob": "", "school_pay_code": "" },
-    { "name": "Musiige Hezekiah", "dob": "", "school_pay_code": "" },
-    { "name": "Kiggundu Liam Mukisa", "dob": "", "school_pay_code": "" },
-    { "name": "Nabukenya Amaal Kirabo", "dob": "", "school_pay_code": "" },
-    { "name": "Agaba Riley Katende", "dob": "", "school_pay_code": "" },
-    { "name": "Manuella Nakkazi Nicole", "dob": "", "school_pay_code": "" },
-    { "name": "Mercy Ampumuza", "dob": "", "school_pay_code": "" },
-    { "name": "Amaris Keza", "dob": "", "school_pay_code": "" }
-  ],
-  "BEGINNER_CLASS_CARNATIONS": [
-    { "name": "Kimberly Slowson Suuna", "dob": "", "school_pay_code": "" },
-    { "name": "Eliana Nazziwa", "dob": "", "school_pay_code": "" },
-    { "name": "Khwezi Telma Kalenge", "dob": "", "school_pay_code": "" },
-    { "name": "Kibuuka King Kylian", "dob": "", "school_pay_code": "" },
-    { "name": "Nagawa Gabrielle", "dob": "", "school_pay_code": "" },
-    { "name": "Kawule Josiah Joash", "dob": "", "school_pay_code": "" },
-    { "name": "Mutebi Jabari", "dob": "", "school_pay_code": "" },
-    { "name": "Masembe John D", "dob": "", "school_pay_code": "" },
-    { "name": "Ssenyonga Ayman Sufian", "dob": "", "school_pay_code": "" },
-    { "name": "Nalujja Hashmat", "dob": "", "school_pay_code": "" },
-    { "name": "Wavamuno Gordon Godfrey Aaron", "dob": "", "school_pay_code": "" },
-    { "name": "Kawooya Aleeza", "dob": "", "school_pay_code": "" },
-    { "name": "Nyanzi Priam Banks", "dob": "", "school_pay_code": "" },
-    { "name": "Nsozzi Ariana Ivy Williams", "dob": "", "school_pay_code": "" },
-    { "name": "Kaweesa Ezekiel", "dob": "", "school_pay_code": "" },
-    { "name": "Muhoozi Liam Avram", "dob": "", "school_pay_code": "" },
-    { "name": "Kisakye Angel Kizito", "dob": "", "school_pay_code": "" },
-    { "name": "Nansamba Ariana", "dob": "", "school_pay_code": "" },
-    { "name": "Wogisha Leo Abel", "dob": "", "school_pay_code": "" },
-    { "name": "Natania Rose Mary Namujjuzi", "dob": "", "school_pay_code": "" },
-    { "name": "Nankanja Myra Happy", "dob": "", "school_pay_code": "" },
-    { "name": "Ahmed Khyran", "dob": "", "school_pay_code": "" },
-    { "name": "Nalugo Patience", "dob": "", "school_pay_code": "" },
-    { "name": "Amara Lisa", "dob": "", "school_pay_code": "" },
-    { "name": "Badebye Kingsley Rapha Mukisa", "dob": "", "school_pay_code": "" },
-    { "name": "Wasswa Israel Kirabo Nadduli", "dob": "", "school_pay_code": "" },
-    { "name": "Bbaale Eleazar Prominent", "dob": "", "school_pay_code": "" },
-    { "name": "Akilimali David Jahleel", "dob": "", "school_pay_code": "" },
-    { "name": "Tariq Kayiwa", "dob": "", "school_pay_code": "" },
-    { "name": "Adrian Mukuye", "dob": "", "school_pay_code": "" },
-    { "name": "Ineza Margaret Hellena", "dob": "", "school_pay_code": "" },
-    { "name": "Suubi Favour Nkalubo", "dob": "", "school_pay_code": "" },
-    { "name": "Seth Ggolooba M", "dob": "", "school_pay_code": "" }
-  ],
-  "PRE_PRIMARY_CLASS_ANGELONIA": [
-    { "name": "Akram Matovu", "dob": "", "school_pay_code": "" },
-    { "name": "Jjingo Travis", "dob": "", "school_pay_code": "" },
-    { "name": "Kitiibwa Joachim", "dob": "", "school_pay_code": "" },
-    { "name": "Besigye Ryan", "dob": "", "school_pay_code": "" },
-    { "name": "Makayla Abigail Nalukaaga", "dob": "", "school_pay_code": "" },
-    { "name": "Ivana Tabitha Manzi", "dob": "", "school_pay_code": "" },
-    { "name": "Benjamin Henson", "dob": "", "school_pay_code": "" },
-    { "name": "Nabatanzi Ariana", "dob": "", "school_pay_code": "" },
-    { "name": "Karungi Isabella", "dob": "", "school_pay_code": "" },
-    { "name": "Ssemujju Precious", "dob": "", "school_pay_code": "" },
-    { "name": "Wasswa Aaron", "dob": "", "school_pay_code": "" },
-    { "name": "Tariq Mukiibi", "dob": "", "school_pay_code": "" },
-    { "name": "Amanya Nathaniel Magash", "dob": "", "school_pay_code": "" },
-    { "name": "Nsubuga Macsen", "dob": "", "school_pay_code": "" },
-    { "name": "Lugendo Prosper", "dob": "", "school_pay_code": "" },
-    { "name": "Kayongo Jahsim", "dob": "", "school_pay_code": "" },
-    { "name": "Mugoya Timothy", "dob": "", "school_pay_code": "" },
-    { "name": "Ssemwezi James", "dob": "", "school_pay_code": "" },
-    { "name": "Ashley Liam Cole Kalyowa", "dob": "", "school_pay_code": "" },
-    { "name": "Mayanja Shayan", "dob": "", "school_pay_code": "" },
-    { "name": "Lemuel Gatali", "dob": "", "school_pay_code": "" },
-    { "name": "Nakyanzi Daphine", "dob": "", "school_pay_code": "" },
-    { "name": "Ssekitto Declan", "dob": "", "school_pay_code": "" },
-    { "name": "Matovu Tamia", "dob": "", "school_pay_code": "" },
-    { "name": "Carlton Ssuna", "dob": "", "school_pay_code": "" },
-    { "name": "Whitley Gemma", "dob": "", "school_pay_code": "" },
-    { "name": "Alia Katasi Mwiza", "dob": "", "school_pay_code": "" },
-    { "name": "Victoria Tibagwa", "dob": "", "school_pay_code": "" },
-    { "name": "Kivumbi Philemon Genius", "dob": "", "school_pay_code": "" },
-    { "name": "Troy Ssuuna Desmet", "dob": "", "school_pay_code": "" },
-    { "name": "Amanya Nathaniel", "dob": "", "school_pay_code": "" },
-    { "name": "Darius Mayende", "dob": "", "school_pay_code": "" }
-  ],
-  "HEADSTART_CLASS_SPOONBILLS": [
-    { "name": "Malaika Genza Gabriella", "dob": "", "school_pay_code": "" },
-    { "name": "Katamba Adeel Ihsaan", "dob": "", "school_pay_code": "" },
-    { "name": "Namuddu Amaal", "dob": "", "school_pay_code": "" },
-    { "name": "Nyanja Arthur Kezimbira", "dob": "", "school_pay_code": "" },
-    { "name": "Namuyanja Petralina Aretha", "dob": "", "school_pay_code": "" },
-    { "name": "Muleme Jessica Ruth", "dob": "", "school_pay_code": "" },
-    { "name": "Kaziro Seth Preston", "dob": "", "school_pay_code": "" },
-    { "name": "Nakazziwa Ariana Winslet", "dob": "", "school_pay_code": "" },
-    { "name": "Lukyamuzi Afreen Mukisa", "dob": "", "school_pay_code": "" },
-    { "name": "Jamba John Mukisa", "dob": "", "school_pay_code": "" },
-    { "name": "Manzi Farhan Danish", "dob": "", "school_pay_code": "" },
-    { "name": "Asasira Hannah Rihanna", "dob": "", "school_pay_code": "" },
-    { "name": "Kyamagero Elijah Joshua", "dob": "", "school_pay_code": "" },
-    { "name": "Ssekitto Dasia Ruth Chen Mubeezi", "dob": "", "school_pay_code": "" },
-    { "name": "Ainomugisha Xavier", "dob": "", "school_pay_code": "" },
-    { "name": "Mwesigye Aviel Elai", "dob": "", "school_pay_code": "" },
-    { "name": "Kajagu Tivan Rafael", "dob": "", "school_pay_code": "" },
-    { "name": "Ssenyonga Hanan", "dob": "", "school_pay_code": "" },
-    { "name": "Ntume Husnah Eshal", "dob": "", "school_pay_code": "" },
-    { "name": "Ssali Ramah", "dob": "", "school_pay_code": "" },
-    { "name": "Kwikiriza Adeline Gloria", "dob": "", "school_pay_code": "" },
-    { "name": "Nakibuule Tatiana Elsie", "dob": "", "school_pay_code": "" },
-    { "name": "Kagimu Pyden George William", "dob": "", "school_pay_code": "" },
-    { "name": "Kabira Mark Travis", "dob": "", "school_pay_code": "" },
-    { "name": "Mpindi James Elisha", "dob": "", "school_pay_code": "" },
-    { "name": "Mugerwa Amanee Yara", "dob": "", "school_pay_code": "" },
-    { "name": "Katongole Mighty Midas", "dob": "", "school_pay_code": "" },
-    { "name": "Mulowoza Monica Makanga", "dob": "", "school_pay_code": "" },
-    { "name": "Aurora Mulungi", "dob": "", "school_pay_code": "" },
-    { "name": "Nanfuka Jacinta", "dob": "", "school_pay_code": "" }
-  ],
-  "RECEPTION_CLASS": [
-    { "name": "Namuli Mirabel Prosper", "dob": "", "school_pay_code": "" },
-    { "name": "Namuyanja Vince Mirella", "dob": "", "school_pay_code": "" },
-    { "name": "Sseruyange Jayce", "dob": "", "school_pay_code": "" },
-    { "name": "Masika Precious Mayani", "dob": "", "school_pay_code": "" },
-    { "name": "Kasule Idris Mukasa", "dob": "", "school_pay_code": "" },
-    { "name": "Kwagala Engel Kizito", "dob": "", "school_pay_code": "" },
-    { "name": "Herielle Williams Mponye", "dob": "", "school_pay_code": "" },
-    { "name": "Gumisiriza Daystar", "dob": "", "school_pay_code": "" },
-    { "name": "Rwashana Abigail", "dob": "", "school_pay_code": "" },
-    { "name": "Muzaana Makula", "dob": "", "school_pay_code": "" },
-    { "name": "Ssempijja Michelle", "dob": "", "school_pay_code": "" }
-  ],
-  "BEGINNER_CLASS_ORCHIDS": [
-    { "name": "Nsubuga Elon", "dob": "", "school_pay_code": "" },
-    { "name": "Kasisa Tahir", "dob": "", "school_pay_code": "" },
-    { "name": "Katumba Amir Suhail", "dob": "", "school_pay_code": "" },
-    { "name": "Kalyowa Angello Jayden", "dob": "", "school_pay_code": "" },
-    { "name": "Kato Isaac Kwagala", "dob": "", "school_pay_code": "" },
-    { "name": "Magalu Farhan Fazil", "dob": "", "school_pay_code": "" },
-    { "name": "Kigoye Jerome Josiah", "dob": "", "school_pay_code": "" },
-    { "name": "Akatuhabwa Kyzer", "dob": "", "school_pay_code": "" },
-    { "name": "Kivumbi Jayce Daniel", "dob": "", "school_pay_code": "" },
-    { "name": "Omara Trevine Testimony", "dob": "", "school_pay_code": "" },
-    { "name": "Lubowa Arnold", "dob": "", "school_pay_code": "" },
-    { "name": "Mutyaba Ayman", "dob": "", "school_pay_code": "" },
-    { "name": "Wasajja Jaythan", "dob": "", "school_pay_code": "" },
-    { "name": "Ssesanga Ayan", "dob": "", "school_pay_code": "" },
-    { "name": "Akantorana Destiny", "dob": "", "school_pay_code": "" },
-    { "name": "Kyazze Marias Myles", "dob": "", "school_pay_code": "" },
-    { "name": "Mayanja Nahiah", "dob": "", "school_pay_code": "" },
-    { "name": "Muhindo Audrey Miranda", "dob": "", "school_pay_code": "" },
-    { "name": "Ntabadde Hazel Nankya", "dob": "", "school_pay_code": "" },
-    { "name": "Nassuna Adel", "dob": "", "school_pay_code": "" },
-    { "name": "Birungi Kyna", "dob": "", "school_pay_code": "" },
-    { "name": "Kirungi Queen Ivy", "dob": "", "school_pay_code": "" },
-    { "name": "Namugenyi Jamie Jombwe", "dob": "", "school_pay_code": "" },
-    { "name": "Nakalule Sarah", "dob": "", "school_pay_code": "" },
-    { "name": "Trizah Aleng Kristian", "dob": "", "school_pay_code": "" },
-    { "name": "Itungo Dapherah", "dob": "", "school_pay_code": "" },
-    { "name": "Nanyunja Zaabu Margret", "dob": "", "school_pay_code": "" },
-    { "name": "Nantongo Wendy Arielle", "dob": "", "school_pay_code": "" },
-    { "name": "Katongole Ramah", "dob": "", "school_pay_code": "" }
-  ],
-  "HEADSTART_CLASS_MARIGOLD": [
-    { "name": "Amone Lucas", "dob": "", "school_pay_code": "" },
-    { "name": "Nassazi Maria", "dob": "", "school_pay_code": "" },
-    { "name": "Walugembe Isabella", "dob": "", "school_pay_code": "" },
-    { "name": "Ssemwogerere Joram Nehemiah", "dob": "", "school_pay_code": "" },
-    { "name": "Ssekajugo Jayrus Maurice", "dob": "", "school_pay_code": "" },
-    { "name": "Kasozi Testimony Hosea Fabian", "dob": "", "school_pay_code": "" },
-    { "name": "Nuwasiima Sheena", "dob": "", "school_pay_code": "" },
-    { "name": "Gimbo Elisheba", "dob": "", "school_pay_code": "" },
-    { "name": "Nakiganda Philberta", "dob": "", "school_pay_code": "" },
-    { "name": "Hirah Tarah Nalwoga", "dob": "", "school_pay_code": "" },
-    { "name": "Khalid Lukwago", "dob": "", "school_pay_code": "" },
-    { "name": "Ishan Adam", "dob": "", "school_pay_code": "" },
-    { "name": "Kyabagye Esther", "dob": "", "school_pay_code": "" },
-    { "name": "Nassali Ashley", "dob": "", "school_pay_code": "" },
-    { "name": "Muwanguzi Harmony Lily", "dob": "", "school_pay_code": "" }
+  "JUNIOR_SIX": [
+    { "name": "Kakeeto Eliana", "dob": "", "school_pay_code": "" },
+    { "name": "Kakeeto Prosper", "dob": "", "school_pay_code": "" }
   ]
 };
 
-// Helper function to parse full names
-function parseFullName(name: string) {
-  const parts = name.trim().split(' ');
-  const firstName = parts[0] || '';
-  const lastName = parts[parts.length - 1] || '';
-  const middleName = parts.length > 2 ? parts.slice(1, -1).join(' ') : (parts.length === 2 ? '' : parts[1] || '');
-  
-  return { firstName, middleName, lastName };
+// Interface for User with extended profile
+export interface User {
+  id: string;
+  email: string;
+  password: string;
+  role: 'admin' | 'teacher' | 'parent' | 'pupil' | 'non-teaching';
+  name: string;
+  firstName: string;
+  middleName?: string;
+  lastName: string;
+  phone: string;
+  address: string;
+  title?: string;
+  gender?: string;
+  subject?: string;
+  department: string;
+  qualification: string;
+  experience: string;
+  joinDate: string;
+  bio: string;
+  emergencyContact: string;
+  emergencyPhone: string;
+  avatar?: string;
+  class?: string;
+  children?: string[];
+  accountStatus: 'active' | 'inactive' | 'suspended' | 'archived' | 'expelled';
+  dateOfBirth?: string;
+  schoolPayCode?: string;
 }
 
-// Helper function to generate email
-function generateEmail(name: string) {
-  return `${name.toLowerCase().replace(/\s+/g, '.')}@pupil.springingstars.ac.ug`;
-}
+// Export studentsByClass for backward compatibility
+export { studentsByClass };
 
-// Helper function to determine gender from name (basic implementation)
-function inferGender(firstName: string): string {
-  const femaleNames = ['adriana', 'faith', 'hayat', 'emma', 'samantha', 'lynah', 'audrey', 'maria', 'hannah', 'tendo', 'blessing', 'bianca', 'ariella', 'angelina', 'meaghan', 'rahia', 'robinah', 'angelica', 'chloe', 'yasmeen', 'hope', 'nissi', 'kiara', 'eliana', 'rashimah', 'esther', 'tamara', 'ava', 'hidayah', 'elsie', 'theo', 'mona', 'ashley', 'adriana', 'elizabeth', 'hanan', 'mary', 'sophia', 'norah', 'krystabel', 'rayana', 'candice', 'latifah', 'tatyana', 'valeria', 'leah', 'alba', 'petronillah', 'victoria', 'allison', 'amantha', 'angel', 'martha', 'atalia', 'gertrude', 'canty', 'nairah', 'sharapova', 'ellyvick', 'bernice', 'myrah', 'raphaella', 'rania', 'hannan', 'jamirah', 'mildred', 'kayla', 'zoey', 'atarah', 'nina', 'mirabel', 'ariella', 'cynthia', 'elsie', 'kaye', 'hazel', 'yvonne', 'noella', 'kerisha', 'eliana', 'amaris', 'keza', 'clara', 'michelle', 'gabriella', 'manuella', 'ann', 'racheal', 'ariana', 'ivy', 'williams', 'natania', 'rose', 'myra', 'patience', 'lisa', 'margaret', 'hellena', 'favour', 'gabrielle', 'abigail', 'isabella', 'daphine', 'tamia', 'gemma', 'alia', 'victoria', 'malaika', 'petralina', 'aretha', 'jessica', 'ruth', 'winslet', 'afreen', 'hannah', 'rihanna', 'dasia', 'chen', 'adeline', 'gloria', 'tatiana', 'monica', 'makanga', 'aurora', 'jacinta', 'mirabel', 'mirella', 'precious', 'mayani', 'abigail', 'michelle', 'audrey', 'miranda', 'hazel', 'nankya', 'adel', 'kyna', 'queen', 'ivy', 'jamie', 'jombwe', 'sarah', 'trizah', 'aleng', 'kristian', 'dapherah', 'zaabu', 'margret', 'wendy', 'arielle', 'ramah', 'maria', 'isabella', 'sheena', 'elisheba', 'philberta', 'tarah', 'nalwoga', 'ashley', 'harmony', 'lily'];
-  return femaleNames.includes(firstName.toLowerCase()) ? 'Female' : 'Male';
-}
-
-// Generate students array from organized data
-const generateStudents = () => {
-  let id = 1;
-  const students = [];
-
-  Object.entries(studentsByClass).forEach(([className, studentData]) => {
-    studentData.forEach(student => {
-      const { firstName, middleName, lastName } = parseFullName(student.name);
+// Convert student data to User format
+export const localStudentDatabase = {
+  studentsByClass,
+  users: Object.entries(studentsByClass).flatMap(([className, students], classIndex) =>
+    students.map((student, index) => {
+      const globalId = (classIndex * 1000) + index + 1;
+      const imageName = getPhotoFilename(student.name);
       
-      const studentRecord = {
-        id: id.toString(),
-        email: generateEmail(student.name),
+      return {
+        id: globalId.toString(),
+        email: `${student.name.toLowerCase().replace(/[^a-z\s]/g, '').replace(/\s+/g, '.')}@pupil.springingstars.ac.ug`,
         password: 'pupil123',
         role: 'pupil' as const,
         name: student.name,
-        firstName: firstName,
-        middleName: middleName,
-        lastName: lastName,
-        gender: inferGender(firstName),
-        class: className.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase()),
-        avatar: `https://fresh-teacher-uganda.github.io/talk-of-the-day/src/assets/photos/${encodeURIComponent(student.name)}.JPG`,
+        firstName: student.name.split(' ')[0] || '',
+        middleName: student.name.split(' ').length > 2 ? student.name.split(' ').slice(1, -1).join(' ') : '',
+        lastName: student.name.split(' ').pop() || '',
+        phone: `+256 77${Math.floor(1000000 + Math.random() * 9000000)}`,
+        address: 'Kampala, Uganda',
+        title: '',
+        gender: Math.random() > 0.5 ? 'male' : 'female',
+        subject: 'All Subjects',
+        department: 'Primary',
+        qualification: 'PLE Candidate',
+        experience: 'N/A',
+        joinDate: '2024-01-01',
+        bio: `A dedicated student at Springing Stars Junior School studying in ${className.replace(/_/g, ' ')}.`,
+        emergencyContact: 'Parent/Guardian',
+        emergencyPhone: `+256 77${Math.floor(1000000 + Math.random() * 9000000)}`,
+        avatar: getAvatarWithFallback(imageName),
+        class: className.replace(/_/g, ' '),
+        accountStatus: 'active' as const,
         dateOfBirth: student.dob,
         schoolPayCode: student.school_pay_code
       };
-      students.push(studentRecord);
-      id++;
-    });
-  });
-
-  return students;
-};
-
-export const localStudentDatabase = {
-  users: generateStudents(),
-  studentsByClass
+    })
+  )
 };
