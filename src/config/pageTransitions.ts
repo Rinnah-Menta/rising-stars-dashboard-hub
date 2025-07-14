@@ -36,6 +36,13 @@ export const pageTransitions = {
   }
 };
 
+// Optimized transition settings for performance
+export const transitionConfig = {
+  duration: 0.15,
+  ease: "easeOut",
+  type: "tween" as const
+};
+
 // Route-specific transition mapping for consistent UX
 export const routeTransitions: Record<string, keyof typeof pageTransitions> = {
   '/': 'fade',
