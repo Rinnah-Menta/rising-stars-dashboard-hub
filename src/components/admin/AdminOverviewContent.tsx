@@ -5,6 +5,7 @@ import { SchoolOverview } from './SchoolOverview';
 import { RecentActivities } from './RecentActivities';
 import { GradeDistribution } from './GradeDistribution';
 import { AdminQuickActions } from './AdminQuickActions';
+import AnimatedInView from '../AnimatedInView';
 
 interface AdminOverviewContentProps {
   onControlPanelClick: () => void;
@@ -18,10 +19,18 @@ export const AdminOverviewContent: React.FC<AdminOverviewContentProps> = ({ onCo
       
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <SchoolOverview />
-        <RecentActivities />
-        <GradeDistribution />
-        <AdminQuickActions onControlPanelClick={onControlPanelClick} />
+        <AnimatedInView animation="fadeIn" delay={0.4}>
+          <SchoolOverview />
+        </AnimatedInView>
+        <AnimatedInView animation="zoomIn" delay={0.5}>
+          <RecentActivities />
+        </AnimatedInView>
+        <AnimatedInView animation="flipIn" delay={0.6}>
+          <GradeDistribution />
+        </AnimatedInView>
+        <AnimatedInView animation="bounceIn" delay={0.7}>
+          <AdminQuickActions onControlPanelClick={onControlPanelClick} />
+        </AnimatedInView>
       </div>
     </div>
   );

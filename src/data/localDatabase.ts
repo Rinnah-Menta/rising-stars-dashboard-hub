@@ -1,34 +1,29 @@
 import { User } from '@/types/auth';
 import { ProfileData } from '@/types/profile';
+import { localStudentDatabase } from './studentdata';
 
 export const localDatabase = {
   users: [
-    {
-      id: '1',
-      email: 'john.mukasa@pupil.springingstars.ac.ug',
-      password: 'pupil123',
+    // Add all students from studentdata.ts first
+    ...localStudentDatabase.users.map(student => ({
+      ...student,
       role: 'pupil' as const,
-      name: 'John Mukasa',
-      firstName: 'John',
-      middleName: '',
-      lastName: 'Mukasa',
-      phone: '+256 772 111 111',
-      address: '123 Makerere Hill, Kampala',
+      phone: `+256 77${Math.floor(1000000 + Math.random() * 9000000)}`,
+      address: 'Kampala, Uganda',
       title: '',
-      gender: 'male',
       subject: 'All Subjects',
       department: 'Primary',
       qualification: 'PLE Candidate',
       experience: 'N/A',
-      joinDate: '2020-02-01',
-      bio: 'A curious and enthusiastic learner, always eager to participate in class activities.',
-      emergencyContact: 'Grace Nalongo',
-      emergencyPhone: '+256 772 444 444',
-      class: 'Primary 6',
-      avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=face'
-    },
+      joinDate: '2024-01-01',
+      bio: `A dedicated student at Springing Stars Junior School.`,
+      emergencyContact: 'Parent/Guardian',
+      emergencyPhone: `+256 77${Math.floor(1000000 + Math.random() * 9000000)}`,
+      accountStatus: 'active' as const
+    })),
+    // Other non-student users
     {
-      id: '2',
+      id: '1000',
       email: 'sarah.nambi@teacher.springingstars.ac.ug',
       password: 'teacher123',
       role: 'teacher' as const,
@@ -49,10 +44,11 @@ export const localDatabase = {
       emergencyContact: 'Michael Nambi',
       emergencyPhone: '+256 772 222 223',
       class: 'Primary 5 & 6',
-      avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop&crop=face'
+      avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop&crop=face',
+      accountStatus: 'active' as const
     },
     {
-      id: '3',
+      id: '1001',
       email: 'david.kato@staff.springingstars.ac.ug',
       password: 'staff123',
       role: 'non-teaching' as const,
@@ -72,10 +68,11 @@ export const localDatabase = {
       bio: 'An efficient and organized administrator ensuring the smooth running of the school.',
       emergencyContact: 'Mary Kato',
       emergencyPhone: '+256 772 333 334',
-      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face'
+      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face',
+      accountStatus: 'active' as const
     },
     {
-      id: '4',
+      id: '1002',
       email: 'grace.nalongo@parent.springingstars.ac.ug',
       password: 'parent123',
       role: 'parent' as const,
@@ -96,10 +93,11 @@ export const localDatabase = {
       emergencyContact: 'David Mukasa',
       emergencyPhone: '+256 772 111 112',
       children: ['John Mukasa', 'Mary Nakato'],
-      avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop&crop=face'
+      avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop&crop=face',
+      accountStatus: 'active' as const
     },
     {
-      id: '5',
+      id: '1003',
       email: 'admin@springingstars.ac.ug',
       password: 'admin123',
       role: 'admin' as const,
@@ -119,30 +117,38 @@ export const localDatabase = {
       bio: 'A visionary leader focused on providing a world-class educational experience.',
       emergencyContact: 'Esther Ssebunya',
       emergencyPhone: '+256 772 555 556',
-      avatar: 'https://images.unsplash.com/photo-1556157382-97eda2d62296?w=400&h=400&fit=crop&crop=face'
+      avatar: 'https://images.unsplash.com/photo-1556157382-97eda2d62296?w=400&h=400&fit=crop&crop=face',
+      accountStatus: 'active' as const
     }
   ] as User[],
   dummyProfiles: {
-    '1': { // John Mukasa - Pupil
-      firstName: 'John',
-      middleName: '',
-      lastName: 'Mukasa',
-      email: 'john.mukasa@pupil.springingstars.ac.ug',
-      phone: '+256 772 111 111',
-      address: '123 Makerere Hill, Kampala',
-      title: '',
-      gender: 'male',
-      subject: 'All Subjects',
-      department: 'Primary',
-      qualification: 'PLE Candidate',
-      experience: 'N/A',
-      joinDate: '2020-02-01',
-      bio: 'A curious and enthusiastic learner, always eager to participate in class activities.',
-      emergencyContact: 'Grace Nalongo',
-      emergencyPhone: '+256 772 444 444',
-      avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=face',
-    },
-    '2': { // Sarah Nambi - Teacher
+    // Generate profiles for all students from studentdata.ts
+    ...Object.fromEntries(
+      localStudentDatabase.users.map(student => [
+        student.id,
+        {
+          firstName: student.firstName,
+          middleName: student.middleName,
+          lastName: student.lastName,
+          email: student.email,
+          phone: `+256 77${Math.floor(1000000 + Math.random() * 9000000)}`,
+          address: 'Kampala, Uganda',
+          title: '',
+          gender: student.gender?.toLowerCase() || 'unknown',
+          subject: 'All Subjects',
+          department: 'Primary',
+          qualification: 'PLE Candidate',
+          experience: 'N/A',
+          joinDate: '2024-01-01',
+          bio: `A dedicated student at Springing Stars Junior School.`,
+          emergencyContact: 'Parent/Guardian',
+          emergencyPhone: `+256 77${Math.floor(1000000 + Math.random() * 9000000)}`,
+          avatar: student.avatar,
+          class: student.class
+        }
+      ])
+    ),
+    '1000': { // Sarah Nambi - Teacher
       firstName: 'Sarah',
       middleName: '',
       lastName: 'Nambi',
@@ -161,7 +167,7 @@ export const localDatabase = {
       emergencyPhone: '+256 772 222 223',
       avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop&crop=face',
     },
-    '3': { // David Kato - Staff
+    '1001': { // David Kato - Staff
       firstName: 'David',
       middleName: '',
       lastName: 'Kato',
@@ -180,7 +186,7 @@ export const localDatabase = {
       emergencyPhone: '+256 772 333 334',
       avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face',
     },
-    '4': { // Grace Nalongo - Parent
+    '1002': { // Grace Nalongo - Parent
       firstName: 'Grace',
       middleName: '',
       lastName: 'Nalongo',
@@ -199,7 +205,7 @@ export const localDatabase = {
       emergencyPhone: '+256 772 111 112',
       avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop&crop=face',
     },
-    '5': { // Moses Ssebunya - Admin
+    '1003': { // Moses Ssebunya - Admin
       firstName: 'Moses',
       middleName: '',
       lastName: 'Ssebunya',

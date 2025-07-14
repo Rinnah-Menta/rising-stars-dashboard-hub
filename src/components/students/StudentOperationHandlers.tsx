@@ -146,7 +146,7 @@ export const useStudentOperationHandlers = ({
 
   const handleExport = () => {
     const csvContent = [
-      ['Student ID', 'Name', 'Class', 'Age', 'Parent/Guardian', 'Contact', 'Fees Status', 'Account Status'],
+      ['Student ID', 'Name', 'Class', 'Age', 'Parent/Guardian', 'Contact', 'Account Status'],
       ...students.map(student => [
         student.id,
         student.name,
@@ -154,7 +154,6 @@ export const useStudentOperationHandlers = ({
         student.age.toString(),
         student.parent,
         student.phone,
-        student.fees,
         student.status
       ])
     ].map(row => row.join(',')).join('\n');

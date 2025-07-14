@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Student } from '@/hooks/useStudents';
-import { Phone, Mail, MapPin, User, GraduationCap, Calendar } from 'lucide-react';
+import { Phone, Mail, MapPin, User, GraduationCap, Calendar, CreditCard, Hash } from 'lucide-react';
 
 interface StudentDetailsDialogProps {
   open: boolean;
@@ -68,6 +68,26 @@ export const StudentDetailsDialog: React.FC<StudentDetailsDialogProps> = ({
               </div>
             </div>
 
+            {student.dateOfBirth && (
+              <div className="flex items-center space-x-3">
+                <Calendar className="h-5 w-5 text-gray-400" />
+                <div>
+                  <p className="text-sm text-gray-600">Date of Birth</p>
+                  <p className="font-medium">{student.dateOfBirth}</p>
+                </div>
+              </div>
+            )}
+
+            {student.schoolPayCode && (
+              <div className="flex items-center space-x-3">
+                <CreditCard className="h-5 w-5 text-gray-400" />
+                <div>
+                  <p className="text-sm text-gray-600">School Pay Code</p>
+                  <p className="font-medium">{student.schoolPayCode}</p>
+                </div>
+              </div>
+            )}
+
             <div className="flex items-center space-x-3">
               <User className="h-5 w-5 text-gray-400" />
               <div>
@@ -107,12 +127,6 @@ export const StudentDetailsDialog: React.FC<StudentDetailsDialogProps> = ({
             <div className="flex items-center space-x-3">
               <div className="h-5 w-5 flex items-center justify-center">
                 <div className="h-3 w-3 bg-gray-400 rounded-full"></div>
-              </div>
-              <div>
-                <p className="text-sm text-gray-600">Fees Status</p>
-                <Badge className={getFeesStatusColor(student.fees)}>
-                  {student.fees}
-                </Badge>
               </div>
             </div>
           </div>

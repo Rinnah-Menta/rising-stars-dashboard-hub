@@ -29,6 +29,22 @@ export const AdminDashboardHeader: React.FC<AdminDashboardHeaderProps> = ({
 }) => {
   const { pendingCount, controlPanelBadgeCount, clearControlPanelBadge } = useNotifications();
 
+  const formatTitle = (title: string) => {
+    if (!title) return '';
+    const lowerTitle = title.toLowerCase();
+    if (lowerTitle === 'mr') return 'Mr.';
+    if (lowerTitle === 'mrs') return 'Mrs.';
+    if (lowerTitle === 'ms') return 'Ms.';
+    if (lowerTitle === 'dr') return 'Dr.';
+    if (lowerTitle === 'teacher') return 'Tr.';
+    return title.charAt(0).toUpperCase() + title.slice(1).toLowerCase();
+  };
+
+  const formatName = (name: string) => {
+    if (!name) return '';
+    return name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
+  };
+
   const handleControlPanelClick = () => {
     clearControlPanelBadge();
     onViewChange('control');
@@ -41,7 +57,7 @@ export const AdminDashboardHeader: React.FC<AdminDashboardHeaderProps> = ({
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold">
-                Welcome, {title} {lastName}
+                Welcome, {formatTitle(title)} {formatName(lastName)}
               </h1>
               <p className="text-blue-100 mt-1">
                 Administrator Dashboard - Manage your school efficiently

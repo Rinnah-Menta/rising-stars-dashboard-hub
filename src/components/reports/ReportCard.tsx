@@ -5,6 +5,8 @@ interface Student {
   id: number;
   name: string;
   class: string;
+  dateOfBirth?: string;
+  schoolPayCode?: string;
 }
 
 interface Subject {
@@ -36,10 +38,10 @@ export const ReportCard = ({ student, term, studentClass, subjects, totalMarks, 
   
   return (
     <div className="p-8 bg-white relative">
-      {/* Watermark */}
-      <div className="absolute inset-0 flex items-center justify-center opacity-5 pointer-events-none">
+      {/* Watermark - Made more visible and properly positioned */}
+      <div className="absolute inset-0 flex items-center justify-center opacity-15 pointer-events-none z-0">
         <img 
-          src="https://springingstars.ac.ug/wp-content/uploads/2023/04/logo.png" 
+          src="https://gloriouschools.github.io/rising-star-connect/schoologo.png" 
           alt="Watermark" 
           className="w-96 h-96 object-contain"
         />
@@ -49,7 +51,7 @@ export const ReportCard = ({ student, term, studentClass, subjects, totalMarks, 
       <header className="text-center mb-8 relative z-10">
         <div className="flex items-center justify-center gap-4 mb-4">
           <img 
-            src="https://springingstars.ac.ug/wp-content/uploads/2023/04/logo.png" 
+            src="https://gloriouschools.github.io/rising-star-connect/schoologo.png" 
             alt="Springing Stars Logo" 
             className="h-20 w-20 object-contain"
           />
@@ -66,7 +68,7 @@ export const ReportCard = ({ student, term, studentClass, subjects, totalMarks, 
 
       {/* Student Information */}
       <section className="mb-8 relative z-10">
-        <Card>
+        <Card className="bg-white/80">
           <CardContent className="p-6 grid grid-cols-2 gap-x-8 gap-y-4">
             <div className="flex items-baseline">
               <span className="font-semibold text-gray-700 w-32">Student Name:</span>
@@ -88,6 +90,18 @@ export const ReportCard = ({ student, term, studentClass, subjects, totalMarks, 
               <span className="font-semibold text-gray-700 w-32">Student ID:</span>
               <span className="flex-1 border-b border-dotted border-gray-400 px-2 text-gray-900">SS{student?.id.toString().padStart(4, '0')}</span>
             </div>
+            {student?.dateOfBirth && (
+              <div className="flex items-baseline">
+                <span className="font-semibold text-gray-700 w-32">Date of Birth:</span>
+                <span className="flex-1 border-b border-dotted border-gray-400 px-2 text-gray-900">{student.dateOfBirth}</span>
+              </div>
+            )}
+            {student?.schoolPayCode && (
+              <div className="flex items-baseline">
+                <span className="font-semibold text-gray-700 w-32">School Pay Code:</span>
+                <span className="flex-1 border-b border-dotted border-gray-400 px-2 text-gray-900">{student.schoolPayCode}</span>
+              </div>
+            )}
             <div className="flex items-baseline">
               <span className="font-semibold text-gray-700 w-32">Date Issued:</span>
               <span className="flex-1 border-b border-dotted border-gray-400 px-2 text-gray-900">{new Date().toLocaleDateString()}</span>
@@ -98,10 +112,10 @@ export const ReportCard = ({ student, term, studentClass, subjects, totalMarks, 
 
       {/* Grades Table */}
       <section className="mb-8 relative z-10">
-        <Card>
+        <Card className="bg-white/80">
           <CardContent className="p-0">
             <table className="w-full">
-              <thead className="bg-blue-50">
+              <thead className="bg-blue-50/80">
                 <tr>
                   <th className="p-4 text-left font-semibold text-gray-700">Subject</th>
                   <th className="p-4 text-center font-semibold text-gray-700">Score (%)</th>
@@ -111,7 +125,7 @@ export const ReportCard = ({ student, term, studentClass, subjects, totalMarks, 
               </thead>
               <tbody>
                 {subjects.map((subject, index) => (
-                  <tr key={index} className="border-b border-gray-200 last:border-b-0 hover:bg-gray-50 transition-colors">
+                  <tr key={index} className="border-b border-gray-200 last:border-b-0 hover:bg-gray-50/50 transition-colors">
                     <td className="p-4">{subject.name}</td>
                     <td className="p-4 text-center">{subject.score}</td>
                     <td className="p-4 text-center font-bold text-lg">{subject.grade}</td>
@@ -126,7 +140,7 @@ export const ReportCard = ({ student, term, studentClass, subjects, totalMarks, 
       
       {/* Summary and Performance */}
       <section className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8 relative z-10">
-        <Card className="p-6">
+        <Card className="p-6 bg-white/80">
           <h3 className="font-semibold text-lg mb-4 text-center text-blue-900">Overall Performance</h3>
           <div className="text-center">
             <p className="text-sm text-gray-600">Total Marks</p>
@@ -142,7 +156,7 @@ export const ReportCard = ({ student, term, studentClass, subjects, totalMarks, 
           </div>
         </Card>
 
-        <Card className="p-6">
+        <Card className="p-6 bg-white/80">
           <h3 className="font-semibold text-lg mb-4 text-blue-900">Grading Scale</h3>
           <div className="text-sm space-y-2 text-gray-700">
             <div className="flex justify-between"><span>A: 85-100%</span> <span>Excellent</span></div>
@@ -154,7 +168,7 @@ export const ReportCard = ({ student, term, studentClass, subjects, totalMarks, 
           </div>
         </Card>
 
-        <Card className="p-6">
+        <Card className="p-6 bg-white/80">
           <h3 className="font-semibold text-lg mb-4 text-blue-900">Class Performance</h3>
           <div className="text-sm space-y-3 text-gray-700">
             <div className="flex justify-between items-center">
@@ -179,10 +193,10 @@ export const ReportCard = ({ student, term, studentClass, subjects, totalMarks, 
 
       {/* Teacher Comments */}
       <section className="mb-8 relative z-10">
-        <Card>
+        <Card className="bg-white/80">
           <CardContent className="p-6">
             <h3 className="font-semibold text-lg mb-3 text-blue-900">Class Teacher's Comments</h3>
-            <div className="bg-gray-50 p-4 rounded-md min-h-[80px]">
+            <div className="bg-gray-50/70 p-4 rounded-md min-h-[80px]">
               <p className="text-sm text-gray-800">
                 {student?.name} has shown excellent performance this term. Keep up the good work in Mathematics and continue reading more to improve English comprehension skills.
               </p>

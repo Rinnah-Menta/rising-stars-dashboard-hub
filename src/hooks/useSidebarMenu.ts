@@ -162,6 +162,7 @@ export const useSidebarMenu = () => {
         'results', 
         'timetable', 
         'attendance', 
+        'library',
         'communication', 
         'help'
       ],
@@ -187,6 +188,7 @@ export const useSidebarMenu = () => {
         'settings', 
         'attendance', 
         'facilities', 
+        'library',
         'communication', 
         'notifications'
       ],

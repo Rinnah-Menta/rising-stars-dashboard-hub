@@ -45,18 +45,6 @@ export const StudentsTable: React.FC<StudentsTableProps> = ({
     student: Student | null;
   }>({ open: false, action: 'archive', student: null });
 
-  const getFeesStatusColor = (status: string) => {
-    switch (status.toLowerCase()) {
-      case 'paid':
-        return 'bg-green-100 text-green-800';
-      case 'pending':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'overdue':
-        return 'bg-red-100 text-red-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
 
   const getAccountStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
@@ -139,7 +127,6 @@ export const StudentsTable: React.FC<StudentsTableProps> = ({
               <TableHead>Age</TableHead>
               <TableHead>Parent/Guardian</TableHead>
               <TableHead>Contact</TableHead>
-              <TableHead>Fees Status</TableHead>
               <TableHead>Account Status</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
@@ -153,11 +140,6 @@ export const StudentsTable: React.FC<StudentsTableProps> = ({
                 <TableCell>{student.age}</TableCell>
                 <TableCell>{student.parent}</TableCell>
                 <TableCell>{student.phone}</TableCell>
-                <TableCell>
-                  <Badge variant="secondary" className={getFeesStatusColor(student.fees)}>
-                    {student.fees}
-                  </Badge>
-                </TableCell>
                 <TableCell>
                   <Badge variant="secondary" className={getAccountStatusColor(student.status)}>
                     {student.status.charAt(0).toUpperCase() + student.status.slice(1)}

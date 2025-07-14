@@ -18,8 +18,9 @@ export const Students = () => {
     loading,
     searchTerm,
     setSearchTerm,
-    filterStatus,
-    setFilterStatus,
+    filterClass,
+    setFilterClass,
+    availableClasses,
     stats,
     addStudent,
     updateStudent,
@@ -113,8 +114,9 @@ export const Students = () => {
               <StudentFilters
                 searchTerm={searchTerm}
                 setSearchTerm={setSearchTerm}
-                filterStatus={filterStatus}
-                setFilterStatus={setFilterStatus}
+                filterClass={filterClass}
+                setFilterClass={setFilterClass}
+                availableClasses={availableClasses}
                 resultsCount={students.length}
               />
             </div>

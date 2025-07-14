@@ -12,11 +12,18 @@ const NonTeachingDashboard = () => {
   
   const getTitle = () => {
     if (!profileData?.title) return '';
-    return profileData.title;
+    const title = profileData.title.toLowerCase();
+    if (title === 'mr') return 'Mr.';
+    if (title === 'mrs') return 'Mrs.';
+    if (title === 'ms') return 'Ms.';
+    if (title === 'dr') return 'Dr.';
+    if (title === 'teacher') return 'Tr.';
+    return profileData.title.charAt(0).toUpperCase() + profileData.title.slice(1).toLowerCase();
   };
 
   const getLastName = () => {
-    return profileData?.lastName || '';
+    const lastName = profileData?.lastName || '';
+    return lastName.charAt(0).toUpperCase() + lastName.slice(1).toLowerCase();
   };
 
   return (

@@ -30,12 +30,18 @@ const TeacherDashboard = () => {
   
   const getTitle = () => {
     if (!profileData?.title) return '';
-    if (profileData.title.toLowerCase() === 'teacher') return 'Tr.';
-    return profileData.title;
+    const title = profileData.title.toLowerCase();
+    if (title === 'teacher') return 'Tr.';
+    if (title === 'mr') return 'Mr.';
+    if (title === 'mrs') return 'Mrs.';
+    if (title === 'ms') return 'Ms.';
+    if (title === 'dr') return 'Dr.';
+    return profileData.title.charAt(0).toUpperCase() + profileData.title.slice(1).toLowerCase();
   };
 
   const getLastName = () => {
-    return profileData?.lastName || '';
+    const lastName = profileData?.lastName || '';
+    return lastName.charAt(0).toUpperCase() + lastName.slice(1).toLowerCase();
   };
 
   return (

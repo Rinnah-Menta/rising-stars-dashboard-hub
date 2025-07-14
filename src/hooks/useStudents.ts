@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfile } from '@/contexts/ProfileContext';
+import { localStudentDatabase } from '@/data/studentdata';
 
 export interface Student {
   id: string;
@@ -10,10 +11,11 @@ export interface Student {
   age: number;
   parent: string;
   phone: string;
-  fees: 'Paid' | 'Pending' | 'Overdue';
   email?: string;
   address?: string;
   status: 'active' | 'inactive' | 'suspended' | 'archived' | 'expelled';
+  dateOfBirth?: string;
+  schoolPayCode?: string;
 }
 
 export const useStudents = () => {
@@ -22,7 +24,7 @@ export const useStudents = () => {
   const [allStudents, setAllStudents] = useState<Student[]>([]);
   const [filteredStudents, setFilteredStudents] = useState<Student[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterStatus, setFilterStatus] = useState<string>('all');
+  const [filterClass, setFilterClass] = useState<string>('all');
   const [loading, setLoading] = useState(false);
 
   // Load initial data
@@ -58,41 +60,42 @@ export const useStudents = () => {
       );
     }
 
-    if (filterStatus !== 'all') {
-      filtered = filtered.filter(student => student.fees === filterStatus);
+    if (filterClass !== 'all') {
+      filtered = filtered.filter(student => student.class === filterClass);
     }
 
     setFilteredStudents(filtered);
-  }, [allStudents, searchTerm, filterStatus, user, profileData]);
+  }, [allStudents, searchTerm, filterClass, user, profileData]);
 
   const loadStudents = () => {
     setLoading(true);
-    // Simulate API call
+    // Load real student data from studentdata.ts with progressive loading simulation
     setTimeout(() => {
-      const mockStudents: Student[] = [
-        { id: 'SS001', name: 'Sarah Nakato', class: 'P.7A', age: 13, parent: 'Robert Nakato', phone: '+256 700 123 456', fees: 'Paid', status: 'active' },
-        { id: 'SS002', name: 'John Mukasa', class: 'P.6B', age: 12, parent: 'Grace Mukasa', phone: '+256 701 234 567', fees: 'Pending', status: 'active' },
-        { id: 'SS003', name: 'Mary Namuli', class: 'P.5A', age: 11, parent: 'Peter Namuli', phone: '+256 702 345 678', fees: 'Paid', status: 'suspended' },
-        { id: 'SS004', name: 'David Ssali', class: 'P.7B', age: 14, parent: 'Jane Ssali', phone: '+256 703 456 789', fees: 'Paid', status: 'active' },
-        { id: 'SS005', name: 'Ruth Auma', class: 'P.4A', age: 10, parent: 'James Auma', phone: '+256 704 567 890', fees: 'Overdue', status: 'active' },
-        { id: 'SS006', name: 'Samuel Okello', class: 'P.6A', age: 12, parent: 'Helen Okello', phone: '+256 705 678 901', fees: 'Paid', status: 'archived' },
-        { id: 'SS007', name: 'Grace Nalubega', class: 'P.5B', age: 11, parent: 'Moses Nalubega', phone: '+256 706 789 012', fees: 'Pending', status: 'active' },
-        { id: 'SS008', name: 'Emmanuel Kato', class: 'P.7A', age: 13, parent: 'Sarah Kato', phone: '+256 707 890 123', fees: 'Paid', status: 'expelled' },
-        { id: 'SS009', name: 'Alice Tendo', class: 'P.5A', age: 11, parent: 'Paul Tendo', phone: '+256 708 901 234', fees: 'Paid', status: 'active' },
-        { id: 'SS010', name: 'Peter Ssempala', class: 'P.6B', age: 12, parent: 'Mary Ssempala', phone: '+256 709 012 345', fees: 'Overdue', status: 'active' },
-      ];
-      setAllStudents(mockStudents);
+      const realStudents: Student[] = localStudentDatabase.users.map(student => ({
+        id: student.id,
+        name: student.name,
+        class: student.class,
+        age: Math.floor(Math.random() * 5) + 6, // Random age between 6-10 for primary school
+        parent: 'Parent/Guardian',
+        phone: `+256 77${Math.floor(1000000 + Math.random() * 9000000)}`,
+        email: student.email,
+        address: 'Kampala, Uganda',
+        status: 'active' as const,
+        dateOfBirth: student.dateOfBirth || '',
+        schoolPayCode: student.schoolPayCode || ''
+      }));
+      setAllStudents(realStudents);
       setLoading(false);
-    }, 1000);
+    }, 1500); // Slightly longer for better loading UX demonstration
   };
 
   const getStats = () => {
     const total = filteredStudents.length;
-    const paid = filteredStudents.filter(s => s.fees === 'Paid').length;
-    const pending = filteredStudents.filter(s => s.fees === 'Pending').length;
-    const overdue = filteredStudents.filter(s => s.fees === 'Overdue').length;
+    const activeClasses = [...new Set(filteredStudents.map(s => s.class))].length;
+    const activeStudents = filteredStudents.filter(s => s.status === 'active').length;
+    const inactiveStudents = filteredStudents.filter(s => s.status !== 'active').length;
     
-    return { total, paid, pending, overdue };
+    return { total, activeClasses, activeStudents, inactiveStudents };
   };
 
   const addStudent = (student: Omit<Student, 'id'>) => {
@@ -124,14 +127,20 @@ export const useStudents = () => {
     setAllStudents(prev => prev.filter(student => student.id !== id));
   };
 
+  // Get available classes
+  const getAvailableClasses = () => {
+    return [...new Set(allStudents.map(student => student.class))].sort();
+  };
+
   return {
     students: filteredStudents,
     allStudents,
     loading,
     searchTerm,
     setSearchTerm,
-    filterStatus,
-    setFilterStatus,
+    filterClass,
+    setFilterClass,
+    availableClasses: getAvailableClasses(),
     stats: getStats(),
     addStudent,
     updateStudent,

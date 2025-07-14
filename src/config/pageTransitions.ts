@@ -1,51 +1,52 @@
 
-export const pageTransitions = [
-  {
-    name: 'fade',
-    variants: {
-      initial: { opacity: 0 },
-      animate: { opacity: 1 },
-      exit: { opacity: 0 },
-    }
+// Optimized page transitions for smooth performance
+export const pageTransitions = {
+  // Ultra-smooth fade transition
+  fade: {
+    initial: { opacity: 0 },
+    animate: { opacity: 1 },
+    exit: { opacity: 0 }
   },
-  {
-    name: 'slideRight',
-    variants: {
-      initial: { opacity: 0, x: 50 },
-      animate: { opacity: 1, x: 0 },
-      exit: { opacity: 0, x: -50 },
-    }
+  
+  // Subtle slide transitions
+  slideRight: {
+    initial: { opacity: 0, x: 20 },
+    animate: { opacity: 1, x: 0 },
+    exit: { opacity: 0, x: -20 }
   },
-  {
-    name: 'slideLeft',
-    variants: {
-      initial: { opacity: 0, x: -50 },
-      animate: { opacity: 1, x: 0 },
-      exit: { opacity: 0, x: 50 },
-    }
+  
+  slideUp: {
+    initial: { opacity: 0, y: 15 },
+    animate: { opacity: 1, y: 0 },
+    exit: { opacity: 0, y: -15 }
   },
-  {
-    name: 'slideBottom',
-    variants: {
-      initial: { opacity: 0, y: 50 },
-      animate: { opacity: 1, y: 0 },
-      exit: { opacity: 0, y: -50 },
-    }
+  
+  // Optimized scale transition
+  scale: {
+    initial: { opacity: 0, scale: 0.98 },
+    animate: { opacity: 1, scale: 1 },
+    exit: { opacity: 0, scale: 0.98 }
   },
-  {
-    name: 'slideTop',
-    variants: {
-      initial: { opacity: 0, y: -50 },
-      animate: { opacity: 1, y: 0 },
-      exit: { opacity: 0, y: 50 },
-    }
-  },
-  {
-    name: 'zoom',
-    variants: {
-      initial: { opacity: 0, scale: 0.95 },
-      animate: { opacity: 1, scale: 1 },
-      exit: { opacity: 0, scale: 0.95 },
-    }
+  
+  // Default smooth transition
+  default: {
+    initial: { opacity: 0, y: 8 },
+    animate: { opacity: 1, y: 0 },
+    exit: { opacity: 0, y: -8 }
   }
-];
+};
+
+// Route-specific transition mapping for consistent UX
+export const routeTransitions: Record<string, keyof typeof pageTransitions> = {
+  '/': 'fade',
+  '/dashboard': 'fade',
+  '/profile': 'slideUp',
+  '/students': 'slideRight',
+  '/staff': 'slideRight',
+  '/classes': 'slideRight',
+  '/reports': 'slideUp',
+  '/analytics': 'scale',
+  '/settings': 'slideUp',
+  // Default for unmapped routes
+  default: 'default'
+};
