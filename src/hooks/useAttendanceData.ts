@@ -17,26 +17,47 @@ interface AttendanceRecord {
 
 const STORAGE_KEY = 'attendance_records';
 
-// Generate attendance records for a specific class
-const generateRecordsForClass = (className: string): AttendanceRecord[] => {
-  const students = localStudentDatabase.users.filter(user => 
-    user.role === 'pupil' && user.class === className
-  );
-  
-  const today = format(new Date(), 'yyyy-MM-dd');
-  
-  return students.map((student) => ({
-    id: student.id,
-    studentId: student.id,
-    studentName: student.name,
-    class: student.class,
-    date: today,
-    status: 'present' as const,
+const defaultRecords: AttendanceRecord[] = [
+  {
+    id: '1',
+    studentId: 'SS001',
+    studentName: 'Sarah Nakato',
+    class: 'P.7A',
+    date: format(new Date(), 'yyyy-MM-dd'),
+    status: 'present',
     timeIn: '8:00 AM',
-    timeOut: '3:30 PM',
-    remarks: undefined
-  }));
-};
+    timeOut: '3:30 PM'
+  },
+  {
+    id: '2',
+    studentId: 'SS002',
+    studentName: 'John Mukasa',
+    class: 'P.6B',
+    date: format(new Date(), 'yyyy-MM-dd'),
+    status: 'late',
+    timeIn: '8:45 AM',
+    remarks: 'Transport delay'
+  },
+  {
+    id: '3',
+    studentId: 'SS003',
+    studentName: 'Mary Namuli',
+    class: 'P.5A',
+    date: format(new Date(), 'yyyy-MM-dd'),
+    status: 'absent',
+    remarks: 'Sick leave'
+  },
+  {
+    id: '4',
+    studentId: 'SS004',
+    studentName: 'David Ssali',
+    class: 'P.7B',
+    date: format(new Date(), 'yyyy-MM-dd'),
+    status: 'present',
+    timeIn: '7:55 AM',
+    timeOut: '3:30 PM'
+  }
+];
 
 export const useAttendanceData = (selectedClass?: string) => {
   const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>([]);
@@ -122,8 +143,6 @@ export const useAttendanceData = (selectedClass?: string) => {
 
   return {
     attendanceRecords,
-    loading,
-    updateAttendanceStatus,
-    bulkUpdateAttendance
+    updateAttendanceStatus
   };
 };
