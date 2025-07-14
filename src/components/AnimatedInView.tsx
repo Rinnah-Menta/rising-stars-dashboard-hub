@@ -121,7 +121,7 @@ const AnimatedInView = ({ children, variants, className, animation = 'slideUp', 
     threshold: 0.1,
   });
 
-  const selectedVariants = variants || animationVariants[animation];
+  const selectedVariants = variants || animationVariants[animation] || defaultVariants;
 
   useEffect(() => {
     if (inView) {
