@@ -6,7 +6,6 @@ import { Badge } from '@/components/ui/badge';
 import { Download, Users, BookOpen, ChevronRight, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/contexts/AuthContext';
-import { useStudents } from '@/hooks/useStudents';
 import { useToast } from '@/hooks/use-toast';
 import AnimatedInView from '@/components/AnimatedInView';
 import { exportAttendanceToCSV } from '@/utils/attendanceExport';
@@ -23,7 +22,12 @@ import { localStudentDatabase } from '@/data/studentdata';
 export const Attendance = () => {
   const { user } = useAuth();
   const { toast } = useToast();
-  const { attendanceRecords, updateAttendanceStatus } = useAttendanceData();
+  
+  // State declarations first
+  const [selectedClass, setSelectedClass] = useState<string>('');
+  
+  // Hook that depends on selectedClass
+  const { attendanceRecords, loading, updateAttendanceStatus, bulkUpdateAttendance } = useAttendanceData(selectedClass);
   
   // Get available classes from student database with student counts
   const classesWithCounts = useMemo(() => {
@@ -39,6 +43,9 @@ export const Attendance = () => {
       .sort((a, b) => a.name.localeCompare(b.name));
   }, []);
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedStudents, setSelectedStudents] = useState<string[]>([]);
+  const [showClassSelection, setShowClassSelection] = useState(true);
+  const [loadingStudents, setLoadingStudents] = useState(false);
 
   const handleQuickAttendance = (studentId: string, status: 'present' | 'absent') => {
     updateAttendanceStatus(studentId, status);
@@ -103,12 +110,6 @@ export const Attendance = () => {
     const matchesClass = selectedClass === '' || record.class === selectedClass;
     return matchesSearch && matchesClass;
   });
-
-  console.log('Available classes:', availableClasses);
-  console.log('Selected class:', selectedClass);
-  console.log('Total attendance records:', attendanceRecords.length);
-  console.log('Filtered records:', filteredRecords.length);
-  console.log('Sample record classes:', attendanceRecords.slice(0, 5).map(r => r.class));
 
   const canManageAttendance = user?.role === 'admin' || user?.role === 'teacher';
 
@@ -230,27 +231,57 @@ export const Attendance = () => {
         </>
       )}
 
-      {/* Filters */}
-      <AnimatedInView>
-        <AttendanceFilters
-          selectedDate={selectedDate}
-          setSelectedDate={setSelectedDate}
-          selectedClass={selectedClass}
-          setSelectedClass={setSelectedClass}
-          searchTerm={searchTerm}
-          setSearchTerm={setSearchTerm}
-        />
-      </AnimatedInView>
+      {/* Search Filter */}
+      {!showClassSelection && (
+        <AnimatedInView>
+          <Card>
+            <CardContent className="p-3 sm:p-4">
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+                <div className="flex-1">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                    <Input
+                      placeholder="Search students by name or ID..."
+                      className="pl-10"
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </AnimatedInView>
+      )}
 
-      {/* Quick Attendance Table */}
-      <AnimatedInView>
-        <AttendanceTable
-          records={filteredRecords}
-          selectedDate={selectedDate}
-          canManageAttendance={canManageAttendance}
-          onStatusChange={handleQuickAttendance}
-        />
-      </AnimatedInView>
+      {/* Attendance Table */}
+      {!showClassSelection && (
+        <AnimatedInView>
+          {loading ? (
+            <ColorfulSpinner 
+              type="attendance" 
+              message="Loading student attendance..."
+              size="lg"
+            />
+          ) : (
+            <AttendanceTable
+              records={filteredRecords}
+              canManageAttendance={canManageAttendance}
+              onStatusChange={handleQuickAttendance}
+              selectedStudents={selectedStudents}
+              onStudentSelect={(studentId) => {
+                setSelectedStudents(prev => 
+                  prev.includes(studentId) 
+                    ? prev.filter(id => id !== studentId)
+                    : [...prev, studentId]
+                );
+              }}
+              onSelectAll={handleSelectAll}
+              onBulkAttendance={handleBulkAttendance}
+            />
+          )}
+        </AnimatedInView>
+      )}
     </div>
   );
 };

@@ -7,6 +7,53 @@ import AnimatedInView from '../AnimatedInView';
 import { localStudentDatabase } from '@/data/studentdata';
 
 export const AdminStatsCards = () => {
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState({
+    totalStudents: 0,
+    totalClasses: 0,
+    avgPerformance: 0,
+    revenue: 0
+  });
+
+  useEffect(() => {
+    // Simulate calculation time for statistics
+    setTimeout(() => {
+      const totalStudents = localStudentDatabase.users.length;
+      const totalClasses = Object.keys(localStudentDatabase.studentsByClass).length;
+      
+      setStats({
+        totalStudents,
+        totalClasses,
+        avgPerformance: 87,
+        revenue: 85000
+      });
+      setLoading(false);
+    }, 1500);
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <AnimatedInView key={i} animation="zoomIn" delay={i * 0.1}>
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center space-x-2 text-sm font-medium">
+                  <Skeleton className="h-4 w-4" />
+                  <Skeleton className="h-4 w-20" />
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-8 w-16 mb-2" />
+                <Skeleton className="h-4 w-24" />
+              </CardContent>
+            </Card>
+          </AnimatedInView>
+        ))}
+      </div>
+    );
+  }
+  
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       <AnimatedInView animation="slideLeft" delay={0}>
@@ -18,8 +65,8 @@ export const AdminStatsCards = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">342</div>
-            <p className="text-blue-100 text-sm">+12 this month</p>
+            <div className="text-2xl font-bold">{stats.totalStudents}</div>
+            <p className="text-blue-100 text-sm">Enrolled students</p>
           </CardContent>
         </Card>
       </AnimatedInView>

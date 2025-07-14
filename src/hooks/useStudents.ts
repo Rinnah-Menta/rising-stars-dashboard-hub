@@ -69,7 +69,7 @@ export const useStudents = () => {
 
   const loadStudents = () => {
     setLoading(true);
-    // Simulate API call
+    // Load real student data from studentdata.ts with progressive loading simulation
     setTimeout(() => {
       const realStudents: Student[] = localStudentDatabase.users.map(student => ({
         id: student.id,
