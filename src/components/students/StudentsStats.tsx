@@ -2,6 +2,7 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Users, BookOpen, CheckCircle, XCircle } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
 import AnimatedInView from '@/components/AnimatedInView';
 
 interface StudentsStatsProps {
@@ -11,9 +12,10 @@ interface StudentsStatsProps {
     activeStudents: number;
     inactiveStudents: number;
   };
+  loading?: boolean;
 }
 
-export const StudentsStats: React.FC<StudentsStatsProps> = ({ stats }) => {
+export const StudentsStats: React.FC<StudentsStatsProps> = ({ stats, loading = false }) => {
   const statCards = [
     {
       title: 'Total Students',
@@ -44,6 +46,30 @@ export const StudentsStats: React.FC<StudentsStatsProps> = ({ stats }) => {
       bgColor: 'bg-red-50'
     }
   ];
+
+  if (loading) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <AnimatedInView key={i}>
+            <Card className="hover:shadow-md transition-shadow">
+              <CardContent className="pt-6">
+                <div className="flex items-center space-x-3">
+                  <div className="p-2 rounded-lg bg-muted">
+                    <Skeleton className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <Skeleton className="h-8 w-16 mb-2" />
+                    <Skeleton className="h-4 w-24" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </AnimatedInView>
+        ))}
+      </div>
+    );
+  }
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">

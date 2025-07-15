@@ -1,12 +1,14 @@
 
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface TeachersStatsProps {
   teachers: any[];
+  loading?: boolean;
 }
 
-export const TeachersStats: React.FC<TeachersStatsProps> = ({ teachers }) => {
+export const TeachersStats: React.FC<TeachersStatsProps> = ({ teachers, loading = false }) => {
   const totalTeachers = teachers.length;
   const activeTeachers = teachers.filter(t => t.status === 'Active').length;
   const onLeaveTeachers = teachers.filter(t => t.status === 'On Leave').length;
@@ -15,6 +17,21 @@ export const TeachersStats: React.FC<TeachersStatsProps> = ({ teachers }) => {
     const exp = parseInt(teacher.experience) || 0;
     return sum + exp;
   }, 0) / totalTeachers;
+
+  if (loading) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <Card key={i}>
+            <CardContent className="pt-6">
+              <Skeleton className="h-8 w-16 mb-2" />
+              <Skeleton className="h-4 w-24" />
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    );
+  }
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
