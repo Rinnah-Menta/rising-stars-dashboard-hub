@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -8,10 +9,13 @@ import { Progress } from '@/components/ui/progress';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { TrendingUp, TrendingDown, Award, BookOpen, Calendar, User, Download, Eye } from 'lucide-react';
 import { subjects } from '@/data/marks';
+import { usePrint } from '@/hooks/usePrint';
+import { toast } from 'sonner';
 
 export const Grades = () => {
   const [selectedTerm, setSelectedTerm] = useState('current');
   const [selectedSubject, setSelectedSubject] = useState('all');
+  const handlePrint = usePrint();
 
   // Calculate overall statistics
   const totalMarks = subjects.reduce((sum, subject) => sum + subject.score, 0);
@@ -53,6 +57,95 @@ export const Grades = () => {
     ? subjects 
     : subjects.filter(subject => subject.name.toLowerCase().includes(selectedSubject.toLowerCase()));
 
+  const handleExportReport = () => {
+    // Create CSV content
+    const csvHeader = 'Subject,Score,Grade,Remarks\n';
+    const csvData = subjects.map(subject => 
+      `"${subject.name}",${subject.score},"${subject.grade}","${subject.remarks}"`
+    ).join('\n');
+    
+    const csvContent = csvHeader + csvData;
+    
+    // Create and download CSV file
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `grades_report_${selectedTerm.replace(' ', '_')}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    toast.success('Grades report exported successfully!');
+  };
+
+  const handleViewTranscript = () => {
+    // Open transcript in new window for printing
+    const transcriptWindow = window.open('', '_blank');
+    if (transcriptWindow) {
+      const transcriptHTML = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Academic Transcript</title>
+          <style>
+            body { font-family: Arial, sans-serif; padding: 20px; }
+            .header { text-align: center; margin-bottom: 30px; }
+            .student-info { margin-bottom: 20px; }
+            .grades-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+            .grades-table th, .grades-table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+            .grades-table th { background-color: #f2f2f2; }
+            .summary { margin-top: 20px; }
+            @media print { body { margin: 0; } }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>Academic Transcript</h1>
+            <h2>Rising Star Connect School</h2>
+          </div>
+          <div class="student-info">
+            <p><strong>Student:</strong> Current Student</p>
+            <p><strong>Term:</strong> ${selectedTerm}</p>
+            <p><strong>Academic Year:</strong> 2024</p>
+          </div>
+          <table class="grades-table">
+            <thead>
+              <tr>
+                <th>Subject</th>
+                <th>Score</th>
+                <th>Grade</th>
+                <th>Remarks</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${subjects.map(subject => `
+                <tr>
+                  <td>${subject.name}</td>
+                  <td>${subject.score}%</td>
+                  <td>${subject.grade}</td>
+                  <td>${subject.remarks}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+          <div class="summary">
+            <p><strong>Overall Average:</strong> ${averageScore}%</p>
+            <p><strong>Subjects Passed:</strong> ${passedSubjects}/${totalSubjects}</p>
+            <p><strong>Generated:</strong> ${new Date().toLocaleDateString()}</p>
+          </div>
+        </body>
+        </html>
+      `;
+      
+      transcriptWindow.document.write(transcriptHTML);
+      transcriptWindow.document.close();
+    }
+    
+    toast.success('Transcript opened in new window');
+  };
+
   return (
     <div className="space-y-6 p-6">
       {/* Header */}
@@ -62,11 +155,11 @@ export const Grades = () => {
           <p className="text-muted-foreground">Track your academic performance across all subjects</p>
         </div>
         <div className="flex gap-3">
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" onClick={handleExportReport}>
             <Download className="h-4 w-4 mr-2" />
             Export Report
           </Button>
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" onClick={handleViewTranscript}>
             <Eye className="h-4 w-4 mr-2" />
             View Transcript
           </Button>
