@@ -24,7 +24,6 @@ export const routePaths = {
   timetable: '/timetable',
   assignments: '/assignments',
   results: '/results',
-  grades: '/grades',
   notifications: '/notifications',
   attendance: '/attendance',
   facilities: '/facilities',

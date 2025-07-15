@@ -16,7 +16,6 @@ import { Settings } from '@/components/pages/Settings';
 import { Timetable } from '@/components/pages/Timetable';
 import { Assignments } from '@/components/pages/Assignments';
 import { Results } from '@/components/pages/Results';
-import { Grades } from '@/components/pages/Grades';
 import { Notifications } from '@/components/pages/Notifications';
 import { Attendance } from '@/components/pages/Attendance';
 import { Facilities } from '@/components/pages/Facilities';
@@ -176,14 +175,6 @@ export const AppRoutes: React.FC = () => {
             <ProtectedRoute>
               <Layout>
                 <Results />
-              </Layout>
-            </ProtectedRoute>
-          } />
-
-          <Route path="/grades" element={
-            <ProtectedRoute>
-              <Layout>
-                <Grades />
               </Layout>
             </ProtectedRoute>
           } />
