@@ -23,6 +23,7 @@ import { Settings } from './pages/Settings';
 import { Timetable } from './pages/Timetable';
 import { Assignments } from './pages/Assignments';
 import { Results } from './pages/Results';
+import { Grades } from './pages/Grades';
 import { Notifications } from './pages/Notifications';
 import { Attendance } from './pages/Attendance';
 import { Facilities } from './pages/Facilities';
@@ -80,6 +81,8 @@ export const PageRenderer = () => {
       return <Assignments />;
     case 'results':
       return <Results />;
+    case 'grades':
+      return <Grades />;
     case 'notifications':
       return <Notifications />;
     case 'attendance':
